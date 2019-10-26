@@ -5,5 +5,5 @@ sh_binary(
     srcs = ["bazel_tools/buildifier.sh"],
     data = [
         "@buildifier//file",
-    ]
+    ],
 )
