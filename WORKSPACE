@@ -45,6 +45,11 @@ load(
 
 _go_image_repos()
 
+local_repository(
+    name = "thirdparty",
+    path = "third_party",
+)
+
 # Node
 http_archive(
     name = "build_bazel_rules_nodejs",
@@ -52,14 +57,19 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.39.0/rules_nodejs-0.39.0.tar.gz"],
 )
 
+
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
 
-#node_repositories(
-#    vendored_node = "//third_party/node-v10.12.0-linux-x64",
-#)
+node_repositories(
+    node_version = "10.12.0",
+    vendored_node = "@thirdparty//:node-v10.12.0-linux-x64",
+)
 
 npm_install(
     name = "npm",
+    data = [
+        "@thirdparty//:node-v10.12.0-linux-x64/bin/node",
+    ],
     package_json = "//:package.json",
     package_lock_json = "//:package-lock.json",
 )
