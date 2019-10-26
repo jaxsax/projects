@@ -62,13 +62,13 @@ load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install"
 
 node_repositories(
     node_version = "10.12.0",
-    vendored_node = "@thirdparty//:node-v10.12.0-linux-x64",
+    vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
 )
 
 npm_install(
     name = "npm",
     data = [
-        "@thirdparty//:node-v10.12.0-linux-x64/bin/node",
+        "@thirdparty//:node-v13.0.1-linux-x64/bin/node"
     ],
     package_json = "//:package.json",
     package_lock_json = "//:package-lock.json",

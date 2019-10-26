@@ -1,3 +1,3 @@
 exports_files([
-    "node-v10.12.0-linux-x64/bin/node"
+    "node-v13.0.1-linux-x64/bin/node"
 ])
