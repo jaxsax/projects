@@ -57,7 +57,6 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.39.0/rules_nodejs-0.39.0.tar.gz"],
 )
 
-
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
 
 node_repositories(
@@ -68,13 +67,14 @@ node_repositories(
 npm_install(
     name = "npm",
     data = [
-        "@thirdparty//:node-v13.0.1-linux-x64/bin/node"
+        "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
     ],
     package_json = "//:package.json",
     package_lock_json = "//:package-lock.json",
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
+
 install_bazel_dependencies()
 
 # Tools
