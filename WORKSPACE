@@ -1,6 +1,10 @@
 workspace(name="com_github_jaxsax_projects")
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+load(
+    "@bazel_tools//tools/build_defs/repo:http.bzl", 
+    "http_archive",
+    "http_file",
+)
 
 http_archive(
     name = "io_bazel_rules_go",
@@ -19,7 +23,7 @@ http_archive(
 )
 
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
+load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains", "go_download_sdk")
 
 go_rules_dependencies()
 go_register_toolchains()
@@ -35,3 +39,11 @@ load(
     _go_image_repos = "repositories",
 )
 _go_image_repos()
+
+# Tools
+http_file(
+    name = "buildifier",
+    executable = True,
+    sha256="4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6",
+    urls = ["https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier"],
+)
