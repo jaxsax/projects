@@ -7,3 +7,8 @@ sh_binary(
         "@buildifier//file",
     ],
 )
+
+sh_binary(
+    name = "test",
+    srcs = ["test.sh"],
+)
