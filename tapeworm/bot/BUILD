@@ -9,6 +9,6 @@ py_binary(
         requirement("MarkupSafe"),
         requirement("Jinja2"),
         requirement("itsdangerous"),
-        requirement("Click")
-    ]
+        requirement("Click"),
+    ],
 )

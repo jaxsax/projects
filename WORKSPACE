@@ -20,8 +20,8 @@ http_archive(
 
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
     sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
 )
 
 http_archive(
@@ -68,17 +68,17 @@ load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install
 node_repositories(
     node_version = "10.12.0",
     vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
-    vendored_yarn = "@thirdparty//:yarn-v1.19.1"
+    vendored_yarn = "@thirdparty//:yarn-v1.19.1",
 )
 
 yarn_install(
     name = "npm",
     data = [
         "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
-        "@thirdparty//:yarn-v1.19.1/bin/yarn.js"
+        "@thirdparty//:yarn-v1.19.1/bin/yarn.js",
     ],
     package_json = "//:package.json",
-    yarn_lock = "//:yarn.lock"
+    yarn_lock = "//:yarn.lock",
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
@@ -87,9 +87,12 @@ install_bazel_dependencies()
 
 # Python
 load("@rules_python//python:repositories.bzl", "py_repositories")
+
 py_repositories()
+
 # Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
+load("@rules_python//python:pip.bzl", "pip_import", "pip_repositories")
+
 pip_repositories()
 
 pip_import(
@@ -101,6 +104,7 @@ load(
     "@tapeworm_import//:requirements.bzl",
     _tapeworm_install = "pip_install",
 )
+
 _tapeworm_install()
 
 # Tools

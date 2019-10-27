@@ -10,7 +10,7 @@ sh_binary(
 
 sh_binary(
     name = "cache-gc",
-    srcs = ["sys/gc-cache.sh"]
+    srcs = ["sys/gc-cache.sh"],
 )
 
 sh_binary(
