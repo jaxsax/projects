@@ -63,20 +63,22 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.39.0/rules_nodejs-0.39.0.tar.gz"],
 )
 
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "npm_install")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
 
 node_repositories(
     node_version = "10.12.0",
     vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
+    vendored_yarn = "@thirdparty//:yarn-v1.19.1"
 )
 
-npm_install(
+yarn_install(
     name = "npm",
     data = [
         "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
+        "@thirdparty//:yarn-v1.19.1/bin/yarn.js"
     ],
     package_json = "//:package.json",
-    package_lock_json = "//:package-lock.json",
+    yarn_lock = "//:yarn.lock"
 )
 
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
