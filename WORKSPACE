@@ -19,6 +19,12 @@ http_archive(
 )
 
 http_archive(
+    name = "rules_python",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
+)
+
+http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "14ac30773fdb393ddec90e158c9ec7ebb3f8a4fd533ec2abbfd8789ad81a284b",
     strip_prefix = "rules_docker-0.12.1",
@@ -76,6 +82,24 @@ npm_install(
 load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
 
 install_bazel_dependencies()
+
+# Python
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+# Only needed if using the packaging rules.
+load("@rules_python//python:pip.bzl", "pip_repositories", "pip_import")
+pip_repositories()
+
+pip_import(
+    name = "tapeworm_import",
+    requirements = "//tapeworm/bot:requirements.txt",
+)
+
+load(
+    "@tapeworm_import//:requirements.bzl",
+    _tapeworm_install = "pip_install",
+)
+_tapeworm_install()
 
 # Tools
 http_file(
