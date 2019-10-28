@@ -11,7 +11,7 @@ describe('bundling', () => {
         let written;
 
         console.log = (m) => written = m;
-        const bundle = require('com_github_jaxsax_projects/tapeworm/ui/bundle.js');
+        const bundle = require('com_github_jaxsax_projects/tapeworm/ui/js/bundle.js');
         expect(written).toEqual('Hello, Bob');
     })
 })
