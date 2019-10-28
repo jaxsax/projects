@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "lib": ["es2015.promise", "dom", "es5"],
+        "types": [],
+        "baseUrl": ".",
+        "paths": {
+            "com_github_jaxsax_projects/*": ["*"]
+        }
+    },
+}
