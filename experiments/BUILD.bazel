@@ -7,7 +7,7 @@ sh_test(
     srcs = ["verify-black.sh"],
     data = [
         ":black_bin",
-        "//:all-srcs"
+        "//:all-srcs",
     ]
 )
 
