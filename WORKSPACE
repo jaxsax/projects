@@ -14,6 +14,7 @@ git_repository(
     name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
     commit = "38f86fb55b698c51e8510c807489c9f4e047480e",
+    shallow_since = "1575517988 -0500"
 )
 
 load("@rules_python//python:repositories.bzl", "py_repositories")
