@@ -1,8 +1,28 @@
+load("@py_deps//:requirements.bzl", "requirement")
+
+
 py_binary(
     name = 'bot',
     srcs = [
         'bot.py'
+    ],
+    deps = [
+        ':lib'
     ]
+)
+
+py_library(
+    name = 'lib',
+    srcs = [
+        'lib.py'
+    ],
+    deps = [
+        requirement('Werkzeug'),
+        requirement('Jinja2'),
+        requirement('itsdangerous'),
+        requirement('Click'),
+        requirement('Flask'),
+    ],
 )
 
 filegroup(
