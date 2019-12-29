@@ -1,3 +1,6 @@
+package(default_visibility = ["//visibility:public"])
+
+
 py_library(
     name = 'lib',
     srcs = [
@@ -22,4 +25,17 @@ py_binary(
     deps = [
         ':lib'
     ]
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
 )
