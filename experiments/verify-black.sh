@@ -24,4 +24,4 @@ fi
 
 shopt -s extglob globstar
 
-"$DIR/black_bin" !(external)/**/*.py
+"$DIR/black_bin" --check !(external)/**/*.py

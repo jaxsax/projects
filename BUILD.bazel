@@ -7,9 +7,9 @@ py_library(
         requirement('py'),
         requirement('packaging'),
         requirement('pluggy'),
+        requirement('attrs'),
         requirement('importlib-metadata'),
         requirement('zipp'),
-        requirement('attrs'),
         requirement('more-itertools'),
         requirement('wcwidth'),
         requirement('pytest'),
@@ -35,8 +35,8 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//experiments:all-srcs",
-        "//python_test:all-srcs"
+        "//examples:all-srcs",
+        "//tapeworm_bot:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
