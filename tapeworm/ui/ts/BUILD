@@ -1,4 +1,5 @@
 load("@npm_bazel_typescript//:index.bzl", "ts_library", "ts_devserver")
+load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
 
 
 ts_library(
@@ -24,7 +25,33 @@ ts_devserver(
     ],
     static_files = [
         "index.html",
-        "src/main.css",
     ],
     serving_path = "/bundle.js"
+)
+
+ts_library(
+    name = "app",
+    srcs = [
+        "app.ts"
+    ],
+    deps = [
+        ":widget"
+    ]
+)
+
+rollup_bundle(
+    name = "app_chunks",
+    deps = [
+        ":app"
+    ],
+    sourcemap = "inline",
+    entry_point = "index",
+    output_dir = True
+)
+
+ts_devserver(
+    name = "app_devserver",
+    deps = [
+        ":app"
+    ]
 )

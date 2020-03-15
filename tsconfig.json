@@ -2,6 +2,9 @@
     "compilerOptions": {
         "strict": true,
         "lib": ["es2015.promise", "dom", "es5"],
+        "sourceMap": true,
+        "target": "es5",
+        "module": "commonjs",
         "types": [],
         "baseUrl": ".",
         "paths": {
