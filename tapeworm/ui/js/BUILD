@@ -7,9 +7,9 @@ load("@npm//http-server:index.bzl", "http_server")
 parcel(
     name = "bundle",
     srcs = [
-        "src/bar.js"
+        "src/bar.js",
     ],
-    entry_point = "src/foo.js"
+    entry_point = "src/foo.js",
 )
 
 nodejs_binary(
@@ -26,19 +26,18 @@ jasmine_node_test(
     srcs = glob(["*.spec.js"]),
     deps = [
         ":bundle",
-    ]
+    ],
 )
-
 
 web_package(
     name = "stuff",
     index_html = "index.html",
     assets = [
-        "src/main.css"
+        "src/main.css",
     ],
     data = [
-        ":bundle"
-    ]
+        ":bundle",
+    ],
 )
 
 http_server(

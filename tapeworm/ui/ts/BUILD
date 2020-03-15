@@ -1,10 +1,9 @@
 load("@npm_bazel_typescript//:index.bzl", "ts_library", "ts_devserver")
 load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
 
-
 ts_library(
     name = "widget",
-    srcs = glob(["widget/*.ts"])
+    srcs = glob(["widget/*.ts"]),
 )
 
 ts_library(
@@ -14,44 +13,44 @@ ts_library(
     ],
     deps = [
         ":widget",
-    ]
+    ],
 )
 
 ts_devserver(
     name = "devserver",
     port = 8080,
     deps = [
-        ":code"
+        ":code",
     ],
     static_files = [
         "index.html",
     ],
-    serving_path = "/bundle.js"
+    serving_path = "/bundle.js",
 )
 
 ts_library(
     name = "app",
     srcs = [
-        "app.ts"
+        "app.ts",
     ],
     deps = [
-        ":widget"
-    ]
+        ":widget",
+    ],
 )
 
 rollup_bundle(
     name = "app_chunks",
     deps = [
-        ":app"
+        ":app",
     ],
     sourcemap = "inline",
     entry_point = "index",
-    output_dir = True
+    output_dir = True,
 )
 
 ts_devserver(
     name = "app_devserver",
     deps = [
-        ":app"
-    ]
+        ":app",
+    ],
 )
