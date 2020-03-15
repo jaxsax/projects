@@ -12,5 +12,14 @@ func main() {
 	flag.Parse()
 
 	b := bot_v2.NewBot(*configPath)
-	b.Run()
+
+	err := b.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	err = b.Run()
+	if err != nil {
+		panic(err)
+	}
 }

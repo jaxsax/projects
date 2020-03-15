@@ -2,8 +2,8 @@
 package bot_v2
 
 import (
+	"errors"
 	"fmt"
-	"log"
 
 	kitlog "github.com/go-kit/kit/log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -12,6 +12,7 @@ import (
 type Bot struct {
 	logger *Logger
 	cfg    *Config
+	botApi *tgbotapi.BotAPI
 }
 
 type Logger struct {
@@ -33,30 +34,57 @@ func NewBot(configPath string) *Bot {
 	}
 }
 
-func (b *Bot) Run() error {
+func (b *Bot) Init() error {
+	b.logger.Message("init connection to telegram")
+
 	bot, err := tgbotapi.NewBotAPI(b.cfg.Token)
 	if err != nil {
-		log.Panic(err)
+		return fmt.Errorf("init: %w", err)
 	}
 
-	bot.Debug = true
+	b.botApi = bot
+
+	return nil
+}
+
+func (b *Bot) Run() error {
+	if b.botApi == nil {
+		return errors.New("not initialized yet")
+	}
+
+	b.logger.Message("listening for messages")
+
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	b.logger.Message("init")
-
-	updates, err := bot.GetUpdatesChan(u)
+	updates, err := b.botApi.GetUpdatesChan(u)
 	if err != nil {
 		b.logger.Log("err", "failed to retrieve updates channel")
 	}
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
-
-		b.logger.Log("update", fmt.Sprintf("%+v", update))
+		b.handleUpdate(update)
 	}
 
 	return nil
+}
+
+func (b *Bot) handleUpdate(update tgbotapi.Update) {
+	if update.Message == nil {
+		return
+	}
+
+	message := update.Message
+	log := kitlog.WithPrefix(b.logger,
+		"from", message.From.UserName,
+		"from_userid", message.From.ID,
+	)
+
+	log.Log("message", message.Text)
+
+	if message.Text == "ping" {
+		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
+		reply.ReplyToMessageID = message.MessageID
+		b.botApi.Send(reply)
+	}
 }
