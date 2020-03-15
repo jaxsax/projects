@@ -6,16 +6,18 @@
   "author": "Sheng Wei <shengweichow@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "@bazel/hide-bazel-files": "latest",
     "@bazel/jasmine": "^0.39.0",
     "@bazel/rollup": "^0.39.0",
     "@bazel/typescript": "^0.39.0",
-    "@bazel/hide-bazel-files": "latest",
     "http-server": "^0.11.1",
     "parcel-bundler": "^1.12.4",
     "typescript": "^3.6.4"
   },
   "dependencies": {
+    "acorn": "6.4.1",
     "express": "^4.17.1",
+    "minimist": "1.2.2",
     "moment": "^2.24.0",
     "react": "^16.11.0",
     "react-dom": "^16.11.0"
