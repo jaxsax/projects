@@ -17,3 +17,8 @@ sh_binary(
     name = "test",
     srcs = ["test.sh"],
 )
+
+sh_binary(
+    name = "update-bot",
+    srcs = ["update-bot.sh"],
+)
