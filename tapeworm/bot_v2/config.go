@@ -3,6 +3,7 @@ package bot_v2
 import (
 	"errors"
 	"os"
+	"path/filepath"
 
 	kitlog "github.com/go-kit/kit/log"
 	"gopkg.in/yaml.v2"
@@ -31,7 +32,10 @@ func initLogger() kitlog.Logger {
 func readConfig(configPath string) *Config {
 	log := initLogger()
 
-	f, err := os.Open(configPath)
+	fp, err := filepath.Abs(configPath)
+	handleError(log, err)
+
+	f, err := os.Open(fp)
 
 	handleError(log, err)
 	defer func() {
