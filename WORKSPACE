@@ -8,11 +8,13 @@ load(
     "http_archive",
     "http_file",
 )
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-http_archive(
+git_repository(
     name = "rules_python",
-    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+    commit = "38f86fb55b698c51e8510c807489c9f4e047480e",
+    shallow_since = "1575517988 -0500"
 )
 
 http_archive(
@@ -110,21 +112,15 @@ load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
 
 # Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip_import", "pip_repositories")
-
+load("@rules_python//python:pip.bzl", "pip_repositories", "pip3_import")
 pip_repositories()
-
-pip_import(
-    name = "tapeworm_import",
-    requirements = "//tapeworm/bot:requirements.txt",
+pip3_import(
+    name = "py_deps",
+    requirements = "//:requirements.txt",
 )
 
-load(
-    "@tapeworm_import//:requirements.bzl",
-    _tapeworm_install = "pip_install",
-)
-
-_tapeworm_install()
+load("@py_deps//:requirements.bzl", "pip_install")
+pip_install()
 
 # Tools
 http_file(

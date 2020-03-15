@@ -1,4 +1,4 @@
-load("@tapeworm_import//:requirements.bzl", "requirement")
+load("@py_deps//:requirements.bzl", "requirement")
 
 py_binary(
     name = "main",
