@@ -47,7 +47,7 @@ go_rules_dependencies()
 
 go_register_toolchains()
 
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 gazelle_dependencies()
 
@@ -132,4 +132,18 @@ http_file(
     executable = True,
     sha256 = "4c985c883eafdde9c0e8cf3c8595b8bfdf32e77571c369bf8ddae83b042028d6",
     urls = ["https://github.com/bazelbuild/buildtools/releases/download/0.29.0/buildifier"],
+)
+
+go_repository(
+    name = "com_github_go_telegram_bot_api_telegram_bot_api",
+    importpath = "github.com/go-telegram-bot-api/telegram-bot-api",
+    sum = "h1:2cauKuaELYAEARXRkq2LrJ0yDDv1rW7+wrTEdVL3uaU=",
+    version = "v4.6.4+incompatible",
+)
+
+go_repository(
+    name = "com_github_technoweenie_multipartstreamer",
+    importpath = "github.com/technoweenie/multipartstreamer",
+    sum = "h1:XRztA5MXiR1TIRHxH2uNxXxaIkKQDeX7m2XsSOlQEnM=",
+    version = "v1.0.1",
 )
