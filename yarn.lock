@@ -683,6 +683,11 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
+"@bazel/hide-bazel-files@latest":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@bazel/hide-bazel-files/-/hide-bazel-files-1.4.1.tgz#ccb87409df28bd435060f8f569c3fbeb8c5dbbd1"
+  integrity sha512-6fZzLj23U07UL/9IGO8Sf4KC0uGAASQuzQdBGf+wzNjzA3WP/XlRswCI1Ie88mAfPwMBdGFaE8K0W3mLKq28kA==
+
 "@bazel/jasmine@^0.39.0":
   version "0.39.0"
   resolved "https://registry.yarnpkg.com/@bazel/jasmine/-/jasmine-0.39.0.tgz#a567ceabd6caf3e8b14b92d4c28a2535f3a13dd7"
