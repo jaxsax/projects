@@ -67,10 +67,10 @@ load(
 
 _go_image_repos()
 
-local_repository(
-    name = "thirdparty",
-    path = "third_party",
-)
+# local_repository(
+#     name = "thirdparty",
+#     path = "third_party",
+# )
 
 # Node
 http_archive(
@@ -82,17 +82,17 @@ http_archive(
 load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
 
 node_repositories(
-    node_version = "10.12.0",
-    vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
-    vendored_yarn = "@thirdparty//:yarn-v1.19.1",
+    # node_version = "10.12.0",
+    # vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
+    # vendored_yarn = "@thirdparty//:yarn-v1.19.1",
 )
 
 yarn_install(
     name = "npm",
-    data = [
-        "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
-        "@thirdparty//:yarn-v1.19.1/bin/yarn.js",
-    ],
+    # data = [
+    #     "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
+    #     "@thirdparty//:yarn-v1.19.1/bin/yarn.js",
+    # ],
     package_json = "//:package.json",
     yarn_lock = "//:yarn.lock",
 )
