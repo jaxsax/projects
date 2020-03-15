@@ -26,5 +26,6 @@ fi
     docker load -i bazel-bin/tapeworm/bot_v2/cmd/bot/docker.tar
     generatedImageID=$(docker images  bazel/tapeworm/bot_v2/cmd/bot:docker --format '{{.ID}}')
     version="v$(date '+%Y%m%d-%H%M')"
-    docker tag "$generatedImageID" tapeworm/bot_v2:$version
+    docker tag "$generatedImageID" r.internal.jaxsax.co/tapeworm/bot_v2:$version
+    docker push r.internal.jaxsax.co/tapeworm/bot_v2:$version
 )
