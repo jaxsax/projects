@@ -10,17 +10,17 @@ load("@py_deps//:requirements.bzl", "requirement")
 gazelle(name = "gazelle")
 
 py_library(
-    name = 'pytest',
+    name = "pytest",
     deps = [
-        requirement('py'),
-        requirement('packaging'),
-        requirement('pluggy'),
-        requirement('importlib-metadata'),
-        requirement('zipp'),
-        requirement('attrs'),
-        requirement('more-itertools'),
-        requirement('wcwidth'),
-        requirement('pytest'),
+        requirement("py"),
+        requirement("packaging"),
+        requirement("pluggy"),
+        requirement("importlib-metadata"),
+        requirement("zipp"),
+        requirement("attrs"),
+        requirement("more-itertools"),
+        requirement("wcwidth"),
+        requirement("pytest"),
     ],
     visibility = ["//visibility:public"],
 )

@@ -7,13 +7,13 @@ sh_test(
     srcs = ["verify-black.sh"],
     data = [
         ":black_bin",
-    ]
+    ],
 )
 
 py_binary(
-    name = 'black_bin',
-    srcs = ['black_bin.py'],
-    tags = ['lint'],
+    name = "black_bin",
+    srcs = ["black_bin.py"],
+    tags = ["lint"],
     deps = [
         requirement("black"),
         requirement("appdirs"),
@@ -23,7 +23,7 @@ py_binary(
         requirement("regex"),
         requirement("toml"),
         requirement("typed-ast"),
-    ]
+    ],
 )
 
 filegroup(
