@@ -78,6 +78,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	log := kitlog.WithPrefix(b.logger,
 		"from", message.From.UserName,
 		"from_userid", message.From.ID,
+		"message_id", message.MessageID,
 	)
 
 	log.Log("message", message.Text)
@@ -86,5 +87,29 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
 		b.botApi.Send(reply)
+	}
+
+	if message.Entities != nil {
+		res := HandleEntities(message.Text, message.Entities)
+
+		bodyParsed := ""
+		for i, url := range res.Parsed {
+			bodyParsed += fmt.Sprintf("%v. %v\n", i+1, url)
+		}
+		body := fmt.Sprintf(`<b>Links parsed</b>
+
+%v
+`, bodyParsed)
+
+		reply := tgbotapi.NewMessage(message.Chat.ID, body)
+		reply.ParseMode = "HTML"
+		reply.DisableNotification = true
+		reply.DisableWebPagePreview = true
+		reply.ReplyToMessageID = message.MessageID
+
+		_, err := b.botApi.Send(reply)
+		if err != nil {
+			log.Log("err", err)
+		}
 	}
 }
