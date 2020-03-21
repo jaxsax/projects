@@ -4,9 +4,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "github.com/jaxsax/projects/tapeworm/bot_v2/cmd/bot",
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/cmd/bot",
     visibility = ["//visibility:private"],
-    deps = ["//tapeworm/bot_v2:go_default_library"],
+    deps = ["//tapeworm/botv2:go_default_library"],
 )
 
 go_binary(

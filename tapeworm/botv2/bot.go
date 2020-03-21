@@ -1,5 +1,5 @@
 // https://peter.bourgon.org/go-best-practices-2016/#configuration
-package bot_v2
+package botv2
 
 import (
 	"errors"
@@ -12,7 +12,7 @@ import (
 type Bot struct {
 	logger *Logger
 	cfg    *Config
-	botApi *tgbotapi.BotAPI
+	botAPI *tgbotapi.BotAPI
 }
 
 type Logger struct {
@@ -42,13 +42,13 @@ func (b *Bot) Init() error {
 		return fmt.Errorf("init: %w", err)
 	}
 
-	b.botApi = bot
+	b.botAPI = bot
 
 	return nil
 }
 
 func (b *Bot) Run() error {
-	if b.botApi == nil {
+	if b.botAPI == nil {
 		return errors.New("not initialized yet")
 	}
 
@@ -57,7 +57,7 @@ func (b *Bot) Run() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := b.botApi.GetUpdatesChan(u)
+	updates, err := b.botAPI.GetUpdatesChan(u)
 	if err != nil {
 		b.logger.Log("err", "failed to retrieve updates channel")
 	}
@@ -86,7 +86,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	if message.Text == "ping" {
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
-		b.botApi.Send(reply)
+		b.botAPI.Send(reply)
 	}
 
 	if message.Entities != nil {
@@ -107,7 +107,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply.DisableWebPagePreview = true
 		reply.ReplyToMessageID = message.MessageID
 
-		_, err := b.botApi.Send(reply)
+		_, err := b.botAPI.Send(reply)
 		if err != nil {
 			log.Log("err", err)
 		}

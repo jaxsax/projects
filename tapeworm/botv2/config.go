@@ -1,4 +1,4 @@
-package bot_v2
+package botv2
 
 import (
 	"errors"
