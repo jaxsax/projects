@@ -144,9 +144,34 @@ Database:
 		if err != nil {
 			log.Log("err", err)
 		}
+	case "!links":
+		all, err := b.linksDB.List()
+		if err != nil {
+			log.Log("err", err)
+		}
+
+		fmt.Printf("%+v\n", all)
 	default:
 		if message.Entities != nil {
 			res := HandleEntities(message.Text, message.Entities)
+
+			linksToAdd := []Link{}
+			for _, entity := range res.Parsed {
+				linksToAdd = append(linksToAdd, Link{
+					Title: entity,
+					Link:  entity,
+					ExtraData: map[string]interface{}{
+						"created_username": message.From.UserName,
+					},
+					CreatedTS: int64(message.Date),
+					CreatedBy: int64(message.From.ID),
+				})
+			}
+			err := b.linksDB.Create(linksToAdd)
+			if err != nil {
+				log.Log("err", err)
+				return
+			}
 
 			bodyParsed := ""
 			for i, url := range res.Parsed {
@@ -164,7 +189,7 @@ Database:
 			reply.DisableWebPagePreview = true
 			reply.ReplyToMessageID = message.MessageID
 
-			_, err := b.botAPI.Send(reply)
+			_, err = b.botAPI.Send(reply)
 			if err != nil {
 				log.Log("err", err)
 			}
