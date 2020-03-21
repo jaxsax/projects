@@ -96,10 +96,11 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		for i, url := range res.Parsed {
 			bodyParsed += fmt.Sprintf("%v. %v\n", i+1, url)
 		}
-		body := fmt.Sprintf(`<b>Links parsed</b>
+		body := fmt.Sprintf(`
+<b>Links parsed</b>
 
 %v
-`, bodyParsed)
+`, bodyParsed)[1:]
 
 		reply := tgbotapi.NewMessage(message.Chat.ID, body)
 		reply.ParseMode = "HTML"
