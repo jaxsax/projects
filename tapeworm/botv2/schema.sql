@@ -6,3 +6,8 @@ CREATE TABLE links (
     title character varying(1024) NOT NULL,
     extra_data jsonb NOT NULL
 );
+
+CREATE TABLE updates (
+    id serial primary key,
+    "data" jsonb NOT NULL
+);

@@ -7,6 +7,7 @@ go_library(
         "config.go",
         "entities.go",
         "links.go",
+        "updates.go",
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2",
     visibility = ["//visibility:public"],

@@ -11,10 +11,11 @@ import (
 )
 
 type Bot struct {
-	logger  *Logger
-	cfg     *Config
-	botAPI  *tgbotapi.BotAPI
-	linksDB *LinksDB
+	logger    *Logger
+	cfg       *Config
+	botAPI    *tgbotapi.BotAPI
+	linksDB   *LinksDB
+	updatesDB *UpdateDB
 }
 
 type Logger struct {
@@ -84,6 +85,7 @@ func (b *Bot) Init() error {
 	)
 
 	b.linksDB = NewLinksDB(db)
+	b.updatesDB = NewUpdateDB(db)
 
 	return nil
 }
@@ -121,6 +123,14 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		"from_userid", message.From.ID,
 		"message_id", message.MessageID,
 	)
+
+	err := b.updatesDB.Create(Update{Data: &update})
+	if err != nil {
+		log.Log(
+			"action", "persist_update",
+			"err", err,
+		)
+	}
 
 	log.Log("message", message.Text)
 
