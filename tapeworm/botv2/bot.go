@@ -124,11 +124,12 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 
 	log.Log("message", message.Text)
 
-	if message.Text == "ping" {
+	switch message.Text {
+	case "ping":
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
 		b.botAPI.Send(reply)
-	} else if message.Text == "!debug" {
+	case "!debug":
 		body := fmt.Sprintf(`
 Database:
 	%+v
@@ -143,30 +144,30 @@ Database:
 		if err != nil {
 			log.Log("err", err)
 		}
-	}
+	default:
+		if message.Entities != nil {
+			res := HandleEntities(message.Text, message.Entities)
 
-	if message.Entities != nil {
-		res := HandleEntities(message.Text, message.Entities)
-
-		bodyParsed := ""
-		for i, url := range res.Parsed {
-			bodyParsed += fmt.Sprintf("%v. %v\n", i+1, url)
-		}
-		body := fmt.Sprintf(`
+			bodyParsed := ""
+			for i, url := range res.Parsed {
+				bodyParsed += fmt.Sprintf("%v. %v\n", i+1, url)
+			}
+			body := fmt.Sprintf(`
 <b>Links parsed</b>
 
 %v
 `, bodyParsed)[1:]
 
-		reply := tgbotapi.NewMessage(message.Chat.ID, body)
-		reply.ParseMode = "HTML"
-		reply.DisableNotification = true
-		reply.DisableWebPagePreview = true
-		reply.ReplyToMessageID = message.MessageID
+			reply := tgbotapi.NewMessage(message.Chat.ID, body)
+			reply.ParseMode = "HTML"
+			reply.DisableNotification = true
+			reply.DisableWebPagePreview = true
+			reply.ReplyToMessageID = message.MessageID
 
-		_, err := b.botAPI.Send(reply)
-		if err != nil {
-			log.Log("err", err)
+			_, err := b.botAPI.Send(reply)
+			if err != nil {
+				log.Log("err", err)
+			}
 		}
 	}
 }
