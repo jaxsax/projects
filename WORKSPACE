@@ -136,8 +136,8 @@ http_file(
 go_repository(
     name = "com_github_go_telegram_bot_api_telegram_bot_api",
     importpath = "github.com/go-telegram-bot-api/telegram-bot-api",
-    sum = "h1:2cauKuaELYAEARXRkq2LrJ0yDDv1rW7+wrTEdVL3uaU=",
-    version = "v4.6.4+incompatible",
+    sum = "h1:MMufjch8yWKRo67mc+HdMseaUlF1UAwngldBRB/lgAs=",
+    version = "v1.0.1-0.20200319042609-5e339ed016b0",
 )
 
 go_repository(

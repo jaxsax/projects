@@ -16,7 +16,11 @@ func HandleEntities(text string, entities *[]tgbotapi.MessageEntity) *HandleEnti
 	entitiesValue := *entities
 	urlsToParse := make([]string, 0, len(entitiesValue))
 	for _, entity := range entitiesValue {
+		if !entity.IsTextLink() {
+			continue
+		}
 		urlsToParse = append(urlsToParse, text[entity.Offset:entity.Offset+entity.Length])
+
 	}
 
 	return &HandleEntitiesResponse{
