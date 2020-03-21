@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/jaxsax/projects/tapeworm/botv2"
+	_ "github.com/lib/pq"
 )
 
 var configPath = flag.String("config_path", "config.yml", "path to config file")

@@ -7,12 +7,14 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/jmoiron/sqlx"
 )
 
 type Bot struct {
-	logger *Logger
-	cfg    *Config
-	botAPI *tgbotapi.BotAPI
+	logger  *Logger
+	cfg     *Config
+	botAPI  *tgbotapi.BotAPI
+	linksDB *LinksDB
 }
 
 type Logger struct {
@@ -34,15 +36,54 @@ func NewBot(configPath string) *Bot {
 	}
 }
 
-func (b *Bot) Init() error {
-	b.logger.Message("init connection to telegram")
-
-	bot, err := tgbotapi.NewBotAPI(b.cfg.Token)
+func connectDB(conf *DBConfig) (*sqlx.DB, error) {
+	connString := fmt.Sprintf(
+		"user=%s password=%s host=%s dbname=%s sslmode=disable",
+		conf.User, conf.Password, conf.Host, conf.Name,
+	)
+	db, err := sqlx.Connect("postgres", connString)
 	if err != nil {
-		return fmt.Errorf("init: %w", err)
+		return nil, err
 	}
 
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+}
+
+func (b *Bot) Init() error {
+	b.logger.Log(
+		"action", "init",
+		"dependency", "telegram",
+	)
+	bot, err := tgbotapi.NewBotAPI(b.cfg.Token)
+	if err != nil {
+		return fmt.Errorf("init telegram: %w", err)
+	}
+	b.logger.Log(
+		"action", "init_ok",
+		"dependency", "telegram",
+	)
+
 	b.botAPI = bot
+
+	b.logger.Log(
+		"action", "init",
+		"dependency", "postgres",
+	)
+	db, err := connectDB(&b.cfg.Database)
+	if err != nil {
+		return fmt.Errorf("connect db: %w", err)
+	}
+	b.logger.Log(
+		"action", "init_ok",
+		"dependency", "postgres",
+	)
+
+	b.linksDB = NewLinksDB(db)
 
 	return nil
 }
@@ -87,6 +128,21 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
 		b.botAPI.Send(reply)
+	} else if message.Text == "!debug" {
+		body := fmt.Sprintf(`
+Database:
+	%+v
+`, b.linksDB.db.Stats())[1:]
+
+		reply := tgbotapi.NewMessage(message.Chat.ID, body)
+		reply.DisableNotification = true
+		reply.DisableWebPagePreview = true
+		reply.ReplyToMessageID = message.MessageID
+
+		_, err := b.botAPI.Send(reply)
+		if err != nil {
+			log.Log("err", err)
+		}
 	}
 
 	if message.Entities != nil {

@@ -9,9 +9,17 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+type DBConfig struct {
+	Host     string `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"name"`
+}
+
 type Config struct {
-	Token  string        `yaml:"token"`
-	Logger kitlog.Logger `yaml:"-"`
+	Token    string        `yaml:"token"`
+	Database DBConfig      `yaml:"database"`
+	Logger   kitlog.Logger `yaml:"-"`
 }
 
 func handleError(log kitlog.Logger, err error) {
@@ -43,14 +51,14 @@ func readConfig(configPath string) *Config {
 	}()
 
 	var cfg Config
+	cfg.Logger = log
+
 	decoder := yaml.NewDecoder(f)
 	handleError(log, decoder.Decode(&cfg))
 
 	if cfg.Token == "" {
 		handleError(log, errors.New("invalid token"))
 	}
-
-	cfg.Logger = log
 
 	return &cfg
 }
