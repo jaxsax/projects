@@ -83,7 +83,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		b.botAPI.Send(reply)
 	case "!links":
 		all := b.linksRepository.List()
-		fmt.Printf("%+v\n", all)
+		log.Log("links", fmt.Sprintf("%+v\n", all))
 	default:
 		if message.Entities != nil {
 			res := HandleEntities(message.Text, message.Entities)
