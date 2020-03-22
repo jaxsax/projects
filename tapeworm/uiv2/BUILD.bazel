@@ -1,0 +1,7 @@
+load("@build_bazel_rules_svelte//:defs.bzl", "svelte")
+
+svelte(
+  name = "App",
+  entry_point = "App.svelte",
+  srcs = ["main.js"],
+)

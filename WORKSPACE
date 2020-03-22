@@ -18,6 +18,19 @@ git_repository(
 )
 
 http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "591d2945b09ecc89fde53e56dd54cfac93322df3bc9d4747cb897ce67ba8cdbf",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
+)
+
+http_archive(
+    name = "build_bazel_rules_svelte",
+    url = "https://github.com/thelgevold/rules_svelte/archive/0.15.zip",
+    strip_prefix = "rules_svelte-0.15",
+    sha256 = "1b04eb08ef80636929d152bb2f2733e36d9e0b8ad10aca7b435c82bd638336f5"
+)
+
+http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "14ac30773fdb393ddec90e158c9ec7ebb3f8a4fd533ec2abbfd8789ad81a284b",
     strip_prefix = "rules_docker-0.12.1",
@@ -67,45 +80,6 @@ load(
 
 _go_image_repos()
 
-# local_repository(
-#     name = "thirdparty",
-#     path = "third_party",
-# )
-
-# Node
-http_archive(
-    name = "build_bazel_rules_nodejs",
-    sha256 = "26c39450ce2d825abee5583a43733863098ed29d3cbaebf084ebaca59a21a1c8",
-    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/0.39.0/rules_nodejs-0.39.0.tar.gz"],
-)
-
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
-
-node_repositories(
-    # node_version = "10.12.0",
-    # vendored_node = "@thirdparty//:node-v13.0.1-linux-x64",
-    # vendored_yarn = "@thirdparty//:yarn-v1.19.1",
-)
-
-yarn_install(
-    name = "npm",
-    # data = [
-    #     "@thirdparty//:node-v13.0.1-linux-x64/bin/node",
-    #     "@thirdparty//:yarn-v1.19.1/bin/yarn.js",
-    # ],
-    package_json = "//:package.json",
-    yarn_lock = "//:yarn.lock",
-)
-
-load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-install_bazel_dependencies()
-
-# Set up TypeScript toolchain
-load("@npm_bazel_typescript//:index.bzl", "ts_setup_workspace")
-
-ts_setup_workspace()
-
 # Python
 load("@rules_python//python:repositories.bzl", "py_repositories")
 
@@ -124,6 +98,19 @@ pip3_import(
 load("@py_deps//:requirements.bzl", "pip_install")
 
 pip_install()
+
+# Javascript
+
+load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
+
+yarn_install(
+  name = "npm",
+  package_json = "//:package.json",
+  yarn_lock = "//:yarn.lock",
+)
+
+load("@build_bazel_rules_svelte//:defs.bzl", "rules_svelte_dependencies")
+rules_svelte_dependencies()
 
 # Tools
 http_file(
