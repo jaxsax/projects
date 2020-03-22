@@ -34,7 +34,7 @@ func NewLinksDB(db *sqlx.DB) *LinksDB {
 	}
 }
 
-func toDBObject(l Link) link {
+func (l *Link) toDBObject() link {
 	var extraDataAsString = "{}"
 	body, err := json.Marshal(l.ExtraData)
 	if err == nil {
@@ -51,7 +51,7 @@ func toDBObject(l Link) link {
 	}
 }
 
-func fromDBObject(l link) Link {
+func (l *link) fromDBObject() Link {
 	var extraData = map[string]interface{}{}
 	_ = json.Unmarshal([]byte(l.ExtraData), &extraData)
 
@@ -74,7 +74,7 @@ func (l *LinksDB) List() ([]Link, error) {
 
 	links := make([]Link, len(dbLinks))
 	for i, link := range dbLinks {
-		links[i] = fromDBObject(link)
+		links[i] = link.fromDBObject()
 	}
 
 	return links, nil
@@ -85,7 +85,7 @@ func (l *LinksDB) Create(links []Link) error {
 				VALUES(:link, :title, :created_ts, :created_by, :extra_data)`
 
 	for _, link := range links {
-		_, err := l.db.NamedExec(query, toDBObject(link))
+		_, err := l.db.NamedExec(query, link.toDBObject())
 		if err != nil {
 			return err
 		}

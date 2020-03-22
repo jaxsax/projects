@@ -25,5 +25,5 @@ func TestDBObjectToViewObject(t *testing.T) {
 		ExtraData: map[string]interface{}{"a": float64(1)},
 	}
 
-	require.Equal(t, want, fromDBObject(l))
+	require.Equal(t, want, l.fromDBObject())
 }
