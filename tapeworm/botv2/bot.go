@@ -2,87 +2,38 @@
 package botv2
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/jaxsax/projects/tapeworm/botv2/links"
 
 	kitlog "github.com/go-kit/kit/log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/jmoiron/sqlx"
 )
 
 type Bot struct {
 	*Logger
-	cfg       *Config
-	botAPI    *tgbotapi.BotAPI
-	linksDB   *LinksDB
-	updatesDB *UpdateDB
+	cfg             *Config
+	botAPI          *tgbotapi.BotAPI
+	updatesDB       *UpdateDB
+	linksRepository links.Repository
 }
 
-func NewBot(logger *Logger, config *Config) *Bot {
+func NewBot(
+	logger *Logger,
+	config *Config,
+	linksRepository links.Repository,
+	botAPI *tgbotapi.BotAPI,
+) *Bot {
 	return &Bot{
-		Logger: logger,
-		cfg:    config,
+		Logger:          logger,
+		cfg:             config,
+		linksRepository: linksRepository,
+		botAPI:          botAPI,
+		updatesDB:       nil,
 	}
-}
-
-func connectDB(conf *DBConfig) (*sqlx.DB, error) {
-	connString := fmt.Sprintf(
-		"user=%s password=%s host=%s dbname=%s sslmode=disable",
-		conf.User, conf.Password, conf.Host, conf.Name,
-	)
-	db, err := sqlx.Connect("postgres", connString)
-	if err != nil {
-		return nil, err
-	}
-
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
-}
-
-func (b *Bot) Init() error {
-	b.Log(
-		"action", "init",
-		"dependency", "telegram",
-	)
-	bot, err := tgbotapi.NewBotAPI(b.cfg.Token)
-	if err != nil {
-		return fmt.Errorf("init telegram: %w", err)
-	}
-	b.Log(
-		"action", "init_ok",
-		"dependency", "telegram",
-	)
-
-	b.botAPI = bot
-
-	b.Log(
-		"action", "init",
-		"dependency", "postgres",
-	)
-	db, err := connectDB(&b.cfg.Database)
-	if err != nil {
-		return fmt.Errorf("connect db: %w", err)
-	}
-	b.Log(
-		"action", "init_ok",
-		"dependency", "postgres",
-	)
-
-	b.linksDB = NewLinksDB(db)
-	b.updatesDB = NewUpdateDB(db)
-
-	return nil
 }
 
 func (b *Bot) Run() error {
-	if b.botAPI == nil {
-		return errors.New("not initialized yet")
-	}
-
 	b.Message("listening for messages")
 
 	u := tgbotapi.NewUpdate(0)
@@ -112,13 +63,13 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		"message_id", message.MessageID,
 	)
 
-	err := b.updatesDB.Create(Update{Data: &update})
-	if err != nil {
-		log.Log(
-			"action", "persist_update",
-			"err", err,
-		)
-	}
+	// err := b.updatesDB.Create(Update{Data: &update})
+	// if err != nil {
+	// 	log.Log(
+	// 		"action", "persist_update",
+	// 		"err", err,
+	// 	)
+	// }
 
 	log.Log("message", message.Text)
 
@@ -127,35 +78,16 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
 		b.botAPI.Send(reply)
-	case "!debug":
-		body := fmt.Sprintf(`
-Database:
-	%+v
-`, b.linksDB.db.Stats())[1:]
-
-		reply := tgbotapi.NewMessage(message.Chat.ID, body)
-		reply.DisableNotification = true
-		reply.DisableWebPagePreview = true
-		reply.ReplyToMessageID = message.MessageID
-
-		_, err := b.botAPI.Send(reply)
-		if err != nil {
-			log.Log("err", err)
-		}
 	case "!links":
-		all, err := b.linksDB.List()
-		if err != nil {
-			log.Log("err", err)
-		}
-
+		all := b.linksRepository.List()
 		fmt.Printf("%+v\n", all)
 	default:
 		if message.Entities != nil {
 			res := HandleEntities(message.Text, message.Entities)
 
-			linksToAdd := []Link{}
+			linksToAdd := []links.Link{}
 			for _, entity := range res.Parsed {
-				linksToAdd = append(linksToAdd, Link{
+				linksToAdd = append(linksToAdd, links.Link{
 					Title: entity,
 					Link:  entity,
 					ExtraData: map[string]interface{}{
@@ -165,7 +97,7 @@ Database:
 					CreatedBy: int64(message.From.ID),
 				})
 			}
-			err := b.linksDB.Create(linksToAdd)
+			err := b.linksRepository.CreateMany(linksToAdd)
 			if err != nil {
 				log.Log("err", err)
 				return

@@ -1,8 +1,9 @@
-package botv2
+package sql
 
 import (
 	"encoding/json"
 
+	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -15,26 +16,18 @@ type link struct {
 	ExtraData string `db:"extra_data"`
 }
 
-type Link struct {
-	ID        int64
-	CreatedTS int64
-	CreatedBy int64
-	Link      string
-	Title     string
-	ExtraData map[string]interface{}
-}
-
-type LinksDB struct {
+type linksRepository struct {
 	db *sqlx.DB
 }
 
-func NewLinksDB(db *sqlx.DB) *LinksDB {
-	return &LinksDB{
+// NewLinksRepository creates a new links.Repository backed by sql
+func NewLinksRepository(db *sqlx.DB) links.Repository {
+	return &linksRepository{
 		db: db,
 	}
 }
 
-func (l *Link) toDBObject() link {
+func toDBObject(l links.Link) link {
 	var extraDataAsString = "{}"
 	body, err := json.Marshal(l.ExtraData)
 	if err == nil {
@@ -51,11 +44,11 @@ func (l *Link) toDBObject() link {
 	}
 }
 
-func (l *link) fromDBObject() Link {
+func (l *link) fromDBObject() links.Link {
 	var extraData = map[string]interface{}{}
 	_ = json.Unmarshal([]byte(l.ExtraData), &extraData)
 
-	return Link{
+	return links.Link{
 		ID:        l.ID,
 		CreatedTS: l.CreatedTS,
 		CreatedBy: l.CreatedBy,
@@ -65,30 +58,30 @@ func (l *link) fromDBObject() Link {
 	}
 }
 
-func (l *LinksDB) List() ([]Link, error) {
-	dbLinks := []link{}
-	err := l.db.Select(&dbLinks, "SELECT * FROM links")
-	if err != nil {
-		return nil, err
-	}
-
-	links := make([]Link, len(dbLinks))
-	for i, link := range dbLinks {
-		links[i] = link.fromDBObject()
-	}
-
-	return links, nil
-}
-
-func (l *LinksDB) Create(links []Link) error {
+func (repo *linksRepository) CreateMany(links []links.Link) error {
 	query := `INSERT INTO links(link, title, created_ts, created_by, extra_data)
 				VALUES(:link, :title, :created_ts, :created_by, :extra_data)`
 
 	for _, link := range links {
-		_, err := l.db.NamedExec(query, link.toDBObject())
+		_, err := repo.db.NamedExec(query, toDBObject(link))
 		if err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (repo *linksRepository) List() []links.Link {
+	dbLinks := []link{}
+	err := repo.db.Select(&dbLinks, "SELECT * FROM links")
+	if err != nil {
+		return []links.Link{}
+	}
+
+	links := make([]links.Link, len(dbLinks))
+	for i, link := range dbLinks {
+		links[i] = link.fromDBObject()
+	}
+
+	return links
 }

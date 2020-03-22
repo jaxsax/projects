@@ -7,6 +7,7 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/jaxsax/projects/tapeworm/botv2"
+	"github.com/jaxsax/projects/tapeworm/botv2/sql"
 	_ "github.com/lib/pq"
 )
 
@@ -46,9 +47,22 @@ func main() {
 	config, err := readConfig()
 	logErrorAndExit("read_config", err)
 
-	b := botv2.NewBot(&botv2.Logger{Logger: logger}, config)
-	err = b.Init()
-	logErrorAndExit("init", err)
+	db, err := botv2.ConnectDB(&config.Database)
+	logErrorAndExit("connect_db", err)
+
+	var (
+		linksRepository = sql.NewLinksRepository(db)
+	)
+
+	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
+	logErrorAndExit("connect_telegram", err)
+
+	b := botv2.NewBot(
+		&botv2.Logger{Logger: logger},
+		config,
+		linksRepository,
+		botAPI,
+	)
 
 	err = b.Run()
 	logErrorAndExit("run", err)

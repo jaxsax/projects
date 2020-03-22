@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["links.go"],
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/sql",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tapeworm/botv2/links:go_default_library",
+        "@com_github_jmoiron_sqlx//:go_default_library",
+    ],
+)

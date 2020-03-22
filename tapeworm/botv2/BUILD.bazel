@@ -5,14 +5,16 @@ go_library(
     srcs = [
         "bot.go",
         "config.go",
+        "db.go",
         "entities.go",
-        "links.go",
         "logger.go",
+        "telegram.go",
         "updates.go",
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2",
     visibility = ["//visibility:public"],
     deps = [
+        "//tapeworm/botv2/links:go_default_library",
         "@com_github_go_kit_kit//log:go_default_library",
         "@com_github_go_telegram_bot_api_telegram_bot_api//:go_default_library",
         "@com_github_jmoiron_sqlx//:go_default_library",
