@@ -27,7 +27,7 @@ http_archive(
     name = "build_bazel_rules_svelte",
     url = "https://github.com/thelgevold/rules_svelte/archive/0.15.zip",
     strip_prefix = "rules_svelte-0.15",
-    sha256 = "1b04eb08ef80636929d152bb2f2733e36d9e0b8ad10aca7b435c82bd638336f5"
+    sha256 = "1b04eb08ef80636929d152bb2f2733e36d9e0b8ad10aca7b435c82bd638336f5",
 )
 
 http_archive(
@@ -104,12 +104,13 @@ pip_install()
 load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
 
 yarn_install(
-  name = "npm",
-  package_json = "//:package.json",
-  yarn_lock = "//:yarn.lock",
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
 )
 
 load("@build_bazel_rules_svelte//:defs.bzl", "rules_svelte_dependencies")
+
 rules_svelte_dependencies()
 
 # Tools
@@ -1299,8 +1300,8 @@ go_repository(
 go_repository(
     name = "com_github_stretchr_testify",
     importpath = "github.com/stretchr/testify",
-    sum = "h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=",
-    version = "v1.4.0",
+    sum = "h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=",
+    version = "v1.5.1",
 )
 
 go_repository(
