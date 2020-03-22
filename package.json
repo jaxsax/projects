@@ -11,6 +11,7 @@
     "@bazel/rollup": "^0.39.0",
     "@bazel/typescript": "^0.39.0",
     "http-server": "^0.11.1",
+    "lite-server": "^2.5.4",
     "parcel-bundler": "^1.12.4",
     "rollup": "1.32.1",
     "typescript": "^3.6.4"
