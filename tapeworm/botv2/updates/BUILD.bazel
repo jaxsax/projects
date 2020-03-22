@@ -1,0 +1,9 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["updates.go"],
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/updates",
+    visibility = ["//visibility:public"],
+    deps = ["@com_github_go_telegram_bot_api_telegram_bot_api//:go_default_library"],
+)

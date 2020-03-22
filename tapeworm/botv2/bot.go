@@ -4,6 +4,8 @@ package botv2
 import (
 	"fmt"
 
+	"github.com/jaxsax/projects/tapeworm/botv2/updates"
+
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 
 	kitlog "github.com/go-kit/kit/log"
@@ -12,24 +14,25 @@ import (
 
 type Bot struct {
 	*Logger
-	cfg             *Config
-	botAPI          *tgbotapi.BotAPI
-	updatesDB       *UpdateDB
-	linksRepository links.Repository
+	cfg               *Config
+	botAPI            *tgbotapi.BotAPI
+	updatesRepository updates.Repository
+	linksRepository   links.Repository
 }
 
 func NewBot(
 	logger *Logger,
 	config *Config,
 	linksRepository links.Repository,
+	updatesRepository updates.Repository,
 	botAPI *tgbotapi.BotAPI,
 ) *Bot {
 	return &Bot{
-		Logger:          logger,
-		cfg:             config,
-		linksRepository: linksRepository,
-		botAPI:          botAPI,
-		updatesDB:       nil,
+		Logger:            logger,
+		cfg:               config,
+		linksRepository:   linksRepository,
+		botAPI:            botAPI,
+		updatesRepository: updatesRepository,
 	}
 }
 
@@ -63,13 +66,13 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		"message_id", message.MessageID,
 	)
 
-	// err := b.updatesDB.Create(Update{Data: &update})
-	// if err != nil {
-	// 	log.Log(
-	// 		"action", "persist_update",
-	// 		"err", err,
-	// 	)
-	// }
+	err := b.updatesRepository.Create(updates.Update{Data: &update})
+	if err != nil {
+		log.Log(
+			"action", "persist_update",
+			"err", err,
+		)
+	}
 
 	log.Log("message", message.Text)
 
