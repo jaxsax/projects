@@ -1,12 +1,19 @@
 package botv2
 
 import (
-	"errors"
-	"os"
-	"path/filepath"
+	"fmt"
+	"io"
 
 	kitlog "github.com/go-kit/kit/log"
 	"gopkg.in/yaml.v2"
+)
+
+var (
+	// ErrEmptyToken is returned when the token is empty
+	ErrEmptyToken = fmt.Errorf("token cannot be empty")
+
+	// ErrEmptyConfig is returned when contents is empty
+	ErrEmptyConfig = fmt.Errorf("empty config")
 )
 
 type DBConfig struct {
@@ -22,43 +29,20 @@ type Config struct {
 	Logger   kitlog.Logger `yaml:"-"`
 }
 
-func handleError(log kitlog.Logger, err error) {
-	if err != nil {
-		log.Log("err", err, "msg", "failed to parse config")
-		os.Exit(1)
-	}
-}
-
-func initLogger() kitlog.Logger {
-	w := kitlog.NewSyncWriter(os.Stderr)
-	logger := kitlog.NewLogfmtLogger(w)
-	logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC, "caller", kitlog.DefaultCaller)
-
-	return logger
-}
-
-func readConfig(configPath string) *Config {
-	log := initLogger()
-
-	fp, err := filepath.Abs(configPath)
-	handleError(log, err)
-
-	f, err := os.Open(fp)
-
-	handleError(log, err)
-	defer func() {
-		handleError(log, f.Close())
-	}()
-
+func ReadConfig(r io.Reader) (*Config, error) {
 	var cfg Config
-	cfg.Logger = log
 
-	decoder := yaml.NewDecoder(f)
-	handleError(log, decoder.Decode(&cfg))
+	err := yaml.NewDecoder(r).Decode(&cfg)
+	if err != nil {
+		if err == io.EOF {
+			return nil, ErrEmptyConfig
+		}
+		return nil, err
+	}
 
 	if cfg.Token == "" {
-		handleError(log, errors.New("invalid token"))
+		return nil, ErrEmptyToken
 	}
 
-	return &cfg
+	return &cfg, nil
 }

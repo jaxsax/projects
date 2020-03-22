@@ -7,6 +7,7 @@ go_library(
         "config.go",
         "entities.go",
         "links.go",
+        "logger.go",
         "updates.go",
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2",
@@ -21,7 +22,10 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = ["links_test.go"],
+    srcs = [
+        "config_test.go",
+        "links_test.go",
+    ],
     embed = [":go_default_library"],
     deps = ["@com_github_stretchr_testify//require:go_default_library"],
 )

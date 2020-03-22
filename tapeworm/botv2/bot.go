@@ -11,29 +11,17 @@ import (
 )
 
 type Bot struct {
-	logger    *Logger
+	*Logger
 	cfg       *Config
 	botAPI    *tgbotapi.BotAPI
 	linksDB   *LinksDB
 	updatesDB *UpdateDB
 }
 
-type Logger struct {
-	kitlog.Logger
-}
-
-func (l *Logger) Message(s string) {
-	l.Log("msg", s)
-}
-
-func NewBot(configPath string) *Bot {
-	if configPath == "" {
-		configPath = "config.yml"
-	}
-	cfg := readConfig(configPath)
+func NewBot(logger *Logger, config *Config) *Bot {
 	return &Bot{
-		logger: &Logger{cfg.Logger},
-		cfg:    cfg,
+		Logger: logger,
+		cfg:    config,
 	}
 }
 
@@ -56,7 +44,7 @@ func connectDB(conf *DBConfig) (*sqlx.DB, error) {
 }
 
 func (b *Bot) Init() error {
-	b.logger.Log(
+	b.Log(
 		"action", "init",
 		"dependency", "telegram",
 	)
@@ -64,14 +52,14 @@ func (b *Bot) Init() error {
 	if err != nil {
 		return fmt.Errorf("init telegram: %w", err)
 	}
-	b.logger.Log(
+	b.Log(
 		"action", "init_ok",
 		"dependency", "telegram",
 	)
 
 	b.botAPI = bot
 
-	b.logger.Log(
+	b.Log(
 		"action", "init",
 		"dependency", "postgres",
 	)
@@ -79,7 +67,7 @@ func (b *Bot) Init() error {
 	if err != nil {
 		return fmt.Errorf("connect db: %w", err)
 	}
-	b.logger.Log(
+	b.Log(
 		"action", "init_ok",
 		"dependency", "postgres",
 	)
@@ -95,14 +83,14 @@ func (b *Bot) Run() error {
 		return errors.New("not initialized yet")
 	}
 
-	b.logger.Message("listening for messages")
+	b.Message("listening for messages")
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
 	updates, err := b.botAPI.GetUpdatesChan(u)
 	if err != nil {
-		b.logger.Log("err", "failed to retrieve updates channel")
+		b.Log("err", "failed to retrieve updates channel")
 	}
 
 	for update := range updates {
@@ -118,7 +106,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	}
 
 	message := update.Message
-	log := kitlog.WithPrefix(b.logger,
+	log := kitlog.WithPrefix(b.Logger,
 		"from", message.From.UserName,
 		"from_userid", message.From.ID,
 		"message_id", message.MessageID,
