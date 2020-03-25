@@ -88,6 +88,10 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		if message.Entities != nil {
 			res := HandleEntities(message.Text, message.Entities)
 
+			if len(res.Parsed) == 0 {
+				return
+			}
+
 			linksToAdd := []links.Link{}
 			for _, entity := range res.Parsed {
 				linksToAdd = append(linksToAdd, links.Link{
