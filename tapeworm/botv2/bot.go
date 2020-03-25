@@ -4,12 +4,11 @@ package botv2
 import (
 	"fmt"
 
-	"github.com/jaxsax/projects/tapeworm/botv2/updates"
-
-	"github.com/jaxsax/projects/tapeworm/botv2/links"
-
 	kitlog "github.com/go-kit/kit/log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
+	"github.com/jaxsax/projects/tapeworm/botv2/links"
+	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 )
 
 type Bot struct {
@@ -93,16 +92,28 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 			}
 
 			linksToAdd := []links.Link{}
-			for _, entity := range res.Parsed {
+			bodyParsed := ""
+			for i, entity := range res.Parsed {
+				enhancedLink, err := enhancers.EnhanceLink(entity)
+				if err != nil {
+					log.Log(
+						"action", "parse_link",
+						"err", err,
+						"url", entity,
+					)
+					continue
+				}
+
 				linksToAdd = append(linksToAdd, links.Link{
-					Title: entity,
-					Link:  entity,
+					Title: enhancedLink.Title,
+					Link:  enhancedLink.Link,
 					ExtraData: map[string]interface{}{
 						"created_username": message.From.UserName,
 					},
 					CreatedTS: int64(message.Date),
 					CreatedBy: int64(message.From.ID),
 				})
+				bodyParsed += fmt.Sprintf("%v. %v\n", i+1, enhancedLink.Title)
 			}
 			err := b.linksRepository.CreateMany(linksToAdd)
 			if err != nil {
@@ -110,13 +121,8 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 				return
 			}
 
-			bodyParsed := ""
-			for i, url := range res.Parsed {
-				bodyParsed += fmt.Sprintf("%v. %v\n", i+1, url)
-			}
 			body := fmt.Sprintf(`
 <b>Links parsed</b>
-
 %v
 `, bodyParsed)[1:]
 

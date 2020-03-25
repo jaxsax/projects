@@ -13,6 +13,7 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2",
     visibility = ["//visibility:public"],
     deps = [
+        "//tapeworm/botv2/enhancers:go_default_library",
         "//tapeworm/botv2/links:go_default_library",
         "//tapeworm/botv2/updates:go_default_library",
         "@com_github_go_kit_kit//log:go_default_library",
@@ -24,10 +25,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "config_test.go",
-        "links_test.go",
-    ],
+    srcs = ["config_test.go"],
     embed = [":go_default_library"],
     deps = ["@com_github_stretchr_testify//require:go_default_library"],
 )

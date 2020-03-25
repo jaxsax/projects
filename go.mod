@@ -9,5 +9,6 @@ require (
 	github.com/lib/pq v1.3.0
 	github.com/stretchr/testify v1.5.1
 	github.com/technoweenie/multipartstreamer v1.0.1 // indirect
+	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 	gopkg.in/yaml.v2 v2.2.2
 )
