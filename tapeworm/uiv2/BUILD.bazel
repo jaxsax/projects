@@ -5,6 +5,14 @@ svelte(
     name = "App",
     entry_point = "App.svelte",
     srcs = ["main.js"],
+    deps = [
+        ":Links",
+    ]
+)
+
+svelte(
+    name = "Links",
+    entry_point = "Links.svelte",
 )
 
 bundle_dev(
@@ -13,6 +21,26 @@ bundle_dev(
     deps = [
         ":App",
         "@npm//lodash",
+        "@npm//moment",
+    ],
+)
+
+bundle_prod(
+  name = "bundle_prod",
+  entry_point = "main.js",
+  deps = [
+     ":App",
+    "@npm//lodash",
+    "@npm//moment",
+  ],
+)
+
+filegroup(
+    name = "statics",
+    srcs = [
+        "semantic.css",
+        "semantic.js",
+        "jquery-3.1.1.min.js",
     ],
 )
 
@@ -24,6 +52,7 @@ nodejs_binary(
     data = [
         "index.html",
         ":bundle_dev",
+        ":statics",
         "@npm//lite-server",
     ],
 )

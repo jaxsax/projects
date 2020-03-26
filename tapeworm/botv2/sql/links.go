@@ -73,7 +73,7 @@ func (repo *linksRepository) CreateMany(links []links.Link) error {
 
 func (repo *linksRepository) List() []links.Link {
 	dbLinks := []link{}
-	err := repo.db.Select(&dbLinks, "SELECT * FROM links")
+	err := repo.db.Select(&dbLinks, "SELECT * FROM links ORDER BY created_ts desc")
 	if err != nil {
 		return []links.Link{}
 	}
