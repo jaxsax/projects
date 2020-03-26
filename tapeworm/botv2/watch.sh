@@ -7,4 +7,4 @@ elif ! command -v bazelisk &>/dev/null; then
     exit 1
 fi
 
-ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path=$PWD/secrets/config.yml 
+WEB_PORT=9999 ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path=$PWD/secrets/config.yml 

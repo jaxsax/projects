@@ -2,13 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
+	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
 )
 
@@ -59,14 +62,54 @@ func main() {
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
 	logErrorAndExit("connect_telegram", err)
 
-	b := botv2.NewBot(
-			&internal.Logger{Logger: logger},
-		config,
-		linksRepository,
-		updatesRepository,
-		botAPI,
-	)
+	// https://medium.com/rungo/running-multiple-http-servers-in-go-d15300f4e59f
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
 
-	err = b.Run()
-	logErrorAndExit("run", err)
+	go func() {
+		logger.Log(
+			"action", "starting",
+			"component", "bot",
+		)
+
+		b := botv2.NewBot(
+			&internal.Logger{Logger: logger},
+			config,
+			linksRepository,
+			updatesRepository,
+			botAPI,
+		)
+
+		err := b.Run()
+		logger.Log(
+			"action", "ended",
+			"component", "bot",
+			"err", fmt.Sprintf("%+v", err),
+		)
+		wg.Done()
+	}()
+
+	go func() {
+		logger.Log(
+			"action", "starting",
+			"component", "web",
+		)
+
+		webServer := web.NewServer(
+			&internal.Logger{Logger: logger},
+			config,
+			linksRepository,
+		)
+
+		err := webServer.Run()
+
+		logger.Log(
+			"action", "ended",
+			"component", "web",
+			"err", fmt.Sprintf("%+v", err),
+		)
+		wg.Done()
+	}()
+
+	wg.Wait()
 }
