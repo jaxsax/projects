@@ -1,6 +1,5 @@
 workspace(
-    name = "com_github_jaxsax_projects",
-    managed_directories = {"@npm": ["node_modules"]},
+    name = "com_github_jaxsax_projects"
 )
 
 load(
