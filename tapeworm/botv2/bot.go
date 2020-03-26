@@ -7,21 +7,22 @@ import (
 	kitlog "github.com/go-kit/kit/log"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 )
 
 type Bot struct {
-	*Logger
-	cfg               *Config
+	*internal.Logger
+	cfg               *internal.Config
 	botAPI            *tgbotapi.BotAPI
 	updatesRepository updates.Repository
 	linksRepository   links.Repository
 }
 
 func NewBot(
-	logger *Logger,
-	config *Config,
+	logger *internal.Logger,
+	config *internal.Config,
 	linksRepository links.Repository,
 	updatesRepository updates.Repository,
 	botAPI *tgbotapi.BotAPI,

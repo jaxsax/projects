@@ -8,6 +8,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//tapeworm/botv2:go_default_library",
+        "//tapeworm/botv2/internal:go_default_library",
         "//tapeworm/botv2/sql:go_default_library",
         "@com_github_go_kit_kit//log:go_default_library",
         "@com_github_lib_pq//:go_default_library",

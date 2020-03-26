@@ -7,13 +7,14 @@ import (
 
 	kitlog "github.com/go-kit/kit/log"
 	"github.com/jaxsax/projects/tapeworm/botv2"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
 	_ "github.com/lib/pq"
 )
 
 var configPath = flag.String("config_path", "config.yml", "path to config file")
 
-func readConfig() (*botv2.Config, error) {
+func readConfig() (*internal.Config, error) {
 	fp, err := filepath.Abs(*configPath)
 	if err != nil {
 		return nil, err
@@ -24,7 +25,7 @@ func readConfig() (*botv2.Config, error) {
 		return nil, err
 	}
 
-	return botv2.ReadConfig(f)
+	return internal.ReadConfig(f)
 }
 
 func main() {
@@ -59,7 +60,7 @@ func main() {
 	logErrorAndExit("connect_telegram", err)
 
 	b := botv2.NewBot(
-		&botv2.Logger{Logger: logger},
+			&internal.Logger{Logger: logger},
 		config,
 		linksRepository,
 		updatesRepository,

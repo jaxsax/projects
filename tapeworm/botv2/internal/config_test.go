@@ -1,4 +1,4 @@
-package botv2_test
+package internal_test
 
 import (
 	"strings"

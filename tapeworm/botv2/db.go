@@ -3,11 +3,12 @@ package botv2
 import (
 	"fmt"
 
+	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jmoiron/sqlx"
 )
 
 // ConnectDB establishes a connection to a postgres database
-func ConnectDB(conf *DBConfig) (*sqlx.DB, error) {
+func ConnectDB(conf *internal.DBConfig) (*sqlx.DB, error) {
 	connString := fmt.Sprintf(
 		"user=%s password=%s host=%s dbname=%s sslmode=disable",
 		conf.User, conf.Password, conf.Host, conf.Name,

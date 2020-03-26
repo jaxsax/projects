@@ -1,10 +1,11 @@
-package botv2
+package internal
 
 import (
 	"fmt"
 	"io"
+	"os"
+	"strconv"
 
-	kitlog "github.com/go-kit/kit/log"
 	"gopkg.in/yaml.v2"
 )
 
@@ -14,6 +15,9 @@ var (
 
 	// ErrEmptyConfig is returned when contents is empty
 	ErrEmptyConfig = fmt.Errorf("empty config")
+
+	// ErrInvalidPort is returned when an invalid port number is returned
+	ErrInvalidPort = fmt.Errorf("port cannot be empty, WEB_PORT undefined")
 )
 
 type DBConfig struct {
@@ -24,9 +28,9 @@ type DBConfig struct {
 }
 
 type Config struct {
-	Token    string        `yaml:"token"`
-	Database DBConfig      `yaml:"database"`
-	Logger   kitlog.Logger `yaml:"-"`
+	Token    string   `yaml:"token"`
+	Database DBConfig `yaml:"database"`
+	Port     int      `yaml:"-"`
 }
 
 func ReadConfig(r io.Reader) (*Config, error) {
@@ -43,6 +47,18 @@ func ReadConfig(r io.Reader) (*Config, error) {
 	if cfg.Token == "" {
 		return nil, ErrEmptyToken
 	}
+
+	port := os.Getenv("WEB_PORT")
+	if port == "" {
+		return nil, ErrInvalidPort
+	}
+
+	p, err := strconv.ParseUint(port, 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("invalid port: %w", err)
+	}
+
+	cfg.Port = int(p)
 
 	return &cfg, nil
 }

@@ -1,4 +1,4 @@
-package botv2
+package internal
 
 import kitlog "github.com/go-kit/kit/log"
 
