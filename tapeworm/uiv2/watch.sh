@@ -7,4 +7,4 @@ elif ! command -v bazelisk &>/dev/null; then
     exit 1
 fi
 
-ibazel run //tapeworm/uiv2:dev_server
+ibazel run //tapeworm/uiv2:devserver

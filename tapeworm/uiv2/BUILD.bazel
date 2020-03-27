@@ -43,16 +43,14 @@ filegroup(
         "jquery-3.1.1.min.js",
     ],
 )
-
 nodejs_binary(
-    name = "dev_server",
-    entry_point = "@npm//:node_modules/lite-server/bin/lite-server",
-    templated_args = ["--baseDir=tapeworm/uiv2/"],
+    name = "devserver",
+    entry_point = "devserver.js",
     tags = ["ibazel_notify_changes"],
     data = [
         "index.html",
         ":bundle_dev",
         ":statics",
-        "@npm//lite-server",
+        "@npm//browser-sync",
     ],
 )
