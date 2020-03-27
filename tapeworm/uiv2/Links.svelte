@@ -9,13 +9,29 @@
         })
 </script>
 
+<style>
+    .link-title {
+        font-size: 1.4em;
+    }
+    .link-item {
+        margin: 1.2em 0;
+    }
+    .link-meta {
+        margin-top: 0.4em;
+    }
+</style>
+
 {#if links}
-    <div class="ui list">
+    <div class="ui relaxed list">
         {#each links as link}
-            <div class="item">
+            <div class="item link-item">
                 <div class="content">
-                    <div class="header">{ link.Title }</div>
-                    <div class="description">
+                    <div class="header">
+                        <a href="{ link.Link }" rel="{ link.Title }" class='link-title'>
+                            { link.Title }
+                        </a>
+                    </div>
+                    <div class="description link-meta">
                         By { link.ExtraData.created_username } { moment.unix(link.CreatedTS).fromNow() }
                     </div>
                 </div>
