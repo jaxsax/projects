@@ -20,6 +20,8 @@
                     </div>
                 </div>
             </div>
+        {:else}
+            <p>No items :(</p>
         {/each}
     </div>
 {:else}
