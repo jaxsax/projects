@@ -3,7 +3,7 @@ Illustrates how to build a static image docker container using nginx to serve st
 # Usage Instructions
 
 ```
-bazelisk build :static_files_image_tar
+bazelisk build :static_files_image.tar
 docker load -i  ../../../bazel-bin/tapeworm/uiv2/nginx-static/static_files_image.tar
 docker run -p 9999:80 --name nginxstatic -d --rm  bazel/tapeworm/uiv2/nginx-static:static_files_image
 ```
