@@ -2,7 +2,7 @@
     import moment from 'moment';
 
     let links = [];
-    $: fetch(`http://l.internal.jaxsax.co/api/links`)
+    $: fetch(`/api/links`)
         .then(r => r.json())
         .then(data => {
             links = data.Links;
