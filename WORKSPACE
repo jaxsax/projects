@@ -79,6 +79,19 @@ load(
 
 _go_image_repos()
 
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_pull",
+)
+
+container_pull(
+    name = "ubuntu_1910_tar",
+    registry = "index.docker.io",
+    repository = "ubuntu",
+    tag = "19.10",
+    digest = "sha256:7ce552ad1c3e94a5c3d2bb24c07000c34a4bb43fd9b379652b2c80593a018e80"
+)
+
 # Python
 load("@rules_python//python:repositories.bzl", "py_repositories")
 

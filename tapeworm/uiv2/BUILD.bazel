@@ -23,6 +23,7 @@ bundle_dev(
         "@npm//lodash",
         "@npm//moment",
     ],
+    visibility = ["//visibility:public"],
 )
 
 bundle_prod(
@@ -33,6 +34,7 @@ bundle_prod(
     "@npm//lodash",
     "@npm//moment",
   ],
+  visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -41,8 +43,11 @@ filegroup(
         "semantic.css",
         "semantic.js",
         "jquery-3.1.1.min.js",
+        "index.html",
     ],
+    visibility = ["//visibility:public"],
 )
+
 nodejs_binary(
     name = "devserver",
     entry_point = "devserver.js",
