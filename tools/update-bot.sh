@@ -22,7 +22,7 @@ fi
     set -o xtrace
 
     cd "$BUILD_WORKSPACE_DIRECTORY"
-    bazelisk build //tapeworm/botv2/cmd/bot:docker.tar
+    bazelisk test //tapeworm/botv2/.. && bazelisk build //tapeworm/botv2/cmd/bot:docker.tar
     docker load -i bazel-bin/tapeworm/botv2/cmd/bot/docker.tar
     generatedImageID=$(docker images  bazel/tapeworm/botv2/cmd/bot:docker --format '{{.ID}}')
     version="v$(date '+%Y%m%d-%H%M')"
