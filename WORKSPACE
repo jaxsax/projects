@@ -12,8 +12,8 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "rules_python",
     remote = "https://github.com/bazelbuild/rules_python.git",
-    commit = "38f86fb55b698c51e8510c807489c9f4e047480e",
-    shallow_since = "1575517988 -0500",
+    commit = "748aa53d7701e71101dfd15d800e100f6ff8e5d1",
+    shallow_since = "1583438240 -0500",
 )
 
 http_archive(
@@ -55,6 +55,23 @@ http_archive(
     sha256 = "d8c45ee70ec39a57e7a05e5027c32b1576cc7f16d9dd37135b0eddde45cf1b10",
 )
 
+# Python
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+# Only needed if using the packaging rules.
+load("@rules_python//python:pip.bzl", "pip3_import")
+
+pip3_import(
+    name = "py_deps",
+    requirements = "//:requirements.txt",
+)
+
+load("@py_deps//:requirements.bzl", "pip_install")
+
+pip_install()
+
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 
 go_rules_dependencies()
@@ -92,24 +109,6 @@ container_pull(
     digest = "sha256:7ce552ad1c3e94a5c3d2bb24c07000c34a4bb43fd9b379652b2c80593a018e80"
 )
 
-# Python
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
-# Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip_repositories", "pip3_import")
-
-pip_repositories()
-
-pip3_import(
-    name = "py_deps",
-    requirements = "//:requirements.txt",
-)
-
-load("@py_deps//:requirements.bzl", "pip_install")
-
-pip_install()
 
 # Javascript
 
