@@ -1,32 +1,35 @@
 package internal_test
 
 import (
+	"os"
 	"strings"
 	"testing"
 
-	"github.com/jaxsax/projects/tapeworm/botv2"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNoEmptyConfig(t *testing.T) {
-	_, err := botv2.ReadConfig(strings.NewReader(``))
+	_, err := internal.ReadConfig(strings.NewReader(``))
 
-	require.EqualError(t, err, botv2.ErrEmptyConfig.Error())
+	require.EqualError(t, err, internal.ErrEmptyConfig.Error())
 }
 
 func TestNoEmptyToken(t *testing.T) {
-	_, err := botv2.ReadConfig(strings.NewReader(`token:`))
+	_, err := internal.ReadConfig(strings.NewReader(`token:`))
 
-	require.EqualError(t, err, botv2.ErrEmptyToken.Error())
+	require.EqualError(t, err, internal.ErrEmptyToken.Error())
 }
 
 func TestPopulatesConfig(t *testing.T) {
-	config, err := botv2.ReadConfig(strings.NewReader(`
+	os.Setenv("WEB_PORT", "9999")
+	config, err := internal.ReadConfig(strings.NewReader(`
 token: aaa
 `))
 
 	require.NoError(t, err)
-	require.Equal(t, &botv2.Config{
+	require.Equal(t, &internal.Config{
 		Token: "aaa",
+		Port:  9999,
 	}, config)
 }
