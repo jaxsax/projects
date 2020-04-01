@@ -7,7 +7,7 @@ svelte(
     srcs = ["main.js"],
     deps = [
         ":Links",
-    ]
+    ],
 )
 
 svelte(
@@ -27,14 +27,14 @@ bundle_dev(
 )
 
 bundle_prod(
-  name = "bundle_prod",
-  entry_point = "main.js",
-  deps = [
-     ":App",
-    "@npm//lodash",
-    "@npm//moment",
-  ],
-  visibility = ["//visibility:public"],
+    name = "bundle_prod",
+    entry_point = "main.js",
+    deps = [
+        ":App",
+        "@npm//lodash",
+        "@npm//moment",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

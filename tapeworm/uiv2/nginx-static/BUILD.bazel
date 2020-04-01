@@ -1,8 +1,7 @@
 load(
     "@io_bazel_rules_docker//container:container.bzl",
-    "container_image"
+    "container_image",
 )
-
 load(
     "@io_bazel_rules_docker//docker/util:run.bzl",
     "container_run_and_commit",
@@ -22,24 +21,28 @@ container_image(
         "//tapeworm/uiv2:statics",
     ],
     ports = [
-        "80"
+        "80",
     ],
-    cmd = ["nginx", "-g", "daemon off;" ]
+    cmd = [
+        "nginx",
+        "-g",
+        "daemon off;",
+    ],
 )
 
 container_run_and_commit(
     name = "test_container_run_and_commit",
     commands = [
-       "set -x",
-       "addgroup --system --gid 101 nginx",
-       "adduser --system --disabled-login --ingroup nginx --no-create-home " +
-            "--home /nonexistent --shell /bin/false --uid 101 nginx",
-       "apt-get update",
-       "apt-get install --no-install-recommends --no-install-suggests -y ca-certificates nginx",
-       "ln -sf /dev/stdout /var/log/nginx/access.log",
-       "ln -sf /dev/stderr /var/log/nginx/error.log",
-       "mkdir /app",
-       "chown -R nginx:nginx /app"
+        "set -x",
+        "addgroup --system --gid 101 nginx",
+        "adduser --system --disabled-login --ingroup nginx --no-create-home " +
+        "--home /nonexistent --shell /bin/false --uid 101 nginx",
+        "apt-get update",
+        "apt-get install --no-install-recommends --no-install-suggests -y ca-certificates nginx",
+        "ln -sf /dev/stdout /var/log/nginx/access.log",
+        "ln -sf /dev/stderr /var/log/nginx/error.log",
+        "mkdir /app",
+        "chown -R nginx:nginx /app",
     ],
     image = "@ubuntu_1910_tar//image",
 )
