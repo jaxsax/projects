@@ -1,11 +1,21 @@
 package botv2
 
 import (
+	"strings"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type HandleEntitiesResponse struct {
 	Parsed []string
+}
+
+func ignoreURL(s string) bool {
+	s = strings.ToLower(s)
+	if s == "readme.md" {
+		return true
+	}
+	return false
 }
 
 func HandleEntities(text string, entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
@@ -21,9 +31,12 @@ func HandleEntities(text string, entities *[]tgbotapi.MessageEntity) *HandleEnti
 			continue
 		}
 
-		url := runeText[entity.Offset : entity.Offset+entity.Length]
-		urlsToParse = append(urlsToParse, string(url))
+		url := string(runeText[entity.Offset : entity.Offset+entity.Length])
+		if ignoreURL(url) {
+			continue
+		}
 
+		urlsToParse = append(urlsToParse, string(url))
 	}
 
 	return &HandleEntitiesResponse{
