@@ -13,13 +13,16 @@ func HandleEntities(text string, entities *[]tgbotapi.MessageEntity) *HandleEnti
 	// defined a context aware logger but passing a logger instance all over the place
 	// seems iffy
 
+	runeText := []rune(text)
 	entitiesValue := *entities
 	urlsToParse := make([]string, 0, len(entitiesValue))
 	for _, entity := range entitiesValue {
 		if !entity.IsUrl() {
 			continue
 		}
-		urlsToParse = append(urlsToParse, text[entity.Offset:entity.Offset+entity.Length])
+
+		url := runeText[entity.Offset : entity.Offset+entity.Length]
+		urlsToParse = append(urlsToParse, string(url))
 
 	}
 
