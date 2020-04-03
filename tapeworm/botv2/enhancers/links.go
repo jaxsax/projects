@@ -40,6 +40,8 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 
 	contentType := http.DetectContentType(body)
 	switch contentType {
+	case "text/xml; charset=utf-8":
+		fallthrough
 	case "text/html; charset=utf-8":
 		title, err := ReadTitle(bytes.NewReader(body))
 		if err != nil {
