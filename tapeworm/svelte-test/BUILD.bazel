@@ -1,7 +1,10 @@
 filegroup(
     name = "public",
-    srcs = glob([
-        "public/*"
-    ], exclude_directories=0),
+    srcs = glob(
+        [
+            "public/*",
+        ],
+        exclude_directories = 0,
+    ),
     visibility = ["//visibility:public"],
 )
