@@ -23,11 +23,9 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
 )
 
-http_archive(
+local_repository(
     name = "build_bazel_rules_svelte",
-    url = "https://github.com/thelgevold/rules_svelte/archive/0.15.zip",
-    strip_prefix = "rules_svelte-0.15",
-    sha256 = "1b04eb08ef80636929d152bb2f2733e36d9e0b8ad10aca7b435c82bd638336f5",
+    path = "vendor/github.com/thelgevold/rules_svelte"
 )
 
 http_archive(
