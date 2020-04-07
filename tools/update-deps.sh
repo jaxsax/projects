@@ -8,4 +8,6 @@ elif ! command -v bazelisk &>/dev/null; then
 fi
 
 set -o xtrace
-bazelisk run //:gazelle -- update-repos --from_file=go.mod --to_macro=repos.bzl%go_repositories
+bazelisk run //:gazelle -- update-repos \
+    --from_file=go.mod --to_macro=repos.bzl%go_repositories \
+    --prune
