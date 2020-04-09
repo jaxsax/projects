@@ -8,6 +8,7 @@
   "devDependencies": {
     "@bazel/hide-bazel-files": "latest",
     "@bazel/jasmine": "^1.4.1",
+    "@bazel/rollup": "^1.5.0",
     "@bazel/typescript": "1.2.0",
     "browser-sync": "^2.26.7",
     "parcel-bundler": "^1.12.4",

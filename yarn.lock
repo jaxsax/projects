@@ -698,6 +698,11 @@
     jasmine-reporters "~2.3.2"
     v8-coverage "1.0.9"
 
+"@bazel/rollup@^1.5.0":
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@bazel/rollup/-/rollup-1.5.0.tgz#d0933d167e682470b90f8149eecf4c5bd7511369"
+  integrity sha512-/FEJfNi9dbbH8oQbf7LHyd0uhGSB0CQQhOpz8d4b2WLnYLhK0NZhoNF4afFjju5kQkrbrOfKaho64BfVxvNppA==
+
 "@bazel/typescript@1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@bazel/typescript/-/typescript-1.2.0.tgz#ab2016e1d6eb7a86b44536e887f51eaf3d75f1a7"
