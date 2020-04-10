@@ -4,4 +4,7 @@ rollup_bundle(
     name = "bundle",
     entry_point = "input.js",
     config_file = "rollup.config.js",
+    deps = [
+        "@npm//moment",
+    ]
 )
