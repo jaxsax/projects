@@ -1,73 +1,120 @@
-import svelte from 'rollup-plugin-svelte';
-import resolve from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import livereload from 'rollup-plugin-livereload';
-import { terser } from 'rollup-plugin-terser';
-import sveltePreprocess from 'svelte-preprocess'
+import svelte from "rollup-plugin-svelte";
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import livereload from "rollup-plugin-livereload";
+import { terser } from "rollup-plugin-terser";
+// import sveltePreprocess from 'svelte-preprocess'
+import html from "@rollup/plugin-html";
 
 const production = !process.env.ROLLUP_WATCH;
 
+const makeHtmlAttributes = (attributes) => {
+  if (!attributes) {
+    return "";
+  }
+
+  const keys = Object.keys(attributes);
+  // eslint-disable-next-line no-param-reassign
+  return keys.reduce(
+    (result, key) => (result += ` ${key}="${attributes[key]}"`),
+    ""
+  );
+};
+
+const defaultTemplate = async ({ attributes, files, publicPath, title }) => {
+  const scripts = (files.js || [])
+    .map(({ fileName }) => {
+      const attrs = makeHtmlAttributes(attributes.script);
+      return `<script src="${publicPath}${fileName}"${attrs}></script>`;
+    })
+    .join("\n");
+
+  const links = (files.css || [])
+    .map(({ fileName }) => {
+      const attrs = makeHtmlAttributes(attributes.link);
+      return `<link href="${publicPath}${fileName}" rel="stylesheet"${attrs}>`;
+    })
+    .join("\n");
+
+  return `
+  <!doctype html>
+  <html${makeHtmlAttributes(attributes.html)}>
+	<head>
+	  <meta charset="utf-8">
+	  <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+	  <title>${title}</title>
+	  <link rel="stylesheet" href="/static/global.css" />
+	  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+	  ${links}
+	</head>
+	<body>
+	  ${scripts}
+	</body>
+  </html>`;
+};
+
 export default {
-	input: 'src/main.js',
-	output: {
-		sourcemap: true,
-		format: 'iife',
-		name: 'app',
-		file: 'public/build/bundle.js'
-	},
-	plugins: [
-		svelte({
-			// enable run-time checks when not in production
-			dev: !production,
-			preprocess: sveltePreprocess({ postcss: true }),
-			// we'll extract any component CSS out into
-			// a separate file - better for performance
-			css: css => {
-				css.write('public/build/bundle.css');
-			}
-		}),
+  input: "src/main.js",
+  output: {
+    entryFileNames: "[name]-[hash].js",
+    format: "es",
+  },
+  plugins: [
+    svelte({
+      // enable run-time checks when not in production
+      dev: !production,
+      // preprocess: sveltePreprocess({ postcss: true }),
+      // we'll extract any component CSS out into
+      // a separate file - better for performance
+      // css: css => {
+      // 	css.write('public/build/bundle.css');
+      // }
+    }),
 
-		// If you have external dependencies installed from
-		// npm, you'll most likely need these plugins. In
-		// some cases you'll need additional configuration -
-		// consult the documentation for details:
-		// https://github.com/rollup/plugins/tree/master/packages/commonjs
-		resolve({
-			browser: true,
-			dedupe: ['svelte']
-		}),
-		commonjs(),
+    // If you have external dependencies installed from
+    // npm, you'll most likely need these plugins. In
+    // some cases you'll need additional configuration -
+    // consult the documentation for details:
+    // https://github.com/rollup/plugins/tree/master/packages/commonjs
+    resolve({
+      browser: true,
+      dedupe: ["svelte"],
+    }),
+    commonjs(),
+    html({
+      template: defaultTemplate,
+    }),
+    // In dev mode, call `npm run start` once
+    // the bundle has been generated
+    !production && serve(),
 
-		// In dev mode, call `npm run start` once
-		// the bundle has been generated
-		!production && serve(),
+    // Watch the `public` directory and refresh the
+    // browser on changes when not in production
+    !production && livereload("public"),
 
-		// Watch the `public` directory and refresh the
-		// browser on changes when not in production
-		!production && livereload('public'),
-
-		// If we're building for production (npm run build
-		// instead of npm run dev), minify
-		production && terser()
-	],
-	watch: {
-		clearScreen: false
-	}
+    // If we're building for production (npm run build
+    // instead of npm run dev), minify
+    production && terser(),
+  ],
+  watch: {
+    clearScreen: false,
+  },
 };
 
 function serve() {
-	let started = false;
+  let started = false;
 
-	return {
-		writeBundle() {
-			if (!started) {
-				started = true;
+  return {
+    writeBundle() {
+      if (!started) {
+        started = true;
 
-				require('child_process').spawn('npm', ['run', 'start', '--', '--dev'], {
-					stdio: ['ignore', 'inherit', 'inherit'],
-					shell: true
-				});
-			}
-		}
-	};
+        require("child_process").spawn("npm", ["run", "start", "--", "--dev"], {
+          stdio: ["ignore", "inherit", "inherit"],
+          shell: true,
+        });
+      }
+    },
+  };
 }

@@ -1,5 +1,5 @@
 load("@npm_bazel_rollup//:index.bzl", "rollup_bundle")
-load("@rules_pkg//:pkg.bzl", "pkg_tar", "pkg_deb")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 
 rollup_bundle(

@@ -33,9 +33,9 @@ container_image(
 container_image(
     name = "v2_static_files_image",
     base = ":test_container_run_and_commit",
-    directory = "/var/www/html/",
-    files = [
-        "//tapeworm/svelte-test:public",
+    tars = [
+        "//tapeworm/svelte-test:static-bin",
+        "//tapeworm/svelte-test:bundle-bin",
     ],
     ports = [
         "80",

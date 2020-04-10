@@ -69,7 +69,7 @@
 
 <main class="container mx-auto mt-8">
   <div>
-    <img class="h-32 w-64 centerimage" src="/tapeworm-icon.png" alt="Tapeworm bot icon" />
+    <img class="h-32 w-64 centerimage" src="/static/tapeworm-icon.png" alt="Tapeworm bot icon" />
     <input
       class="bg-white focus:outline-none focus:shadow-outline border
       border-gray-300 rounded-lg py-2 px-4 block w-full appearance-none
