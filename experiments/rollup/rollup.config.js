@@ -1,15 +1,15 @@
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
+import html from '@rollup/plugin-html';
 
 export default {
-  input: "src/main.js",
   output: {
-    // file: "dist/bundle.js",
-    dir: "dist",
-    format: "cjs",
+    entryFileNames: '[name]-[hash].js',
+    format: "es",
   },
   plugins: [
     resolve(),
     commonjs(),
+    html(),
   ],
 };
