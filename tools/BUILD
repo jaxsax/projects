@@ -24,6 +24,11 @@ sh_binary(
 )
 
 sh_binary(
+    name = "update-bot-ui",
+    srcs = ["update-bot-ui.sh"],
+)
+
+sh_binary(
     name = "update-deps",
     srcs = ["update-deps.sh"],
 )
