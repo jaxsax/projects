@@ -26,8 +26,8 @@ container_image(
 container_bundle(
     name = "bundle_v2_static_files_image",
     images = {
-        "{DOCKER_REPO}/dev/bot_uiv2:{DOCKER_TAG}": ":v2_static_files_image",
-        "{DOCKER_REPO}/dev/bot_uiv2:latest": ":v2_static_files_image",
+        "{DOCKER_REPO}/botv2_ui:{DOCKER_TAG}": ":v2_static_files_image",
+        "{DOCKER_REPO}/botv2_ui:latest": ":v2_static_files_image",
     }
 )
 
