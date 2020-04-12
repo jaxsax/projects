@@ -1,5 +1,7 @@
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "container_push")
 
 go_library(
     name = "go_default_library",
@@ -27,4 +29,18 @@ go_image(
     binary = ":bot",
     tag = "latest",
     visibility = ["//visibility:public"],
+)
+
+container_bundle(
+    name = "bundle",
+    images = {
+        "{DOCKER_REPO}/tapeworm/botv2:{DOCKER_TAG}": ":docker",
+        "{DOCKER_REPO}/tapeworm/botv2:latest": ":docker",
+    }
+)
+
+container_push(
+    name = "push",
+    bundle = ":bundle",
+    format = "Docker",
 )
