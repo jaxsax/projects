@@ -61,7 +61,7 @@ export default {
     dir: "dist",
     sourcemap: true,
     entryFileNames: "[name]-[hash].js",
-    format: "cjs",
+    format: "umd",
   },
   plugins: [
     svelte({
@@ -71,7 +71,7 @@ export default {
       // we'll extract any component CSS out into
       // a separate file - better for performance
     }),
-    resolve(),
+    resolve({browser: true}),
     commonjs(),
     html({
       template: defaultTemplate,
