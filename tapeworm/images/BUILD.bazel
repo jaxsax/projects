@@ -1,0 +1,51 @@
+load(
+    "@io_bazel_rules_docker//docker/util:run.bzl",
+    "container_run_and_commit",
+)
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+)
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
+container_run_and_commit(
+    name = "nginx-static-base",
+    commands = [
+        "set -x",
+        "addgroup --system --gid 101 nginx",
+        "adduser --system --disabled-login --ingroup nginx --no-create-home " +
+            "--home /nonexistent --shell /bin/false --uid 101 nginx",
+        "apt-get update",
+        "apt-get install --no-install-recommends --no-install-suggests -y ca-certificates nginx",
+        "ln -sf /dev/stdout /var/log/nginx/access.log",
+        "ln -sf /dev/stderr /var/log/nginx/error.log",
+        "rm -rf /var/www/html/",
+    ],
+    image = "@ubuntu-1910-base//image",
+)
+
+pkg_tar(
+    name = "nginx-static-config",
+    strip_prefix = "/tapeworm/images/nginx_root/",
+    srcs = glob([
+        "nginx_root/*"
+    ]),
+    mode = "0755",
+)
+
+container_image(
+    name = "nginx-static",
+    base = ":nginx-static-base",
+    tars = [
+        ":nginx-static-config",
+    ],
+    ports = [
+        "80",
+    ],
+    cmd = [
+        "nginx",
+        "-g",
+        "daemon off;",
+    ],
+    visibility = ["//visibility:public"],
+)
