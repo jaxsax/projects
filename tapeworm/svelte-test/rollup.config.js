@@ -6,8 +6,6 @@ import { terser } from "rollup-plugin-terser";
 // import sveltePreprocess from 'svelte-preprocess'
 import html from "@rollup/plugin-html";
 
-const production = !process.env.ROLLUP_WATCH;
-
 const makeHtmlAttributes = (attributes) => {
   if (!attributes) {
     return "";
@@ -54,48 +52,43 @@ const defaultTemplate = async ({ attributes, files, publicPath, title }) => {
   </html>`;
 };
 
+const mode = process.env.NODE_ENV;
+const dev = mode === 'development';
+
 export default {
   input: "src/main.js",
   output: {
+    dir: "dist",
+    sourcemap: true,
     entryFileNames: "[name]-[hash].js",
-    format: "es",
+    format: "cjs",
   },
   plugins: [
     svelte({
       // enable run-time checks when not in production
-      dev: !production,
+      dev: dev,
       // preprocess: sveltePreprocess({ postcss: true }),
       // we'll extract any component CSS out into
       // a separate file - better for performance
-      // css: css => {
-      // 	css.write('public/build/bundle.css');
-      // }
     }),
-
-    // If you have external dependencies installed from
-    // npm, you'll most likely need these plugins. In
-    // some cases you'll need additional configuration -
-    // consult the documentation for details:
-    // https://github.com/rollup/plugins/tree/master/packages/commonjs
-    resolve({
-      browser: true,
-      dedupe: ["svelte"],
-    }),
+    resolve(),
     commonjs(),
     html({
       template: defaultTemplate,
     }),
     // In dev mode, call `npm run start` once
     // the bundle has been generated
-    !production && serve(),
+    dev && serve(),
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload("public"),
+    dev && livereload("public"),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
-    production && terser(),
+    !dev && terser({
+      module: true,
+    }),
   ],
   watch: {
     clearScreen: false,

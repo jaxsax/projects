@@ -18,6 +18,8 @@ rollup_bundle(
     entry_point = "src/main.js",
     config_file = "rollup.config.js",
     output_dir = True,
+    sourcemap = "true",
+    format = "cjs",
     srcs = [
         "src/App.svelte",
         "src/Tailwindcss.svelte",
