@@ -2,3 +2,7 @@ startup --host_jvm_args=-Xmx2500m
 startup --host_jvm_args=-Xms2500m
 
 test --test_output=errors
+
+# envs for stamping
+build --workspace_status_command=./tools/workspace-status.sh
+run --workspace_status_command=./tools/workspace-status.sh
