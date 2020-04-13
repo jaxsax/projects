@@ -27,33 +27,36 @@ func NewServer(
 	}
 }
 
-func (s *Server) handleLinks(w http.ResponseWriter, r *http.Request) {
-	dbLinks := s.linksRepository.List()
+func (s *Server) apiLinks() http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		dbLinks := s.linksRepository.List()
 
-	resp := struct {
-		Links []links.Link
-	}{
-		Links: dbLinks,
+		resp := struct {
+			Links []links.Link
+		}{
+			Links: dbLinks,
+		}
+
+		js, err := json.Marshal(resp)
+		if err != nil {
+			s.Log(
+				"endpoint", "/api/links",
+				"err", err.Error(),
+			)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Write(js)
 	}
-
-	js, err := json.MarshalIndent(resp, "", "    ")
-	if err != nil {
-		s.Log(
-			"endpoint", "/api/links",
-			"err", err.Error(),
-		)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Write(js)
+	return http.HandlerFunc(fn)
 }
 
 func (s *Server) Run() error {
 	s.Message(fmt.Sprintf("listening on %v", s.cfg.Port))
 
-	http.HandleFunc("/api/links", s.handleLinks)
+	http.Handle("/api/links", Gzip(s.apiLinks()))
 	return http.ListenAndServe(fmt.Sprintf(":%v", s.cfg.Port), nil)
 }
