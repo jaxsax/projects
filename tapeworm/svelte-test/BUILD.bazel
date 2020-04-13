@@ -38,15 +38,15 @@ rollup_bundle(
         "@npm//postcss-load-config",
         "@npm//rxjs",
         "@npm//moment",
-        "@npm//fuzzysort"
-    ]
+        "@npm//fuzzysort",
+    ],
 )
 
 pkg_web(
     name = "statics",
     srcs = glob([
-        "static/*"
-    ])
+        "static/*",
+    ]),
 )
 
 pkg_tar(
@@ -55,7 +55,7 @@ pkg_tar(
     package_dir = "/var/www/html",
     srcs = [":statics"],
     mode = "0755",
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
 )
 
 pkg_tar(
@@ -64,5 +64,5 @@ pkg_tar(
     package_dir = "/var/www/html",
     srcs = [":bundle"],
     mode = "0755",
-    visibility = ["//visibility:public"]
+    visibility = ["//visibility:public"],
 )

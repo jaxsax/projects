@@ -1,6 +1,7 @@
 load(
     "@io_bazel_rules_docker//container:container.bzl",
-    "container_image", "container_bundle",
+    "container_image",
+    "container_bundle",
 )
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "container_push")
 
@@ -28,7 +29,7 @@ container_bundle(
     images = {
         "{DOCKER_REPO}/tapeworm/botv2_ui:{DOCKER_TAG}": ":v2_static_files_image",
         "{DOCKER_REPO}/tapeworm/botv2_ui:latest": ":v2_static_files_image",
-    }
+    },
 )
 
 container_push(

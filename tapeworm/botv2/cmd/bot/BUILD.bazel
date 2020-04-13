@@ -36,7 +36,7 @@ container_bundle(
     images = {
         "{DOCKER_REPO}/tapeworm/botv2:{DOCKER_TAG}": ":docker",
         "{DOCKER_REPO}/tapeworm/botv2:latest": ":docker",
-    }
+    },
 )
 
 container_push(
