@@ -27,7 +27,7 @@
   }
 
   onMount(async() => {
-    const res = await fetch(`http://l.internal.jaxsax.co/api/links`);
+    const res = await fetch(`api/links`);
     links = await res.json();
     links = links.Links;
   })
