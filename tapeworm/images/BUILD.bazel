@@ -29,9 +29,16 @@ pkg_tar(
     name = "nginx-static-config",
     strip_prefix = "./nginx_root",
     srcs = [
-        "nginx_root"
+        ":nginx_root"
     ],
     mode = "0755",
+)
+
+filegroup(
+    name = "nginx_root",
+    srcs = glob([
+        "nginx_root/**/*"
+    ]),
 )
 
 container_image(
