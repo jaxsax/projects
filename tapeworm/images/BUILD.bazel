@@ -20,16 +20,17 @@ container_run_and_commit(
         "ln -sf /dev/stdout /var/log/nginx/access.log",
         "ln -sf /dev/stderr /var/log/nginx/error.log",
         "rm -rf /var/www/html/",
+        "rm -rf /etc/nginx/sites-enabled",
     ],
     image = "@ubuntu-1910-base//image",
 )
 
 pkg_tar(
     name = "nginx-static-config",
-    strip_prefix = "/tapeworm/images/nginx_root/",
-    srcs = glob([
-        "nginx_root/*",
-    ]),
+    strip_prefix = "./nginx_root",
+    srcs = [
+        "nginx_root"
+    ],
     mode = "0755",
 )
 
