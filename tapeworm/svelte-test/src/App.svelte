@@ -10,38 +10,41 @@
   let showRFC3339Time = false;
   let timer;
   let searchTerm = "";
+  const limitItems = 25;
 
   const debounce = v => {
 		clearTimeout(timer);
 		timer = setTimeout(() => {
 			searchTerm = v;
 		}, 100);
-	}
+  }
 
-  onMount(async() => {
-    const res = await fetch(`/api/links`);
-    links = await res.json();
-    links = links.Links;
-  })
-
-  $: latestLink = () => {
+  function getRandomLinkFromActive(links) {
     if (!links) {
       return null;
     }
-    links[Math.floor(Math.random() * links.length)] || {};
+    return links[Math.floor(Math.random() * links.length)] || {};
   }
+
+  onMount(async() => {
+    const res = await fetch(`http://l.internal.jaxsax.co/api/links`);
+    links = await res.json();
+    links = links.Links;
+  })
 
   $: {
     if (searchTerm) {
       strictsort.goAsync(searchTerm, links, { key: 'Title' })
         .then(p => {
-          console.log(p);
           searchedLinks = p.map(x => x.obj);
         });
     } else {
       searchedLinks = links;
     }
   }
+
+  $: randomSearchTermLink = getRandomLinkFromActive(searchedLinks)
+  $: searchView = searchedLinks.slice(0, limitItems)
 
   function handleTimestampClick(_) {
     showRFC3339Time = !showRFC3339Time;
@@ -76,14 +79,14 @@
       leading-normal mt-2"
       on:keyup={({ target: { value }}) => debounce(value)}
       type="text"
-      placeholder="{ latestLink ? latestLink.Title : "" }" />
+      placeholder="{ randomSearchTermLink ? randomSearchTermLink.Title : "" }" />
     <span class="ml-2">
       { searchedLinks.length.toLocaleString() }
       result(s)
     </span>
   </div>
   <div class="links">
-    {#each searchedLinks as link}
+    {#each searchView as link}
       <div class="my-4">
         <a class="font-semibold text-blue-600 visited:text-purple-600" href={link.Link}>{link.Title}</a>
         <span class=" border-b-2 border-dashed cursor-pointer" on:click={handleTimestampClick}>

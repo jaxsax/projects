@@ -55,14 +55,27 @@ const defaultTemplate = async ({ attributes, files, publicPath, title }) => {
 const mode = process.env.NODE_ENV;
 const dev = mode === 'development';
 
-export default {
-  input: "src/main.js",
-  output: {
+let output = {};
+if (!dev) {
+  output = {
     dir: "dist",
+    name: "dist/bundle.js",
     sourcemap: true,
     entryFileNames: "[name]-[hash].js",
     format: "umd",
-  },
+  };
+} else {
+  output = {
+    dir: "dist",
+    name: "dist/bundle.js",
+    sourcemap: true,
+    format: "umd",
+  }
+}
+
+export default {
+  input: "src/main.js",
+  output: output,
   plugins: [
     svelte({
       // enable run-time checks when not in production
@@ -82,7 +95,7 @@ export default {
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    dev && livereload("public"),
+    dev && livereload("dist"),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
