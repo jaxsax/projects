@@ -1,10 +1,39 @@
 #!/usr/bin/env bash
 
-if [[ -n "${BUILD_WORKSPACE_DIRECTORY:-}" ]]; then
-    echo "You're running via bazel!" >&2
-elif ! command -v bazelisk &>/dev/null; then
-    echo "Install bazelisk at https://github.com/bazelbuild/bazelisk" >&2
-    exit 1
+err=0
+
+$(command -v bazelisk &>/dev/null) || {
+	echo "Please install bazelisk at https://github.com/bazelbuild/bazelisk" >&2
+	err=1
+}
+
+$(command -v ibazel &>/dev/null) || {
+	echo "Please install ibazel at https://github.com/bazelbuild/bazel-watcher" >&2
+	err=1
+}
+
+if [ $err -eq 1 ]; then
+	exit 1
 fi
 
-WEB_PORT=9999 ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path=$PWD/secrets/config.yml 
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
+secrets_config=$DIR/secrets/config.yml
+
+if [ ! -f "$secrets_config" ]; then
+	echo "Creating default config, please populate telegram bot token"
+	cat <<-EOF > "$secrets_config"
+		token: "default_token"
+		database:
+			host: 127.0.0.1
+			user: postgres
+			password: example
+			name: tapeworm_bot
+	EOF
+fi
+
+(
+	cd "$DIR"/..
+	docker-compose up -d
+)
+
+WEB_PORT=9999 ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"
