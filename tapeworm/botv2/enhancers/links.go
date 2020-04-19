@@ -53,6 +53,12 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 			Link:     url.String(),
 			Title:    title,
 		}, nil
+	case "application/pdf":
+		return &EnhancedLink{
+			Original: link,
+			Link:     url.String(),
+			Title:    url.String(),
+		}, nil
 	}
 
 	return nil, fmt.Errorf("unimplemented type %v", contentType)
