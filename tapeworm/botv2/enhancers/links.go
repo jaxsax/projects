@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -19,6 +20,17 @@ var httpClient = &http.Client{
 	Timeout: 10 * time.Second,
 }
 
+func removeUTMParameters(url *url.URL) {
+	values := url.Query()
+	for k := range values {
+		if strings.HasPrefix(k, "utm_") {
+			values.Del(k)
+		}
+	}
+
+	url.RawQuery = values.Encode()
+}
+
 func EnhanceLink(link string) (*EnhancedLink, error) {
 	url, err := url.Parse(link)
 	if err != nil {
@@ -29,6 +41,7 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 		url.Scheme = "http"
 	}
 
+	removeUTMParameters(url)
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	req.Header.Set(
 		"User-Agent",
