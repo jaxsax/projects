@@ -6,12 +6,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 type EnhancedLink struct {
 	Original string
 	Link     string
 	Title    string
+}
+
+var httpClient = &http.Client{
+	Timeout: 10 * time.Second,
 }
 
 func EnhanceLink(link string) (*EnhancedLink, error) {
@@ -24,7 +29,13 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 		url.Scheme = "http"
 	}
 
-	res, err := http.Get(url.String())
+	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
+	req.Header.Set(
+		"User-Agent",
+		"Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
+	)
+
+	res, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
