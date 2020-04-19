@@ -55,8 +55,9 @@ func main() {
 	logErrorAndExit("connect_db", err)
 
 	var (
-		linksRepository   = sql.NewLinksRepository(db)
-		updatesRepository = sql.NewUpdatesRepository(db)
+		linksRepository        = sql.NewLinksRepository(db)
+		skippedLinksRepository = sql.NewSkippedLinksRepository(db)
+		updatesRepository      = sql.NewUpdatesRepository(db)
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
@@ -77,6 +78,7 @@ func main() {
 			config,
 			linksRepository,
 			updatesRepository,
+			skippedLinksRepository,
 			botAPI,
 		)
 

@@ -55,5 +55,5 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 		}, nil
 	}
 
-	return nil, fmt.Errorf("not imeplemented")
+	return nil, fmt.Errorf("unimplemented type %v", contentType)
 }

@@ -9,15 +9,17 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
+	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
 	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 )
 
 type Bot struct {
 	*internal.Logger
-	cfg               *internal.Config
-	botAPI            *tgbotapi.BotAPI
-	updatesRepository updates.Repository
-	linksRepository   links.Repository
+	cfg                    *internal.Config
+	botAPI                 *tgbotapi.BotAPI
+	updatesRepository      updates.Repository
+	linksRepository        links.Repository
+	skippedLinksRepository skippedlinks.Repository
 }
 
 func NewBot(
@@ -25,14 +27,16 @@ func NewBot(
 	config *internal.Config,
 	linksRepository links.Repository,
 	updatesRepository updates.Repository,
+	skippedLinksRepository skippedlinks.Repository,
 	botAPI *tgbotapi.BotAPI,
 ) *Bot {
 	return &Bot{
-		Logger:            logger,
-		cfg:               config,
-		linksRepository:   linksRepository,
-		botAPI:            botAPI,
-		updatesRepository: updatesRepository,
+		Logger:                 logger,
+		cfg:                    config,
+		linksRepository:        linksRepository,
+		botAPI:                 botAPI,
+		updatesRepository:      updatesRepository,
+		skippedLinksRepository: skippedLinksRepository,
 	}
 }
 
@@ -48,7 +52,7 @@ func (b *Bot) Run() error {
 	}
 
 	for update := range updates {
-		b.handleUpdate(update)
+		go b.handleUpdate(update)
 	}
 
 	return nil
@@ -102,6 +106,19 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 						"err", err,
 						"url", entity,
 					)
+
+					skippedLink := skippedlinks.SkippedLink{
+						Link:        entity,
+						ErrorReason: err.Error(),
+					}
+					serr := b.skippedLinksRepository.Create(skippedLink)
+					if serr != nil {
+						log.Log(
+							"action", "log_skipped_link",
+							"err", serr,
+							"object",
+						)
+					}
 					continue
 				}
 
