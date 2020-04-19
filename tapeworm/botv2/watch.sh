@@ -12,6 +12,11 @@ $(command -v ibazel &>/dev/null) || {
 	err=1
 }
 
+$(command -v docker-compose &> /dev/null) || {
+	echo "Please install docker-compose at https://github.com/docker/compose" >&2
+	err=1
+}
+
 if [ $err -eq 1 ]; then
 	exit 1
 fi
