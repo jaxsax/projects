@@ -55,7 +55,10 @@ func (s *Server) apiLinks() http.Handler {
 }
 
 func (s *Server) Run() error {
-	s.Message(fmt.Sprintf("listening on %v", s.cfg.Port))
+	s.Log(
+		"msg", "listening",
+		"port", s.cfg.Port,
+	)
 
 	http.Handle("/api/links", Gzip(s.apiLinks()))
 	return http.ListenAndServe(fmt.Sprintf(":%v", s.cfg.Port), nil)

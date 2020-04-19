@@ -68,9 +68,13 @@ func main() {
 	wg.Add(2)
 
 	go func() {
+		logger := kitlog.With(
+			logger,
+			"component", "bot",
+		)
+
 		logger.Log(
 			"action", "starting",
-			"component", "bot",
 		)
 
 		b := botv2.NewBot(
@@ -92,9 +96,13 @@ func main() {
 	}()
 
 	go func() {
+		logger := kitlog.With(
+			logger,
+			"component", "api",
+		)
+
 		logger.Log(
 			"action", "starting",
-			"component", "web",
 		)
 
 		webServer := web.NewServer(
@@ -107,7 +115,6 @@ func main() {
 
 		logger.Log(
 			"action", "ended",
-			"component", "web",
 			"err", fmt.Sprintf("%+v", err),
 		)
 		wg.Done()

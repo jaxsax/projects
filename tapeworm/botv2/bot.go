@@ -41,8 +41,6 @@ func NewBot(
 }
 
 func (b *Bot) Run() error {
-	b.Message("listening for messages")
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
@@ -51,6 +49,7 @@ func (b *Bot) Run() error {
 		b.Log("err", "failed to retrieve updates channel")
 	}
 
+	b.Log("msg", "listening for messages")
 	for update := range updates {
 		go b.handleUpdate(update)
 	}
