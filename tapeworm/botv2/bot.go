@@ -3,18 +3,21 @@ package botv2
 
 import (
 	"fmt"
+	"time"
 
-	kitlog "github.com/go-kit/kit/log"
+	"github.com/BTBurke/cannon"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
 	"github.com/jaxsax/projects/tapeworm/botv2/updates"
+	"go.uber.org/zap"
 )
 
 type Bot struct {
-	*internal.Logger
+	Logger                 *zap.Logger
 	cfg                    *internal.Config
 	botAPI                 *tgbotapi.BotAPI
 	updatesRepository      updates.Repository
@@ -23,7 +26,7 @@ type Bot struct {
 }
 
 func NewBot(
-	logger *internal.Logger,
+	logger *zap.Logger,
 	config *internal.Config,
 	linksRepository links.Repository,
 	updatesRepository updates.Repository,
@@ -46,10 +49,10 @@ func (b *Bot) Run() error {
 
 	updates, err := b.botAPI.GetUpdatesChan(u)
 	if err != nil {
-		b.Log("err", "failed to retrieve updates channel")
+		return fmt.Errorf("get updates: %w", err)
 	}
 
-	b.Log("msg", "listening for messages")
+	b.Logger.Info("listening for messages")
 	for update := range updates {
 		go b.handleUpdate(update)
 	}
@@ -63,21 +66,24 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	}
 
 	message := update.Message
-	log := kitlog.WithPrefix(b.Logger,
-		"from", message.From.UserName,
-		"from_userid", message.From.ID,
-		"message_id", message.MessageID,
+
+	start := time.Now()
+	ctxLogger := b.Logger.With(
+		zap.Int("update_id", update.UpdateID),
+		zap.String("from", message.From.UserName),
+		zap.Int("from_userid", message.From.ID),
+		zap.Int("message_id", message.MessageID),
 	)
 
 	err := b.updatesRepository.Create(updates.Update{Data: &update})
 	if err != nil {
-		log.Log(
-			"action", "persist_update",
-			"err", err,
-		)
+		ctxLogger.Error("save update failed", zap.Error(err))
 	}
 
-	log.Log("message", message.Text)
+	ctxLogger.Debug("message received", zap.String("message", message.Text))
+	defer func() {
+		cannon.Emit(ctxLogger, zap.Duration("update_duration", time.Now().Sub(start)))
+	}()
 
 	switch message.Text {
 	case "ping":
@@ -85,10 +91,17 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply.ReplyToMessageID = message.MessageID
 		b.botAPI.Send(reply)
 	case "!links":
-		all := b.linksRepository.List()
-		log.Log("links", fmt.Sprintf("%+v\n", all))
+		// all := b.linksRepository.List()
+
+		ctxLogger.Info(
+			"command received",
+			zap.String("cmd", "links"),
+		)
 	default:
 		if message.Entities != nil {
+			ctxLogger.Debug(
+				"parsing entities",
+			)
 			res := HandleEntities(message.Text, message.Entities)
 
 			if len(res.Parsed) == 0 {
@@ -98,12 +111,14 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 			linksToAdd := []links.Link{}
 			bodyParsed := ""
 			for i, entity := range res.Parsed {
+				ctxLogger.With(zap.String("entity", "entity"))
+
 				enhancedLink, err := enhancers.EnhanceLink(entity)
 				if err != nil {
-					log.Log(
-						"action", "parse_link",
-						"err", err,
-						"url", entity,
+					ctxLogger.Error(
+						"parse link failed",
+						zap.Bool("parse_ok", false),
+						zap.Error(err),
 					)
 
 					skippedLink := skippedlinks.SkippedLink{
@@ -112,10 +127,10 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 					}
 					serr := b.skippedLinksRepository.Create(skippedLink)
 					if serr != nil {
-						log.Log(
-							"action", "log_skipped_link",
-							"err", serr,
-							"object",
+						ctxLogger.Error(
+							"store skipped link failed",
+							zap.Bool("store_skipped_ok", false),
+							zap.Error(serr),
 						)
 					}
 					continue
@@ -134,7 +149,11 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 			}
 			err := b.linksRepository.CreateMany(linksToAdd)
 			if err != nil {
-				log.Log("err", err)
+				ctxLogger.Error(
+					"store links failed",
+					zap.Bool("store_ok", false),
+					zap.Error(err),
+				)
 				return
 			}
 
@@ -151,7 +170,11 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 
 			_, err = b.botAPI.Send(reply)
 			if err != nil {
-				log.Log("err", err)
+				ctxLogger.Error(
+					"send response failed",
+					zap.Bool("send_response_ok", false),
+					zap.Error(err),
+				)
 			}
 		}
 	}

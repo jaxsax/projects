@@ -11,5 +11,7 @@ go_library(
     deps = [
         "//tapeworm/botv2/internal:go_default_library",
         "//tapeworm/botv2/links:go_default_library",
+        "@com_github_btburke_cannon//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )

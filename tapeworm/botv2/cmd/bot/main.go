@@ -2,12 +2,13 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
 
-	kitlog "github.com/go-kit/kit/log"
+	"go.uber.org/zap"
+
+	"github.com/BTBurke/cannon"
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
@@ -34,17 +35,19 @@ func readConfig() (*internal.Config, error) {
 func main() {
 	flag.Parse()
 
-	lw := kitlog.NewSyncWriter(os.Stderr)
-	logger := kitlog.NewLogfmtLogger(lw)
-	logger = kitlog.With(logger, "ts", kitlog.DefaultTimestampUTC, "caller", kitlog.DefaultCaller)
+	lcfg := zap.NewDevelopmentConfig()
+
+	options := []zap.Option{
+		cannon.Core(),
+	}
+	logger, err := lcfg.Build(options...)
+	if err != nil {
+		zap.L().Fatal("error building logger", zap.Error(err))
+	}
 
 	logErrorAndExit := func(action string, err error) {
 		if err != nil {
-			logger.Log(
-				"action", action,
-				"err", err,
-			)
-			os.Exit(1)
+			logger.Fatal(action, zap.String("action", action), zap.Error(err))
 		}
 	}
 
@@ -68,17 +71,14 @@ func main() {
 	wg.Add(2)
 
 	go func() {
-		logger := kitlog.With(
-			logger,
-			"component", "bot",
-		)
+		componentLogger := logger.Named("app.bot")
 
-		logger.Log(
-			"action", "starting",
+		componentLogger.Info(
+			"starting",
 		)
 
 		b := botv2.NewBot(
-			&internal.Logger{Logger: logger},
+			componentLogger,
 			config,
 			linksRepository,
 			updatesRepository,
@@ -87,35 +87,32 @@ func main() {
 		)
 
 		err := b.Run()
-		logger.Log(
-			"action", "ended",
-			"component", "bot",
-			"err", fmt.Sprintf("%+v", err),
+		componentLogger.Info(
+			"stopped",
+			zap.String("state", "stopped"),
+			zap.Error(err),
 		)
+
 		wg.Done()
 	}()
 
 	go func() {
-		logger := kitlog.With(
-			logger,
-			"component", "api",
-		)
+		componentLogger := logger.Named("app.botapi")
 
-		logger.Log(
-			"action", "starting",
+		componentLogger.Info(
+			"starting",
 		)
 
 		webServer := web.NewServer(
-			&internal.Logger{Logger: logger},
+			componentLogger,
 			config,
 			linksRepository,
 		)
 
 		err := webServer.Run()
-
-		logger.Log(
-			"action", "ended",
-			"err", fmt.Sprintf("%+v", err),
+		componentLogger.Info(
+			"stopped",
+			zap.Error(err),
 		)
 		wg.Done()
 	}()

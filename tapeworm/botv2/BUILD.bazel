@@ -16,9 +16,10 @@ go_library(
         "//tapeworm/botv2/links:go_default_library",
         "//tapeworm/botv2/skippedlinks:go_default_library",
         "//tapeworm/botv2/updates:go_default_library",
-        "@com_github_go_kit_kit//log:go_default_library",
+        "@com_github_btburke_cannon//:go_default_library",
         "@com_github_go_telegram_bot_api_telegram_bot_api//:go_default_library",
         "@com_github_jmoiron_sqlx//:go_default_library",
+        "@org_uber_go_zap//:go_default_library",
     ],
 )
 

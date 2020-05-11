@@ -8,10 +8,7 @@ go_library(
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/internal",
     visibility = ["//tapeworm/botv2:__subpackages__"],
-    deps = [
-        "@com_github_go_kit_kit//log:go_default_library",
-        "@in_gopkg_yaml_v2//:go_default_library",
-    ],
+    deps = ["@in_gopkg_yaml_v2//:go_default_library"],
 )
 
 go_test(

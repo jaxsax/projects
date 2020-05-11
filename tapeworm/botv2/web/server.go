@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
+	"github.com/BTBurke/cannon"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
+	"go.uber.org/zap"
 )
 
 type Server struct {
-	*internal.Logger
+	*zap.Logger
 	cfg             *internal.Config
 	linksRepository links.Repository
 }
 
 func NewServer(
-	logger *internal.Logger,
+	logger *zap.Logger,
 	cfg *internal.Config,
 	linksRepository links.Repository,
 ) *Server {
@@ -25,6 +28,21 @@ func NewServer(
 		cfg:             cfg,
 		linksRepository: linksRepository,
 	}
+}
+
+func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		req := r.WithContext(cannon.CtxLogger(r.Context(), s.Logger))
+
+		next.ServeHTTP(w, req)
+
+		cannon.Emit(
+			s.Logger,
+			zap.String("path", r.URL.String()),
+			zap.Duration("request_duration", time.Since(start)),
+		)
+	})
 }
 
 func (s *Server) apiLinks() http.Handler {
@@ -39,10 +57,7 @@ func (s *Server) apiLinks() http.Handler {
 
 		js, err := json.Marshal(resp)
 		if err != nil {
-			s.Log(
-				"endpoint", "/api/links",
-				"err", err.Error(),
-			)
+			s.Logger.Error("error marshalling", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -55,11 +70,8 @@ func (s *Server) apiLinks() http.Handler {
 }
 
 func (s *Server) Run() error {
-	s.Log(
-		"msg", "listening",
-		"port", s.cfg.Port,
-	)
+	s.Logger.Info("listening")
 
-	http.Handle("/api/links", Gzip(s.apiLinks()))
+	http.Handle("/api/links", Gzip(s.LoggerMiddleware(s.apiLinks())))
 	return http.ListenAndServe(fmt.Sprintf(":%v", s.cfg.Port), nil)
 }
