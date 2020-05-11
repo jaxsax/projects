@@ -251,3 +251,9 @@ def go_repositories():
         sum = "h1:YGjVKa8TZUoPMDkGm9Lt3HOiUKakMe4yM4oL581lqRE=",
         version = "v0.2.0",
     )
+    go_repository(
+        name = "com_github_felixge_httpsnoop",
+        importpath = "github.com/felixge/httpsnoop",
+        sum = "h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=",
+        version = "v1.0.1",
+    )

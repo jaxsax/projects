@@ -4,7 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+
+	"github.com/felixge/httpsnoop"
 
 	"github.com/BTBurke/cannon"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
@@ -32,15 +33,14 @@ func NewServer(
 
 func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		req := r.WithContext(cannon.CtxLogger(r.Context(), s.Logger))
-
-		next.ServeHTTP(w, req)
-
+		m := httpsnoop.CaptureMetrics(next, w, r)
 		cannon.Emit(
 			s.Logger,
-			zap.String("path", r.URL.String()),
-			zap.Duration("request_duration", time.Since(start)),
+			zap.String("request.method", r.Method),
+			zap.String("request.path", r.URL.String()),
+			zap.Int("response.status_code", m.Code),
+			zap.Duration("duration", m.Duration),
+			zap.Int64("bytes_written", m.Written),
 		)
 	})
 }
