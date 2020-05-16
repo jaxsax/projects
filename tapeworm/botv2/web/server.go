@@ -7,7 +7,6 @@ import (
 
 	"github.com/felixge/httpsnoop"
 
-	"github.com/BTBurke/cannon"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"go.uber.org/zap"
@@ -34,7 +33,7 @@ func NewServer(
 func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m := httpsnoop.CaptureMetrics(next, w, r)
-		cannon.Emit(
+		internal.Emit(
 			s.Logger,
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.String()),

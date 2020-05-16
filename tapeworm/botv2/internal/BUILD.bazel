@@ -11,7 +11,6 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/internal",
     visibility = ["//tapeworm/botv2:__subpackages__"],
     deps = [
-        "@com_github_davecgh_go_spew//spew:go_default_library",
         "@in_gopkg_yaml_v2//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
         "@org_uber_go_zap//zapcore:go_default_library",
