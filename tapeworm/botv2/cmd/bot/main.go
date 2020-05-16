@@ -8,7 +8,6 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/BTBurke/cannon"
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
@@ -36,9 +35,10 @@ func main() {
 	flag.Parse()
 
 	lcfg := zap.NewDevelopmentConfig()
+	lcfg.OutputPaths = []string{"stdout"}
 
 	options := []zap.Option{
-		cannon.Core(),
+		internal.Core(),
 	}
 	logger, err := lcfg.Build(options...)
 	if err != nil {
@@ -47,7 +47,7 @@ func main() {
 
 	logErrorAndExit := func(action string, err error) {
 		if err != nil {
-			logger.Fatal(action, zap.String("action", action), zap.Error(err))
+			logger.Fatal("init error", zap.String("action", action), zap.Error(err))
 		}
 	}
 

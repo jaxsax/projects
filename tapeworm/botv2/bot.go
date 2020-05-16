@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/BTBurke/cannon"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
@@ -68,12 +66,20 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	message := update.Message
 
 	start := time.Now()
-	ctxLogger := b.Logger.With(
-		zap.Int("update_id", update.UpdateID),
-		zap.String("from", message.From.UserName),
-		zap.Int("from_userid", message.From.ID),
-		zap.Int("message_id", message.MessageID),
-	)
+	ctxLogger := b.Logger.With()
+
+	defer func() {
+		// Placing this here until I figure out why using b.Logger.With() causes duplicates
+		// in canonical logs
+		internal.Emit(
+			ctxLogger,
+			zap.Int("update_id", update.UpdateID),
+			zap.String("from", message.From.UserName),
+			zap.Int("from_userid", message.From.ID),
+			zap.Int("message_id", message.MessageID),
+			zap.Duration("update_duration", time.Now().Sub(start)),
+		)
+	}()
 
 	err := b.updatesRepository.Create(updates.Update{Data: &update})
 	if err != nil {
@@ -81,9 +87,6 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	}
 
 	ctxLogger.Debug("message received", zap.String("message", message.Text))
-	defer func() {
-		cannon.Emit(ctxLogger, zap.Duration("update_duration", time.Now().Sub(start)))
-	}()
 
 	switch message.Text {
 	case "ping":
@@ -111,8 +114,6 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 			linksToAdd := []links.Link{}
 			bodyParsed := ""
 			for i, entity := range res.Parsed {
-				ctxLogger.With(zap.String("entity", "entity"))
-
 				enhancedLink, err := enhancers.EnhanceLink(entity)
 				if err != nil {
 					ctxLogger.Error(
