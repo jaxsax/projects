@@ -257,3 +257,21 @@ def go_repositories():
         sum = "h1:lvB5Jl89CsZtGIWuTcDM1E/vkVs49/Ml7JJe07l8SPQ=",
         version = "v1.0.1",
     )
+    go_repository(
+        name = "com_github_google_go_cmp",
+        importpath = "github.com/google/go-cmp",
+        sum = "h1:+dTQ8DZQJz0Mb/HjFlkptS1FeQ4cWSnN941F8aEG4SQ=",
+        version = "v0.2.0",
+    )
+    go_repository(
+        name = "com_github_google_subcommands",
+        importpath = "github.com/google/subcommands",
+        sum = "h1:/eqq+otEXm5vhfBrbREPCSVQbvofip6kIz+mX5TUH7k=",
+        version = "v1.0.1",
+    )
+    go_repository(
+        name = "com_github_google_wire",
+        importpath = "github.com/google/wire",
+        sum = "h1:kXcsA/rIGzJImVqPdhfnr6q0xsS9gU0515q1EPpJ9fE=",
+        version = "v0.4.0",
+    )
