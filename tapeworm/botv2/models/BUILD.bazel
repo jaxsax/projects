@@ -1,0 +1,47 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "boil_queries.go",
+        "boil_table_names.go",
+        "boil_types.go",
+        "links.go",
+        "skipped_links.go",
+        "updates.go",
+    ],
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/models",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_friendsofgo_errors//:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//drivers:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//queries:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//queries/qm:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//queries/qmhelper:go_default_library",
+        "@com_github_volatiletech_strmangle//:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "boil_main_test.go",
+        "boil_queries_test.go",
+        "boil_suites_test.go",
+        "links_test.go",
+        "skipped_links_test.go",
+        "sqlite3_main_test.go",
+        "updates_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "@com_github_mattn_go_sqlite3//:go_default_library",
+        "@com_github_pkg_errors//:go_default_library",
+        "@com_github_spf13_viper//:go_default_library",
+        "@com_github_volatiletech_randomize//:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
+        "@com_github_volatiletech_sqlboiler_v4//queries:go_default_library",
+        "@com_github_volatiletech_strmangle//:go_default_library",
+    ],
+)

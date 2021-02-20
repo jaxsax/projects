@@ -1,6 +1,8 @@
 package main
 
 import (
+	sql1 "database/sql"
+	"errors"
 	"flag"
 	"os"
 	"path/filepath"
@@ -10,9 +12,11 @@ import (
 
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
+	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var configPath = flag.String("config_path", "config.yml", "path to config file")
@@ -57,8 +61,14 @@ func main() {
 	db, err := botv2.ConnectDB(&config.Database)
 	logErrorAndExit("connect_db", err)
 
+	if config.SqliteDBPath == "" {
+		logErrorAndExit("connect_sqlite", errors.New("sqlite_db_path cannot be empty"))
+	}
+	sqliteDB, err := sql1.Open("sqlite3", config.SqliteDBPath)
+	logErrorAndExit("connect_sqlite", err)
+
 	var (
-		linksRepository        = sql.NewLinksRepository(db)
+		linksRepository        = links.NewSqliteRepository(sqliteDB)
 		skippedLinksRepository = sql.NewSkippedLinksRepository(db)
 		updatesRepository      = sql.NewUpdatesRepository(db)
 	)

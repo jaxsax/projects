@@ -11,9 +11,11 @@ go_library(
     deps = [
         "//tapeworm/botv2:go_default_library",
         "//tapeworm/botv2/internal:go_default_library",
+        "//tapeworm/botv2/links:go_default_library",
         "//tapeworm/botv2/sql:go_default_library",
         "//tapeworm/botv2/web:go_default_library",
         "@com_github_lib_pq//:go_default_library",
+        "@com_github_mattn_go_sqlite3//:go_default_library",
         "@org_uber_go_zap//:go_default_library",
     ],
 )

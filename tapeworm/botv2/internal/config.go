@@ -28,9 +28,10 @@ type DBConfig struct {
 }
 
 type Config struct {
-	Token    string   `yaml:"token"`
-	Database DBConfig `yaml:"database"`
-	Port     int      `yaml:"-"`
+	Token        string   `yaml:"token"`
+	Database     DBConfig `yaml:"database"`
+	SqliteDBPath string   `yaml:"sqlite_db_path"`
+	Port         int      `yaml:"-"`
 }
 
 func ReadConfig(r io.Reader) (*Config, error) {

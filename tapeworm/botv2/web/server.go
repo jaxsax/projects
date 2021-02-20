@@ -46,7 +46,12 @@ func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
 
 func (s *Server) apiLinks() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		dbLinks := s.linksRepository.List()
+		dbLinks, err := s.linksRepository.List()
+		if err != nil {
+			s.Logger.Error("error listing", zap.Error(err))
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 
 		resp := struct {
 			Links []links.Link

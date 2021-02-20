@@ -2,6 +2,7 @@ package sql
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jmoiron/sqlx"
@@ -71,11 +72,11 @@ func (repo *linksRepository) CreateMany(links []links.Link) error {
 	return nil
 }
 
-func (repo *linksRepository) List() []links.Link {
+func (repo *linksRepository) List() ([]links.Link, error) {
 	dbLinks := []link{}
 	err := repo.db.Select(&dbLinks, "SELECT * FROM links ORDER BY created_ts desc")
 	if err != nil {
-		return []links.Link{}
+		return []links.Link{}, fmt.Errorf("select: %w", err)
 	}
 
 	links := make([]links.Link, len(dbLinks))
@@ -83,5 +84,5 @@ func (repo *linksRepository) List() []links.Link {
 		links[i] = link.fromDBObject()
 	}
 
-	return links
+	return links, nil
 }

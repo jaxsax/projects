@@ -14,5 +14,5 @@ type Link struct {
 // Repository provides access to a links store
 type Repository interface {
 	CreateMany(link []Link) error
-	List() []Link
+	List() ([]Link, error)
 }

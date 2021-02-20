@@ -10,7 +10,10 @@ require (
 	github.com/google/wire v0.4.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.3.0
+	github.com/mattn/go-sqlite3 v1.14.6 // indirect
 	github.com/stretchr/testify v1.5.1
+	github.com/volatiletech/null/v8 v8.1.1 // indirect
+	github.com/volatiletech/sqlboiler/v4 v4.4.0 // indirect
 	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7
 	golang.org/x/tools v0.0.0-20200103221440-774c71fcf114 // indirect

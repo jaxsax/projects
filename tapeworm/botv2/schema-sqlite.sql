@@ -1,0 +1,19 @@
+CREATE TABLE links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    created_ts BIGINT NOT NULL,
+    created_by BIGINT NOT NULL,
+    link VARCHAR(1024) NOT NULL,
+    title VARCHAR(1024) NOT NULL,
+    extra_data TEXT NOT NULL
+);
+
+CREATE TABLE skipped_links (
+    id BIGINT PRIMARY KEY NOT NULL,
+    error_reason VARCHAR(512) NOT NULL,
+    link VARCHAR(1024) NOT NULL
+);
+
+CREATE TABLE updates (
+    id BIGINT PRIMARY KEY NOT NULL,
+   "data" TEXT NOT NULL
+);
