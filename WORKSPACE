@@ -57,21 +57,21 @@ http_archive(
 )
 
 # Python
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
-# Only needed if using the packaging rules.
-load("@rules_python//python:pip.bzl", "pip3_import")
-
-pip3_import(
-    name = "py_deps",
-    requirements = "//:requirements.txt",
-)
-
-load("@py_deps//:requirements.bzl", "pip_install")
-
-pip_install()
+#load("@rules_python//python:repositories.bzl", "py_repositories")
+#
+#py_repositories()
+#
+## Only needed if using the packaging rules.
+#load("@rules_python//python:pip.bzl", "pip3_import")
+#
+#pip3_import(
+#    name = "py_deps",
+#    requirements = "//:requirements.txt",
+#)
+#
+#load("@py_deps//:requirements.bzl", "pip_install")
+#
+#pip_install()
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 
