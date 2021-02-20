@@ -92,10 +92,16 @@ func main() {
 		panic(err)
 	}
 
+	if syncLinks(pgDB, sqliteDB); err != nil {
+		panic(err)
+	}
+}
+
+func syncLinks(pgDB *sqlx.DB, sqliteDB *sql.DB) error {
 	// Find which IDs already exist
 	existingLinks, err := models.Links().All(context.TODO(), sqliteDB)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("find all in sqlite: %w", err)
 	}
 
 	existingLinkIDs := map[int64]bool{}
@@ -103,16 +109,16 @@ func main() {
 		existingLinkIDs[link.ID] = true
 	}
 
-	fmt.Printf("%#v\n", existingLinkIDs)
+	fmt.Printf("found %v existing links\n", len(existingLinkIDs))
 
 	postgresLinks, err := models.Links().All(context.TODO(), pgDB)
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("find all in postgres: %w", err)
 	}
 
 	tx, err := sqliteDB.Begin()
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("create tx: %w", err)
 	}
 	defer func() {
 		if err != nil {
@@ -141,10 +147,13 @@ func main() {
 		if *doInsert {
 			err = m.Insert(context.TODO(), tx, boil.Infer())
 			if err != nil {
-				return
+				spew.Printf("%v insert_error: err: %v\n", m, err)
+				return nil
 			}
 		} else {
 			spew.Printf("Would have inserted %v\n", m)
 		}
 	}
+
+	return nil
 }
