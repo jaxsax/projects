@@ -22,6 +22,6 @@ def repositories():
         registry = "index.docker.io",
         repository = "ubuntu",
         tag = "20.10",
-        digest = "sha256:4eaf74a307b91f60ce13308e6a34f7918603db9daad8d08afc609f94e21d6a68",
+        digest = "sha256:160a9181d622d428f6836e17245fea90b87e9f7abb86939d002c2e301383c8a8",
     )
 
