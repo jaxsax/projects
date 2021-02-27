@@ -5,4 +5,11 @@ test --test_output=errors
 
 # envs for stamping
 build --workspace_status_command=./tools/workspace-status.sh
+
+https://github.com/bazelbuild/rules_docker/issues/1716
+build --incompatible_restrict_string_escapes=false
+
 run --workspace_status_command=./tools/workspace-status.sh
+
+https://github.com/bazelbuild/rules_docker/issues/1716
+run --incompatible_restrict_string_escapes=false
