@@ -8,6 +8,7 @@ import (
 
 	"github.com/jaxsax/projects/tapeworm/botv2/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type Sqlite3 struct {
@@ -83,7 +84,9 @@ func (sq *Sqlite3) CreateMany(links []Link) error {
 }
 
 func (sq *Sqlite3) List() ([]Link, error) {
-	objs, err := models.Links().All(context.TODO(), sq.db)
+	objs, err := models.Links(
+		qm.OrderBy(fmt.Sprintf("%v desc", models.LinkColumns.CreatedTS)),
+	).All(context.TODO(), sq.db)
 	if err != nil {
 		return []Link{}, fmt.Errorf("all: %w", err)
 	}
