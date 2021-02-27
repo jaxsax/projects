@@ -32,7 +32,7 @@ go_image(
     binary = ":bot",
     tag = "latest",
     visibility = ["//visibility:public"],
-    base = "@ubuntu-2010-base//image"
+    base = "@base-images-ubuntu-2004//image"
 )
 
 container_bundle(

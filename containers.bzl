@@ -25,3 +25,11 @@ def repositories():
         digest = "sha256:160a9181d622d428f6836e17245fea90b87e9f7abb86939d002c2e301383c8a8",
     )
 
+    container_pull(
+        name = "base-images-ubuntu-2004",
+        registry = "r.internal.jaxsax.co",
+        repository = "base-images/ubuntu",
+        tag = "20.04",
+        digest = "sha256:a0a79e1af3fb8de1fd41847b21bed4c026e47bf6776ce4c4ca499b11c6bef9cc",
+    )
+
