@@ -13,6 +13,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
+	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
 	"github.com/jaxsax/projects/tapeworm/botv2/sql"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
@@ -69,7 +70,7 @@ func main() {
 
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)
-		skippedLinksRepository = sql.NewSkippedLinksRepository(db)
+		skippedLinksRepository = skippedlinks.NewSqliteRepository(sqliteDB)
 		updatesRepository      = sql.NewUpdatesRepository(db)
 	)
 
