@@ -29,10 +29,10 @@ go_binary(
 
 go_image(
     name = "docker",
+    base = "@base-images-ubuntu-2004//image",
     binary = ":bot",
     tag = "latest",
     visibility = ["//visibility:public"],
-    base = "@base-images-ubuntu-2004//image"
 )
 
 container_bundle(
