@@ -36,9 +36,4 @@ if [ ! -f "$secrets_config" ]; then
 	EOF
 fi
 
-(
-	cd "$DIR"/..
-	docker-compose up -d
-)
-
 WEB_PORT=9999 ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"

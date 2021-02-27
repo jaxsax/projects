@@ -14,7 +14,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
-	"github.com/jaxsax/projects/tapeworm/botv2/sql"
+	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
@@ -59,9 +59,6 @@ func main() {
 	config, err := readConfig()
 	logErrorAndExit("read_config", err)
 
-	db, err := botv2.ConnectDB(&config.Database)
-	logErrorAndExit("connect_db", err)
-
 	if config.SqliteDBPath == "" {
 		logErrorAndExit("connect_sqlite", errors.New("sqlite_db_path cannot be empty"))
 	}
@@ -71,7 +68,7 @@ func main() {
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)
 		skippedLinksRepository = skippedlinks.NewSqliteRepository(sqliteDB)
-		updatesRepository      = sql.NewUpdatesRepository(db)
+		updatesRepository      = updates.NewSqliteRepository(sqliteDB)
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
