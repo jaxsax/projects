@@ -3,24 +3,24 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 
 rollup_bundle(
     name = "bundle",
-    entry_point = "src/main.js",
-    config_file = "rollup.config.js",
-    output_dir = True,
     srcs = [
         "src/foo.js",
     ],
+    config_file = "rollup.config.js",
+    entry_point = "src/main.js",
+    output_dir = True,
     deps = [
-        "@npm//@rollup/plugin-node-resolve",
         "@npm//@rollup/plugin-commonjs",
         "@npm//@rollup/plugin-html",
+        "@npm//@rollup/plugin-node-resolve",
     ],
 )
 
 pkg_tar(
     name = "bundle-bin",
-    strip_prefix = "/experiments/rollup/bundle",
-    package_dir = "/var/www/html",
     srcs = [":bundle"],
     mode = "0755",
+    package_dir = "/var/www/html",
+    strip_prefix = "/experiments/rollup/bundle",
     visibility = ["//visibility:public"],
 )

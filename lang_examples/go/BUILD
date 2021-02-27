@@ -14,19 +14,19 @@ container_image(
 )
 
 go_test(
-    name = "go_default_test",
+    name = "go_test",
     srcs = ["main_test.go"],
-    embed = [":go_default_library"],
+    embed = [":go_lib"],
 )
 
 go_binary(
     name = "main",
-    embed = [":go_default_library"],
+    embed = [":go_lib"],
     visibility = ["//visibility:public"],
 )
 
 go_library(
-    name = "go_default_library",
+    name = "go_lib",
     srcs = ["main.go"],
     importpath = "github.com/jaxsax/projects/lang_examples/go",
     visibility = ["//visibility:private"],

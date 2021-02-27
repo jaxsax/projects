@@ -1,7 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "links",
     srcs = [
         "links.go",
         "sqlite3.go",
@@ -9,7 +9,7 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/links",
     visibility = ["//visibility:public"],
     deps = [
-        "//tapeworm/botv2/models:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
+        "//tapeworm/botv2/models",
+        "@com_github_volatiletech_sqlboiler_v4//boil",
     ],
 )

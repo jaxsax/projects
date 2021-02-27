@@ -2,7 +2,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "wiredemo_lib",
     srcs = [
         "main.go",
         "wire_gen.go",
@@ -13,6 +13,6 @@ go_library(
 
 go_binary(
     name = "wire",
-    embed = [":go_default_library"],
+    embed = [":wiredemo_lib"],
     visibility = ["//visibility:public"],
 )

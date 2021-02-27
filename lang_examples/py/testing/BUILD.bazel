@@ -9,11 +9,11 @@ py_library(
 
 py_test(
     name = "lib_pytest",
+    size = "small",
     srcs = [
         "lib.py",
         "lib_pytest.py",
     ],
-    size = "small",
     deps = [
         "//:pytest",
     ],
@@ -21,11 +21,11 @@ py_test(
 
 py_test(
     name = "lib_test",
+    size = "small",
     srcs = [
         "lib.py",
         "lib_test.py",
     ],
-    size = "small",
 )
 
 py_binary(

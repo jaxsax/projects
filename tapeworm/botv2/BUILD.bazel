@@ -1,7 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "go_default_library",
+    name = "botv2",
     srcs = [
         "bot.go",
         "db.go",
@@ -11,20 +11,20 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2",
     visibility = ["//visibility:public"],
     deps = [
-        "//tapeworm/botv2/enhancers:go_default_library",
-        "//tapeworm/botv2/internal:go_default_library",
-        "//tapeworm/botv2/links:go_default_library",
-        "//tapeworm/botv2/skippedlinks:go_default_library",
-        "//tapeworm/botv2/updates:go_default_library",
-        "@com_github_go_telegram_bot_api_telegram_bot_api//:go_default_library",
-        "@com_github_jmoiron_sqlx//:go_default_library",
-        "@org_uber_go_zap//:go_default_library",
+        "//tapeworm/botv2/enhancers",
+        "//tapeworm/botv2/internal",
+        "//tapeworm/botv2/links",
+        "//tapeworm/botv2/skippedlinks",
+        "//tapeworm/botv2/updates",
+        "@com_github_go_telegram_bot_api_telegram_bot_api//:telegram-bot-api",
+        "@com_github_jmoiron_sqlx//:sqlx",
+        "@org_uber_go_zap//:zap",
     ],
 )
 
 go_test(
-    name = "go_default_test",
+    name = "botv2_test",
     srcs = ["entities_test.go"],
-    embed = [":go_default_library"],
-    deps = ["@com_github_stretchr_testify//require:go_default_library"],
+    embed = [":botv2"],
+    deps = ["@com_github_stretchr_testify//require"],
 )

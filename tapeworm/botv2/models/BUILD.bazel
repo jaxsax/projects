@@ -1,7 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
-    name = "go_default_library",
+    name = "models",
     srcs = [
         "boil_queries.go",
         "boil_table_names.go",
@@ -13,18 +13,18 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/models",
     visibility = ["//visibility:public"],
     deps = [
-        "@com_github_friendsofgo_errors//:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//drivers:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//queries:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//queries/qm:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//queries/qmhelper:go_default_library",
-        "@com_github_volatiletech_strmangle//:go_default_library",
+        "@com_github_friendsofgo_errors//:errors",
+        "@com_github_volatiletech_sqlboiler_v4//boil",
+        "@com_github_volatiletech_sqlboiler_v4//drivers",
+        "@com_github_volatiletech_sqlboiler_v4//queries",
+        "@com_github_volatiletech_sqlboiler_v4//queries/qm",
+        "@com_github_volatiletech_sqlboiler_v4//queries/qmhelper",
+        "@com_github_volatiletech_strmangle//:strmangle",
     ],
 )
 
 go_test(
-    name = "go_default_test",
+    name = "models_test",
     srcs = [
         "boil_main_test.go",
         "boil_queries_test.go",
@@ -34,14 +34,14 @@ go_test(
         "sqlite3_main_test.go",
         "updates_test.go",
     ],
-    embed = [":go_default_library"],
+    embed = [":models"],
     deps = [
-        "@com_github_mattn_go_sqlite3//:go_default_library",
-        "@com_github_pkg_errors//:go_default_library",
-        "@com_github_spf13_viper//:go_default_library",
-        "@com_github_volatiletech_randomize//:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//queries:go_default_library",
-        "@com_github_volatiletech_strmangle//:go_default_library",
+        "@com_github_mattn_go_sqlite3//:go-sqlite3",
+        "@com_github_pkg_errors//:errors",
+        "@com_github_spf13_viper//:viper",
+        "@com_github_volatiletech_randomize//:randomize",
+        "@com_github_volatiletech_sqlboiler_v4//boil",
+        "@com_github_volatiletech_sqlboiler_v4//queries",
+        "@com_github_volatiletech_strmangle//:strmangle",
     ],
 )

@@ -1,10 +1,10 @@
 load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
-load("@build_bazel_rules_svelte//:defs.bzl", "svelte", "bundle_dev", "bundle_prod")
+load("@build_bazel_rules_svelte//:defs.bzl", "bundle_dev", "bundle_prod", "svelte")
 
 svelte(
     name = "App",
-    entry_point = "App.svelte",
     srcs = ["main.js"],
+    entry_point = "App.svelte",
     deps = [
         ":Links",
     ],
@@ -18,44 +18,44 @@ svelte(
 bundle_dev(
     name = "bundle_dev",
     entry_point = "main.js",
+    visibility = ["//visibility:public"],
     deps = [
         ":App",
         "@npm//lodash",
         "@npm//moment",
     ],
-    visibility = ["//visibility:public"],
 )
 
 bundle_prod(
     name = "bundle_prod",
     entry_point = "main.js",
+    visibility = ["//visibility:public"],
     deps = [
         ":App",
         "@npm//lodash",
         "@npm//moment",
     ],
-    visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "statics",
     srcs = [
+        "index.html",
+        "jquery-3.1.1.min.js",
         "semantic.css",
         "semantic.js",
-        "jquery-3.1.1.min.js",
-        "index.html",
     ],
     visibility = ["//visibility:public"],
 )
 
 nodejs_binary(
     name = "devserver",
-    entry_point = "devserver.js",
-    tags = ["ibazel_notify_changes"],
     data = [
         "index.html",
         ":bundle_dev",
         ":statics",
         "@npm//browser-sync",
     ],
+    entry_point = "devserver.js",
+    tags = ["ibazel_notify_changes"],
 )

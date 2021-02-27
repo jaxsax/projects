@@ -1,22 +1,22 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "export-to-sqlite_lib",
     srcs = ["main.go"],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/cmd/export-to-sqlite",
     visibility = ["//visibility:private"],
     deps = [
-        "//tapeworm/botv2/models:go_default_library",
-        "@com_github_davecgh_go_spew//spew:go_default_library",
-        "@com_github_jmoiron_sqlx//:go_default_library",
-        "@com_github_lib_pq//:go_default_library",
-        "@com_github_mattn_go_sqlite3//:go_default_library",
-        "@com_github_volatiletech_sqlboiler_v4//boil:go_default_library",
+        "//tapeworm/botv2/models",
+        "@com_github_davecgh_go_spew//spew",
+        "@com_github_jmoiron_sqlx//:sqlx",
+        "@com_github_lib_pq//:pq",
+        "@com_github_mattn_go_sqlite3//:go-sqlite3",
+        "@com_github_volatiletech_sqlboiler_v4//boil",
     ],
 )
 
 go_binary(
     name = "export-to-sqlite",
-    embed = [":go_default_library"],
+    embed = [":export-to-sqlite_lib"],
     visibility = ["//visibility:public"],
 )

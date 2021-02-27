@@ -27,11 +27,11 @@ container_run_and_commit(
 
 pkg_tar(
     name = "nginx-static-config",
-    strip_prefix = "./nginx_root",
     srcs = [
         ":nginx_root",
     ],
     mode = "0755",
+    strip_prefix = "./nginx_root",
 )
 
 filegroup(
@@ -44,16 +44,16 @@ filegroup(
 container_image(
     name = "nginx-static",
     base = ":nginx-static-base",
-    tars = [
-        ":nginx-static-config",
-    ],
-    ports = [
-        "80",
-    ],
     cmd = [
         "nginx",
         "-g",
         "daemon off;",
+    ],
+    ports = [
+        "80",
+    ],
+    tars = [
+        ":nginx-static-config",
     ],
     visibility = ["//visibility:public"],
 )

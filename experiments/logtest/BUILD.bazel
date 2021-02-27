@@ -1,18 +1,18 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "logtest_lib",
     srcs = ["main.go"],
     importpath = "github.com/jaxsax/projects/experiments/logtest",
     visibility = ["//visibility:private"],
     deps = [
-        "@com_github_btburke_cannon//:go_default_library",
-        "@org_uber_go_zap//:go_default_library",
+        "@com_github_btburke_cannon//:cannon",
+        "@org_uber_go_zap//:zap",
     ],
 )
 
 go_binary(
     name = "logtest",
-    embed = [":go_default_library"],
+    embed = [":logtest_lib"],
     visibility = ["//visibility:public"],
 )

@@ -1,15 +1,15 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
-    name = "go_default_library",
+    name = "client_lib",
     srcs = ["main.go"],
     importpath = "github.com/jaxsax/projects/rpc/twirp/client",
     visibility = ["//visibility:private"],
-    deps = ["//rpc/twirp/helloworld:go_default_library"],
+    deps = ["//rpc/twirp/helloworld"],
 )
 
 go_binary(
     name = "client",
-    embed = [":go_default_library"],
+    embed = [":client_lib"],
     visibility = ["//visibility:public"],
 )
