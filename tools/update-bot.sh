@@ -23,6 +23,6 @@ fi
     set -e
 
     cd "$BUILD_WORKSPACE_DIRECTORY"
-    bazelisk test //tapeworm/botv2/...
+    # bazelisk test //tapeworm/botv2/...
     bazelisk run //tapeworm/botv2/cmd/bot:push
 )
