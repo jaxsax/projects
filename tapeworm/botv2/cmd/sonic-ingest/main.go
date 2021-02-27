@@ -84,6 +84,12 @@ func main() {
 
 		txt = strings.Trim(txt, "\n")
 		fmt.Printf("Search query: '%v'\n", txt)
+
+		suggestions, err := search.Suggest("links", "everything", txt, 10)
+		if err == nil {
+			fmt.Printf("suggestions: %v\n", suggestions)
+		}
+
 		results, err := search.Query("links", "everything", txt, 25, 0, sonic.LangEng)
 		if err != nil {
 			fmt.Printf("error searching: %v\n", err)
