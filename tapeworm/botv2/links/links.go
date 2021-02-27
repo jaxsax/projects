@@ -8,11 +8,12 @@ type Link struct {
 	CreatedBy int64
 	Link      string
 	Title     string
-	ExtraData map[string]interface{}
+	ExtraData map[string]string
 }
 
 // Repository provides access to a links store
 type Repository interface {
 	CreateMany(link []Link) error
+	ListMatchingIDs(IDs []int64) ([]Link, error)
 	List() ([]Link, error)
 }

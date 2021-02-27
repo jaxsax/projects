@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "sonic-ingest_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/cmd/sonic-ingest",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//tapeworm/botv2/links",
+        "//tapeworm/botv2/models",
+        "@com_github_dustin_go_humanize//:go-humanize",
+        "@com_github_expectedsh_go_sonic//sonic",
+        "@com_github_mattn_go_sqlite3//:go-sqlite3",
+    ],
+)
+
+go_binary(
+    name = "sonic-ingest",
+    embed = [":sonic-ingest_lib"],
+    visibility = ["//visibility:public"],
+)

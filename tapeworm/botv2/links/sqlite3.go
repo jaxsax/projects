@@ -24,7 +24,7 @@ func NewSqliteRepository(db *sql.DB) *Sqlite3 {
 }
 
 func dbLinksToLink(m *models.Link) *Link {
-	var data map[string]interface{}
+	var data map[string]string
 
 	_ = json.Unmarshal([]byte(m.ExtraData), &data)
 
@@ -85,7 +85,25 @@ func (sq *Sqlite3) CreateMany(links []Link) error {
 
 func (sq *Sqlite3) List() ([]Link, error) {
 	objs, err := models.Links(
-		qm.OrderBy(fmt.Sprintf("%v desc", models.LinkColumns.CreatedTS)),
+		qm.OrderBy("created_ts desc"),
+	).All(context.TODO(), sq.db)
+	if err != nil {
+		return []Link{}, fmt.Errorf("all: %w", err)
+	}
+
+	links := make([]Link, 0, len(objs))
+	for _, dbLink := range objs {
+		links = append(links, *dbLinksToLink(dbLink))
+	}
+
+	return links, nil
+}
+
+func (sq *Sqlite3) ListMatchingIDs(IDs []int64) ([]Link, error) {
+
+	objs, err := models.Links(
+		models.LinkWhere.ID.IN(IDs),
+		qm.OrderBy("created_ts desc"),
 	).All(context.TODO(), sq.db)
 	if err != nil {
 		return []Link{}, fmt.Errorf("all: %w", err)

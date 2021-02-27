@@ -140,6 +140,13 @@ def go_repositories():
         version = "v0.0.0-20181026042036-e10d5fee7954",
     )
     go_repository(
+        name = "com_github_dustin_go_humanize",
+        importpath = "github.com/dustin/go-humanize",
+        sum = "h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=",
+        version = "v1.0.0",
+    )
+
+    go_repository(
         name = "com_github_envoyproxy_go_control_plane",
         importpath = "github.com/envoyproxy/go-control-plane",
         sum = "h1:4cmBvAEBNJaGARUEs3/suWRyfyBfhf7I60WBZq+bv2w=",
@@ -157,6 +164,13 @@ def go_repositories():
         sum = "h1:HQGCJNlqt1dUs/BhtEKmqWd6LWS+DWYVxi9+Jo4r0jE=",
         version = "v0.0.0-20181231230500-73749d4874d5",
     )
+    go_repository(
+        name = "com_github_expectedsh_go_sonic",
+        importpath = "github.com/expectedsh/go-sonic",
+        sum = "h1:f3D+FIUwBd9z7ioyHoVZh3AkPP5NAGoTMwb4OlQzkVw=",
+        version = "v0.0.0-20210126110405-bcfc86192634",
+    )
+
     go_repository(
         name = "com_github_felixge_httpsnoop",
         importpath = "github.com/felixge/httpsnoop",

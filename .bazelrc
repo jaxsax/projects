@@ -13,3 +13,7 @@ run --workspace_status_command=./tools/workspace-status.sh
 
 https://github.com/bazelbuild/rules_docker/issues/1716
 run --incompatible_restrict_string_escapes=false
+
+
+https://github.com/bazelbuild/rules_docker/issues/1716
+query --incompatible_restrict_string_escapes=false

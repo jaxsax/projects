@@ -5,6 +5,8 @@ go 1.13
 require (
 	github.com/BTBurke/cannon v0.2.0
 	github.com/davecgh/go-spew v1.1.1
+	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/expectedsh/go-sonic v0.0.0-20210126110405-bcfc86192634 // indirect
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200319042609-5e339ed016b0
