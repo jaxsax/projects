@@ -11,6 +11,7 @@ go_library(
     deps = [
         "//tapeworm/botv2/internal",
         "//tapeworm/botv2/links",
+        "//tapeworm/botv2/search",
         "@com_github_felixge_httpsnoop//:httpsnoop",
         "@org_uber_go_zap//:zap",
     ],

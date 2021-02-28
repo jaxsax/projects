@@ -2,6 +2,12 @@ startup --host_jvm_args=-Xmx2500m
 startup --host_jvm_args=-Xms2500m
 
 test --test_output=errors
+run --verbose_failures
+
+build --bes_results_url=https://rbe.jaxsax.co/invocation/
+build --bes_backend=grpc://rbe.jaxsax.co:1985
+build --remote_cache=grpc://rbe.jaxsax.co:1985
+build --remote_timeout=3600
 
 # envs for stamping
 build --workspace_status_command=./tools/workspace-status.sh

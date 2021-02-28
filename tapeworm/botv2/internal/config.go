@@ -27,11 +27,18 @@ type DBConfig struct {
 	Name     string `yaml:"name"`
 }
 
+type SonicConfig struct {
+	Host     string `yaml:"host"`
+	Port     int    `yaml:"port"`
+	Password string `yaml:"password"`
+}
+
 type Config struct {
-	Token        string   `yaml:"token"`
-	Database     DBConfig `yaml:"database"`
-	SqliteDBPath string   `yaml:"sqlite_db_path"`
-	Port         int      `yaml:"-"`
+	Token        string      `yaml:"token"`
+	Database     DBConfig    `yaml:"database"`
+	SqliteDBPath string      `yaml:"sqlite_db_path"`
+	Sonic        SonicConfig `yaml:"sonic"`
+	Port         int         `yaml:"-"`
 }
 
 func ReadConfig(r io.Reader) (*Config, error) {
@@ -60,6 +67,10 @@ func ReadConfig(r io.Reader) (*Config, error) {
 	}
 
 	cfg.Port = int(p)
+
+	if cfg.Sonic.Port == 0 {
+		cfg.Sonic.Port = 1491
+	}
 
 	return &cfg, nil
 }

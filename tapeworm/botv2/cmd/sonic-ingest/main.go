@@ -174,7 +174,7 @@ func convertToLinks(repository links.Repository, objects []string) ([]links.Link
 func ingestFromSqlite(db *sql.DB, ingestable sonic.Ingestable) error {
 	const (
 		collection        = "links"
-		bucket            = "everything"
+		bucket            = "title"
 		parallelInserters = 5
 	)
 
@@ -186,7 +186,7 @@ func ingestFromSqlite(db *sql.DB, ingestable sonic.Ingestable) error {
 	for _, link := range links {
 		object := fmt.Sprintf("id:%v", link.ID)
 		text := link.Title
-		err = ingestable.Push(collection, bucket, object, text, sonic.LangEng)
+		err = ingestable.Push(collection, bucket, object, text, sonic.LangNone)
 		if err != nil {
 			log.Printf("ingest error: [object: %v, text: %v] err: %v", object, text, err)
 			continue

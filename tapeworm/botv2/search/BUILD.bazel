@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "search",
+    srcs = ["search.go"],
+    importpath = "github.com/jaxsax/projects/tapeworm/botv2/search",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//tapeworm/botv2/links",
+        "@com_github_expectedsh_go_sonic//sonic",
+    ],
+)
