@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 
@@ -62,11 +63,11 @@ func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
 		lastErr            error = nil
 	)
 
+	increaseAttempt := func() {
+		currentAttempts++
+		time.Sleep(100 * time.Millisecond)
+	}
 	for {
-		defer func() {
-			currentAttempts++
-		}()
-
 		if currentAttempts >= maxAttemptsAllowed {
 			return fmt.Errorf("max attempts hit: %w", lastErr)
 		}
@@ -75,6 +76,7 @@ func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
 			searchable, err := sonic.NewSearch(searcher.conf.Host, searcher.conf.Port, searcher.conf.Password)
 			if err != nil {
 				lastErr = err
+				increaseAttempt()
 				continue
 			}
 
@@ -95,6 +97,7 @@ func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
 		if err != nil {
 			lastErr = err
 			searcher.s = nil
+			increaseAttempt()
 			continue
 		}
 
