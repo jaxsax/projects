@@ -26,8 +26,10 @@ var (
 	port     = flag.Int("sonic-port", 0, "port number to sonic server")
 	password = flag.String("sonic-password", "", "password of sonic server")
 
-	sqlitePath = flag.String("sqlite-path", "", "path to sqlite db")
-	ingest     = flag.Bool("ingest", false, "whether we should ingest into sonic")
+	sqlitePath         = flag.String("sqlite-path", "", "path to sqlite db")
+	ingest             = flag.Bool("ingest", false, "whether we should ingest into sonic")
+	linksCollection    = "links"
+	linksByTitleBucket = "title"
 )
 
 func main() {
@@ -85,12 +87,12 @@ func main() {
 		txt = strings.Trim(txt, "\n")
 		fmt.Printf("Search query: '%v'\n", txt)
 
-		suggestions, err := search.Suggest("links", "everything", txt, 10)
+		suggestions, err := search.Suggest("links", "title", txt, 10)
 		if err == nil {
 			fmt.Printf("suggestions: %v\n", suggestions)
 		}
 
-		results, err := search.Query("links", "everything", txt, 25, 0, sonic.LangEng)
+		results, err := search.Query(linksCollection, linksByTitleBucket, txt, 25, 0, sonic.LangEng)
 		if err != nil {
 			fmt.Printf("error searching: %v\n", err)
 			continue
@@ -172,12 +174,6 @@ func convertToLinks(repository links.Repository, objects []string) ([]links.Link
 }
 
 func ingestFromSqlite(db *sql.DB, ingestable sonic.Ingestable) error {
-	const (
-		collection        = "links"
-		bucket            = "title"
-		parallelInserters = 5
-	)
-
 	links, err := models.Links().All(context.Background(), db)
 	if err != nil {
 		return fmt.Errorf("find all: %w", err)
@@ -186,7 +182,7 @@ func ingestFromSqlite(db *sql.DB, ingestable sonic.Ingestable) error {
 	for _, link := range links {
 		object := fmt.Sprintf("id:%v", link.ID)
 		text := link.Title
-		err = ingestable.Push(collection, bucket, object, text, sonic.LangNone)
+		err = ingestable.Push(linksCollection, linksByTitleBucket, object, text, sonic.LangNone)
 		if err != nil {
 			log.Printf("ingest error: [object: %v, text: %v] err: %v", object, text, err)
 			continue
