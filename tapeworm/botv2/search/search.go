@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
+
+	"go.uber.org/zap"
+
+	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 
 	"github.com/expectedsh/go-sonic/sonic"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
@@ -21,15 +26,22 @@ type collectionBucket struct {
 
 type SonicLinkSearcher struct {
 	s                 sonic.Searchable
+	conf              internal.SonicConfig
+	sonicMu           sync.Mutex
 	linksRepository   links.Repository
 	byLinkTitleBucket collectionBucket
+	logger            *zap.Logger
 }
 
 var _ LinkSearcher = &SonicLinkSearcher{}
 
-func NewSonicLinkSearcher(searchable sonic.Searchable, linksRepository links.Repository) *SonicLinkSearcher {
+func NewSonicLinkSearcher(
+	logger *zap.Logger,
+	sonicSearcher sonic.Searchable, conf internal.SonicConfig, linksRepository links.Repository) *SonicLinkSearcher {
 	return &SonicLinkSearcher{
-		s:               searchable,
+		s:               sonicSearcher,
+		conf:            conf,
+		logger:          logger,
 		linksRepository: linksRepository,
 		byLinkTitleBucket: collectionBucket{
 			Collection: "links",
@@ -38,7 +50,64 @@ func NewSonicLinkSearcher(searchable sonic.Searchable, linksRepository links.Rep
 	}
 }
 
+// Attempts to reconnect when necessary, giving up after 10 attempts
+func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
+	// s might be nil because this is the first connection, so we initialize the connection
+	searcher.sonicMu.Lock()
+	defer searcher.sonicMu.Unlock()
+
+	var (
+		maxAttemptsAllowed       = 10
+		currentAttempts          = 0
+		lastErr            error = nil
+	)
+
+	for {
+		defer func() {
+			currentAttempts++
+		}()
+
+		if currentAttempts >= maxAttemptsAllowed {
+			return fmt.Errorf("max attempts hit: %w", lastErr)
+		}
+
+		if searcher.s == nil {
+			searchable, err := sonic.NewSearch(searcher.conf.Host, searcher.conf.Port, searcher.conf.Password)
+			if err != nil {
+				lastErr = err
+				continue
+			}
+
+			searcher.s = searchable
+		}
+
+		// try to .Ping()
+		// on ping error, try to reconnect
+		// query: write tcp 172.18.0.14:48638->172.18.0.3:1491: write: broken pipe
+
+		err := searcher.s.Ping()
+		searcher.logger.Info(
+			"trying to ping sonic",
+			zap.Int("attempts", currentAttempts),
+			zap.Int("maxAttempts", maxAttemptsAllowed),
+			zap.Error(err),
+		)
+		if err != nil {
+			lastErr = err
+			searcher.s = nil
+			continue
+		}
+
+		return nil
+	}
+}
+
 func (searcher *SonicLinkSearcher) Search(query string, limit int, offset int) ([]links.Link, error) {
+	err := searcher.reconnectIfNecessary()
+	if err != nil {
+		return []links.Link{}, err
+	}
+
 	rs, err := searcher.s.Query(
 		searcher.byLinkTitleBucket.Collection,
 		searcher.byLinkTitleBucket.Bucket,

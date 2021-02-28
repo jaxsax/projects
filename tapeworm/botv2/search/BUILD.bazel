@@ -6,7 +6,9 @@ go_library(
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/search",
     visibility = ["//visibility:public"],
     deps = [
+        "//tapeworm/botv2/internal",
         "//tapeworm/botv2/links",
         "@com_github_expectedsh_go_sonic//sonic",
+        "@org_uber_go_zap//:zap",
     ],
 )
