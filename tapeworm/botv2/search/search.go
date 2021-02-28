@@ -67,6 +67,7 @@ func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
 		currentAttempts++
 		time.Sleep(100 * time.Millisecond)
 	}
+
 	for {
 		if currentAttempts >= maxAttemptsAllowed {
 			return fmt.Errorf("max attempts hit: %w", lastErr)
@@ -74,6 +75,12 @@ func (searcher *SonicLinkSearcher) reconnectIfNecessary() error {
 
 		if searcher.s == nil {
 			searchable, err := sonic.NewSearch(searcher.conf.Host, searcher.conf.Port, searcher.conf.Password)
+			searcher.logger.Info(
+				"trying to make new sonic connection",
+				zap.Int("attempts", currentAttempts),
+				zap.Int("maxAttempts", maxAttemptsAllowed),
+				zap.Error(err),
+			)
 			if err != nil {
 				lastErr = err
 				increaseAttempt()
