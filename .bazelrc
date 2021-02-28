@@ -1,6 +1,11 @@
 startup --host_jvm_args=-Xmx2500m
 startup --host_jvm_args=-Xms2500m
 
+build --bes_results_url=https://rbe.jaxsax.co/invocation/
+build --bes_backend=grpc://rbe.jaxsax.co:1985
+build --remote_cache=grpc://rbe.jaxsax.co:1985
+build --remote_timeout=3600
+
 test --test_output=errors
 
 # envs for stamping
