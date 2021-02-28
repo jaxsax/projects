@@ -140,7 +140,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 				linksToAdd = append(linksToAdd, links.Link{
 					Title: enhancedLink.Title,
 					Link:  enhancedLink.Link,
-					ExtraData: map[string]interface{}{
+					ExtraData: map[string]string{
 						"created_username": message.From.UserName,
 					},
 					CreatedTS: int64(message.Date),
