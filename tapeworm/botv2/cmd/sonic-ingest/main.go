@@ -191,6 +191,8 @@ func ingestFromSqlite(db *sql.DB, ingestable sonic.Ingestable) error {
 			log.Printf("ingest error: [object: %v, text: %v] err: %v", object, text, err)
 			continue
 		}
+
+		log.Printf("indexed [%v:%v]", object, text)
 	}
 
 	return nil
