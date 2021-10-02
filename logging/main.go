@@ -104,7 +104,7 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 
 		_ = json.Unmarshal([]byte(record.RawMessage), &keyvalues)
 
-		unhandledKeys := make([]string, 0)
+		unhandledKeys := map[string]string{}
 		for k, v := range keyvalues {
 			keyType := reflect.TypeOf(v)
 			kv := KeyValue{
@@ -117,12 +117,18 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 			case reflect.String:
 				record.StringKeys = append(record.StringKeys, kv.Key)
 				record.StringValues = append(record.StringValues, kv.Value.(string))
+			case reflect.Map:
+				continue
 			default:
-				unhandledKeys = append(unhandledKeys, fmt.Sprintf("key[%v] kind[%v]", kv.Key, kv.Kind))
+				unhandledKeys[kv.Key] = kv.Kind.String()
 			}
 
 			if len(unhandledKeys) > 0 {
-				log.Printf("unhandled keys=%v, record_service=%v", strings.Join(unhandledKeys, ","), record.Service)
+				l := make([]string, 0, len(unhandledKeys))
+				for k, v := range unhandledKeys {
+					l = append(l, fmt.Sprintf("key=%v, kind=%v", k, v))
+				}
+				log.Printf("unhandled keys=%v, record_service=%v", strings.Join(l, ","), record.Service)
 			}
 			record.StructuredMessages = append(record.StructuredMessages, kv)
 		}
