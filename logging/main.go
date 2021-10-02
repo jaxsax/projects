@@ -109,6 +109,10 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 		unhandledKeys := map[string]string{}
 		for k, v := range keyvalues {
 			keyType := reflect.TypeOf(v)
+			if keyType == nil {
+				unhandledKeys[k] = "nil reflect"
+				continue
+			}
 			kv := KeyValue{
 				Key:   k,
 				Value: v,
