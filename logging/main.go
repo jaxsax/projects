@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/signal"
 	"reflect"
+	"strings"
 	"syscall"
 	"time"
 
@@ -103,6 +104,7 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 
 		_ = json.Unmarshal([]byte(record.RawMessage), &keyvalues)
 
+		unhandledKeys := make([]string, 0)
 		for k, v := range keyvalues {
 			keyType := reflect.TypeOf(v)
 			kv := KeyValue{
@@ -115,8 +117,13 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 			case reflect.String:
 				record.StringKeys = append(record.StringKeys, kv.Key)
 				record.StringValues = append(record.StringValues, kv.Value.(string))
+			default:
+				unhandledKeys = append(unhandledKeys, fmt.Sprintf("key[%v] kind[%v]", kv.Key, kv.Kind))
 			}
 
+			if len(unhandledKeys) > 0 {
+				log.Printf("unhandled keys=%v, record_service=%v", strings.Join(unhandledKeys, ","), record.Service)
+			}
 			record.StructuredMessages = append(record.StructuredMessages, kv)
 		}
 
