@@ -38,8 +38,8 @@ var (
 	addr              = flag.String("addr", ":5000", "address to listen to")
 	clickhouseAddress = flag.String(
 		"clickhouse-address", "tcp://127.0.0.1:9000?database=tutorial", "connection string for mysql clickhouse")
-
-	chDB *sql.DB
+	verbose = flag.Bool("verbose", false, "enable trace logging")
+	chDB    *sql.DB
 )
 
 type KeyValue struct {
@@ -132,18 +132,22 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 				unhandledKeys[kv.Key] = kv.Kind.String()
 			}
 
-			if len(unhandledKeys) > 0 {
-				l := make([]string, 0, len(unhandledKeys))
-				for k, v := range unhandledKeys {
-					l = append(l, fmt.Sprintf("key=%v, kind=%v", k, v))
-				}
-				log.Printf("unhandled keys=%v, record_service=%v", strings.Join(l, ","), record.Service)
-			}
 			record.StructuredMessages = append(record.StructuredMessages, kv)
 		}
 
+		if len(unhandledKeys) > 0 {
+			l := make([]string, 0, len(unhandledKeys))
+			for k, v := range unhandledKeys {
+				l = append(l, fmt.Sprintf("key=%v, kind=%v", k, v))
+			}
+			log.Printf("unhandled keys=%v, record_service=%v", strings.Join(l, ","), record.Service)
+		}
+
 		records = append(records, &record)
-		// log.Printf("Converted record %+v", record)
+
+		if *verbose {
+			log.Printf("Converted record %+v", record)
+		}
 	}
 
 	return records, nil
