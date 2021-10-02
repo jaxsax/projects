@@ -1,0 +1,46 @@
+[sources.journald]
+type = "journald"
+
+[transforms.system-logs]
+type = "add_fields"
+inputs = ["journald"]
+
+[transforms.system-logs.fields]
+host = "${HOSTNAME}"
+service = "journald"
+kind = "system"
+
+[sources.app-gen]
+type = "generator"
+format = "json"
+
+[transforms.application-gen-logs]
+type = "add_fields"
+inputs = ["app-gen"]
+
+[transforms.application-gen-logs.fields]
+host = "${HOSTNAME}"
+service = "generator"
+kind = "app"
+
+[sinks.ch-ingest]
+type= "http"
+inputs = [
+    "system-logs",
+    # "application-gen-logs"
+]
+uri = "http://localhost:5000/logs"
+
+[sinks.ch-ingest.encoding]
+codec = "json"
+timestamp_format = "unix"
+
+# [sinks.sys-stdout]
+# type = "console"
+# inputs = ["system-logs"]
+# target = "stdout"
+# encoding = "json"
+
+# [sinks.ch-ingest.buffer]
+# type = "disk"
+# max_size = 5000
