@@ -10,6 +10,8 @@ CREATE TABLE logs_v1
     -- Key values
     `string.names`	Array(LowCardinality(String)),
 	`string.values`	Array(String)
+    `float64.names`	Array(LowCardinality(String)),
+	`float64.values`	Array(Float64)
 )
 
 ENGINE = MergeTree()

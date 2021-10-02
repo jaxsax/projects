@@ -62,6 +62,8 @@ type Record struct {
 	StructuredMessages []KeyValue
 	StringKeys         []string
 	StringValues       []string
+	Float64Keys        []string
+	Float64Values      []float64
 }
 
 func processBody(bodyBytes []byte) (ret []*Record, err error) {
@@ -117,6 +119,9 @@ func processBody(bodyBytes []byte) (ret []*Record, err error) {
 			case reflect.String:
 				record.StringKeys = append(record.StringKeys, kv.Key)
 				record.StringValues = append(record.StringValues, kv.Value.(string))
+			case reflect.Float64:
+				record.Float64Keys = append(record.Float64Keys, kv.Key)
+				record.Float64Values = append(record.Float64Values, kv.Value.(float64))
 			case reflect.Map:
 				continue
 			default:
@@ -149,8 +154,12 @@ func insertIntoCH(records []*Record) (int, error) {
 	stmt, err := tx.Prepare(
 		`
 		INSERT INTO logs_v1 (
-			_timestamp, _service, _kind, _host, message, string.names, string.values) VALUES(
-			?, ?, ?, ?, ?, ?, ?
+			_timestamp, _service, _kind, _host, message,
+				string.names, string.values,
+				float64.names, float64.values) VALUES(
+			?, ?, ?, ?, ?,
+			?, ?,
+			?, ?
 		)
 		`,
 	)
@@ -168,6 +177,8 @@ func insertIntoCH(records []*Record) (int, error) {
 			record.RawMessage,
 			record.StringKeys,
 			record.StringValues,
+			record.Float64Keys,
+			record.Float64Values,
 		)
 		if err != nil {
 			return 0, err
