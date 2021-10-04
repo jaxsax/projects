@@ -25,6 +25,16 @@ type collectionBucket struct {
 	Bucket     string
 }
 
+type FakeLinkSearcher struct{}
+
+func (s *FakeLinkSearcher) Search(query string, limit int, offset int) ([]links.Link, error) {
+	return []links.Link{}, nil
+}
+
+func (s *FakeLinkSearcher) Ingest([]links.Link) error {
+	return nil
+}
+
 type SonicLinkSearcher struct {
 	s                 sonic.Searchable
 	conf              internal.SonicConfig

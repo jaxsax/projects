@@ -79,8 +79,9 @@ func main() {
 		skippedLinksRepository = skippedlinks.NewSqliteRepository(sqliteDB)
 		updatesRepository      = updates.NewSqliteRepository(sqliteDB)
 
-		searchLogger = logger.Named("app.searcher")
-		linkSearcher = search.NewSonicLinkSearcher(searchLogger, sonicSearcher, config.Sonic, linksRepository)
+		// searchLogger = logger.Named("app.searcher")
+		// linkSearcher = search.NewSonicLinkSearcher(searchLogger, sonicSearcher, config.Sonic, linksRepository)
+		linkSearcher = search.FakeLinkSearcher{}
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
