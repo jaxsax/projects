@@ -81,7 +81,7 @@ func main() {
 
 		// searchLogger = logger.Named("app.searcher")
 		// linkSearcher = search.NewSonicLinkSearcher(searchLogger, sonicSearcher, config.Sonic, linksRepository)
-		linkSearcher = search.FakeLinkSearcher{}
+		linkSearcher = &search.FakeLinkSearcher{}
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
