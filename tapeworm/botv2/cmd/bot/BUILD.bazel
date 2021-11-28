@@ -16,7 +16,6 @@ go_library(
         "//tapeworm/botv2/skippedlinks",
         "//tapeworm/botv2/updates",
         "//tapeworm/botv2/web",
-        "@com_github_expectedsh_go_sonic//sonic",
         "@com_github_lib_pq//:pq",
         "@com_github_mattn_go_sqlite3//:go-sqlite3",
         "@org_uber_go_zap//:zap",
