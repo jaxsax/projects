@@ -57,9 +57,19 @@ load(
 
 _go_image_repos()
 
-load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories")
+load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install")
 
-node_repositories(package_json = ["//:package.json"])
+node_repositories(
+    package_json = ["//:package.json"],
+    node_version = "14.17.5"
+)
+
+yarn_install(
+    # Name this npm so that Bazel Label references look like @npm//package
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
+)
 
 # Tools
 http_file(

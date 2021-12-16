@@ -33,3 +33,10 @@ def repositories():
         digest = "sha256:a0a79e1af3fb8de1fd41847b21bed4c026e47bf6776ce4c4ca499b11c6bef9cc",
     )
 
+    container_pull(
+        name = "node_image-14181",
+        registry = "index.docker.io",
+        repository = "library/node",
+        tag = "14.18.1-alpine3.14",
+        digest = "sha256:351a15a4d8729b092954e86bbcfdc736c8191a619003a0581553b6aa49727dfa",
+    )

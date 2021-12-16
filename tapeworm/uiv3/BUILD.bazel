@@ -1,0 +1,102 @@
+load("@build_bazel_rules_nodejs//:index.bzl", "nodejs_binary")
+
+filegroup(
+    name = "config",
+    srcs = [
+        "package.json",
+        "tsconfig.json",
+        "next.config.js",
+    ],
+)
+
+filegroup(
+    name = "sources",
+    srcs = [
+        "pages/index.tsx",
+    ]
+)
+
+filegroup(
+    name = "webapp-uiv3",
+    srcs = [
+        ":config",
+        ":sources"
+    ]
+)
+
+nodejs_binary(
+    name = "next",
+    data = [
+        "@npm//:node_modules",
+    ],
+    entry_point = "@npm//:node_modules/next/dist/bin/next",
+)
+
+genrule(
+    name = "build",
+    srcs = [
+        ":webapp-uiv3",
+        "@npm//:node_modules",
+    ],
+    outs = ["next.tar.gz"],
+    cmd = """
+        $(location next) build ./tapeworm/uiv3
+        tar -czvf next.tar.gz tapeworm/uiv3/.next
+        mv next.tar.gz $(@D)
+    """,
+    tools = [":next"],
+    # executable = True,
+)
+
+nodejs_binary(
+    name = "start",
+    args = ["./tapeworm/uiv3"],
+    data = [
+        ":build",
+        ":webapp-uiv3",
+        "@npm//:node_modules",
+    ],
+    entry_point = "@npm//:node_modules/next/dist/bin/next",
+)
+
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+load("@io_bazel_rules_docker//container:container.bzl", "container_image")
+
+pkg_tar(
+    name = "webapp-uiv3-tar",
+    srcs = [
+        ":config",
+        ":sources",
+    ],
+    package_dir = "tapeworm/uiv3",
+    strip_prefix = ".",
+)
+
+container_image(
+   name = "image" ,
+   base = "@node_image-14181//image",
+   workdir = "/home/app/",
+   directory = "/home/app/",
+   tars = [
+        ":webapp-uiv3-tar"
+   ],
+   ports = ["3000"],
+   cmd = """
+        apk --no-cache add git autoconf automake bash g++ libc6-compat libjpeg-turbo-dev libpng-dev make nasm
+        yarn install --frozen-lockfile --production=false
+        yarn workspace @tapeworm/$PACKAGE run build
+        yarn workspace @tapeworm/$PACKAGE run start
+    """,
+    env = {
+        "PACKAGE": "uiv3",
+        "NODE_ENV": "production",
+        "ENV": "{ENV}",
+
+    },
+    labels = {
+        "PACKAGE": "uiv3",
+        "ENV": "{ENV}",
+    },
+    stamp = True,
+    visibility = ["//visibility:public"],
+)
