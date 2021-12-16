@@ -5,6 +5,10 @@
   "main": "index.js",
   "author": "Sheng Wei <shengweichow@gmail.com>",
   "license": "MIT",
-  "devDependencies": {},
+  "devDependencies": {
+    "@bazel/bazelisk": "^1.11.0",
+    "@bazel/ibazel": "^0.15.10",
+    "@bazel/typescript": "^4.5.0"
+  },
   "dependencies": {}
 }
