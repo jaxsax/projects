@@ -10,26 +10,6 @@ load(
 )
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-# git_repository(
-#     name = "rules_python",
-#     remote = "https://github.com/bazelbuild/rules_python.git",
-#     commit = "748aa53d7701e71101dfd15d800e100f6ff8e5d1",
-#     shallow_since = "1583438240 -0500",
-# )
-
-# http_archive(
-#     name = "build_bazel_rules_nodejs",
-#     sha256 = "591d2945b09ecc89fde53e56dd54cfac93322df3bc9d4747cb897ce67ba8cdbf",
-#     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/1.2.0/rules_nodejs-1.2.0.tar.gz"],
-# )
-
-# http_archive(
-#     name = "build_bazel_rules_svelte",
-#     url = "https://github.com/thelgevold/rules_svelte/archive/0.15.zip",
-#     strip_prefix = "rules_svelte-0.15",
-#     sha256 = "1b04eb08ef80636929d152bb2f2733e36d9e0b8ad10aca7b435c82bd638336f5",
-# )
-
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "1698624e878b0607052ae6131aa216d45ebb63871ec497f26c67455b34119c80",
@@ -55,23 +35,6 @@ http_archive(
     ],
     sha256 = "222e49f034ca7a1d1231422cdb67066b885819885c356673cb1f72f748a3c9d4",
 )
-
-# Python
-#load("@rules_python//python:repositories.bzl", "py_repositories")
-#
-#py_repositories()
-#
-## Only needed if using the packaging rules.
-#load("@rules_python//python:pip.bzl", "pip3_import")
-#
-#pip3_import(
-#    name = "py_deps",
-#    requirements = "//:requirements.txt",
-#)
-#
-#load("@py_deps//:requirements.bzl", "pip_install")
-#
-#pip_install()
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 
@@ -114,26 +77,6 @@ load(
 )
 
 _go_image_repos()
-
-
-
-# Javascript
-
-# load("@build_bazel_rules_nodejs//:index.bzl", "yarn_install")
-
-# yarn_install(
-#     name = "npm",
-#     package_json = "//:package.json",
-#     yarn_lock = "//:yarn.lock",
-# )
-
-# load("@npm//:install_bazel_dependencies.bzl", "install_bazel_dependencies")
-
-# install_bazel_dependencies()
-
-# load("@build_bazel_rules_svelte//:defs.bzl", "rules_svelte_dependencies")
-
-# rules_svelte_dependencies()
 
 # Tools
 http_file(
