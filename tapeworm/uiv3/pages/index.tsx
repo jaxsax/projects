@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery  } from 'react-query';
 
-function sleep(ms) {
+function sleep(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
@@ -22,7 +22,11 @@ type Link = {
     title: Map<string, any>
 }
 
-function LinksContainer(data) {
+type Props = {
+    links: Link[]
+}
+
+function LinksContainer(data: Props) {
     console.debug(data)
     return (
         <div className="flex">
