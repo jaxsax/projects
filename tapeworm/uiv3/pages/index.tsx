@@ -59,18 +59,16 @@ function LinkItem(l: Link) {
     }
 
     return (
-        <div className="w-full">
-            <div>
-                <a href={l.link}>
-                    {title}
-                    {linkHostname !== null ?
-                        (
-                            <div className="text-gray-400">
-                                ({linkHostname})
-                            </div>
-                        ) : null}
-                </a>
-            </div>
+        <div className="truncate">
+            <a href={l.link}>
+                {title}
+                {linkHostname !== null ?
+                    (
+                        <div className="text-gray-400">
+                            ({linkHostname})
+                        </div>
+                    ) : null}
+            </a>
         </div>
     )
 }
@@ -86,6 +84,7 @@ function LinksContainer({ links }: Props) {
 }
 
 // Generic reusable hook
+// https://stackoverflow.com/questions/23123138/perform-debounce-in-react-js
 const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 
     // Handle the input text state
@@ -143,7 +142,7 @@ function IndexPage() {
     }
 
     const loading = isLoading || searchResults.loading
-    const done = isSuccess && !loading
+    const done = isSuccess && searchResults.result
     return (
         <>
             <div className="mx-2 xl:container xl:mx-auto mt-24">
