@@ -32,6 +32,10 @@ NPM_DEPENDENCIES = [
     "@npm//react-query",
     "@npm//react-toast-notifications",
     "@npm//@headlessui/react",
+    "@npm//lunr",
+    "@npm//awesome-debounce-promise",
+    "@npm//use-constant",
+    "@npm//react-async-hook",
 ]
 
 next(
