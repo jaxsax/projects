@@ -34,4 +34,4 @@ if [ ! -f "$secrets_config" ]; then
 	EOF
 fi
 
-WEB_PORT=9999 ibazel run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"
+WEB_PORT=9999 ibazel --run_output run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"

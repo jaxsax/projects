@@ -8,8 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/jaxsax/projects/tapeworm/botv2/search"
-
 	"go.uber.org/zap"
 
 	"github.com/jaxsax/projects/tapeworm/botv2"
@@ -83,20 +81,10 @@ func main() {
 	sqliteDB, err := sql1.Open("sqlite3", config.SqliteDBPath)
 	logErrorAndExit("connect_sqlite", err)
 
-	// sonicSearcher, err := sonic.NewSearch(config.Sonic.Host, config.Sonic.Port, config.Sonic.Password)
-	// logErrorAndExit("connect_sonic", err)
-
-	// err = sonicSearcher.Ping()
-	// logErrorAndExit("ping_sonic", err)
-
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)
 		skippedLinksRepository = skippedlinks.NewSqliteRepository(sqliteDB)
 		updatesRepository      = updates.NewSqliteRepository(sqliteDB)
-
-		// searchLogger = logger.Named("app.searcher")
-		// linkSearcher = search.NewSonicLinkSearcher(searchLogger, sonicSearcher, config.Sonic, linksRepository)
-		linkSearcher = &search.FakeLinkSearcher{}
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
@@ -143,7 +131,6 @@ func main() {
 			componentLogger,
 			config,
 			linksRepository,
-			linkSearcher,
 			*staticDirPath,
 		)
 

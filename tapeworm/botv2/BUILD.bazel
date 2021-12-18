@@ -25,6 +25,5 @@ go_library(
 go_test(
     name = "botv2_test",
     srcs = ["entities_test.go"],
-    embed = [":botv2"],
     deps = ["@com_github_stretchr_testify//require"],
 )

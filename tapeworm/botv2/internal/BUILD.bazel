@@ -20,6 +20,8 @@ go_library(
 go_test(
     name = "internal_test",
     srcs = ["config_test.go"],
-    embed = [":internal"],
-    deps = ["@com_github_stretchr_testify//require"],
+    deps = [
+        ":internal",
+        "@com_github_stretchr_testify//require",
+    ],
 )

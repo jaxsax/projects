@@ -12,7 +12,6 @@ go_library(
         "//tapeworm/botv2",
         "//tapeworm/botv2/internal",
         "//tapeworm/botv2/links",
-        "//tapeworm/botv2/search",
         "//tapeworm/botv2/skippedlinks",
         "//tapeworm/botv2/updates",
         "//tapeworm/botv2/web",
