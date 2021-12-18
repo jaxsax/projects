@@ -54,7 +54,7 @@ load("@build_bazel_rules_nodejs//:index.bzl", "node_repositories", "yarn_install
 
 node_repositories(
     package_json = ["//:package.json"],
-    node_version = "14.17.5"
+    node_version = "16.13.0",
 )
 
 yarn_install(

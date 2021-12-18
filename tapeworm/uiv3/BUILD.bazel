@@ -4,13 +4,14 @@ load("@npm//next:index.bzl", "next")
 filegroup(
     name = "source_files",
     srcs = glob([
-        "public/**/*",
         "pages/*",
         "styles/*",
     ]) + [
         "tsconfig.json",
         "next.config.js",
         "next-env.d.ts",
+        "tailwind.config.js",
+        "postcss.config.js",
     ],
 )
 
@@ -25,6 +26,11 @@ NPM_DEPENDENCIES = [
     "@npm//react",
     "@npm//react-dom",
     "@npm//typescript",
+    "@npm//tailwindcss",
+    "@npm//postcss",
+    "@npm//autoprefixer",
+    "@npm//react-query",
+    "@npm//react-toast-notifications",
 ]
 
 next(
