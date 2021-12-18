@@ -31,6 +31,7 @@ NPM_DEPENDENCIES = [
     "@npm//autoprefixer",
     "@npm//react-query",
     "@npm//react-toast-notifications",
+    "@npm//@headlessui/react",
 ]
 
 next(
