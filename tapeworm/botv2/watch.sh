@@ -29,9 +29,10 @@ if [ ! -f "$secrets_config" ]; then
 	echo "Creating default config, please populate telegram bot token"
 	cat <<-EOF > "$secrets_config"
 		token: "default_token"
-		database:
-            sqlite_db_path: database.db
+        sqlite_db_path: database.db
+        port: 8080
 	EOF
 fi
 
-WEB_PORT=9999 ibazel --run_output run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"
+ibazel -run_output_interactive=false \
+    run //tapeworm/botv2/cmd/bot:bot -- -config_path="$secrets_config"

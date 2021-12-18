@@ -3,8 +3,6 @@ package internal
 import (
 	"fmt"
 	"io"
-	"os"
-	"strconv"
 
 	"gopkg.in/yaml.v2"
 )
@@ -16,8 +14,7 @@ var (
 	// ErrEmptyConfig is returned when contents is empty
 	ErrEmptyConfig = fmt.Errorf("empty config")
 
-	// ErrInvalidPort is returned when an invalid port number is returned
-	ErrInvalidPort = fmt.Errorf("port cannot be empty, WEB_PORT undefined")
+	ErrEmptyPort = fmt.Errorf("port cannot be empty")
 )
 
 type DBConfig struct {
@@ -31,7 +28,7 @@ type Config struct {
 	Token        string   `yaml:"token"`
 	Database     DBConfig `yaml:"database"`
 	SqliteDBPath string   `yaml:"sqlite_db_path"`
-	Port         int      `yaml:"-"`
+	Port         int      `yaml:"port"`
 }
 
 func ReadConfig(r io.Reader) (*Config, error) {
@@ -49,17 +46,9 @@ func ReadConfig(r io.Reader) (*Config, error) {
 		return nil, ErrEmptyToken
 	}
 
-	port := os.Getenv("WEB_PORT")
-	if port == "" {
-		return nil, ErrInvalidPort
+	if cfg.Port == 0 {
+		return nil, ErrEmptyPort
 	}
-
-	p, err := strconv.ParseUint(port, 10, 32)
-	if err != nil {
-		return nil, fmt.Errorf("invalid port: %w", err)
-	}
-
-	cfg.Port = int(p)
 
 	return &cfg, nil
 }

@@ -3,12 +3,12 @@ package links
 
 // Link is the domain model
 type Link struct {
-	ID        int64
-	CreatedTS int64
-	CreatedBy int64
-	Link      string
-	Title     string
-	ExtraData map[string]string
+	ID        int64             `json:"id"`
+	CreatedTS int64             `json:"created_ts"`
+	CreatedBy int64             `json:"created_by"`
+	Link      string            `json:"link"`
+	Title     string            `json:"title"`
+	ExtraData map[string]string `json:"extra_data"`
 }
 
 // Repository provides access to a links store

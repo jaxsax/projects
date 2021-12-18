@@ -78,8 +78,17 @@ func main() {
 	if config.SqliteDBPath == "" {
 		logErrorAndExit("connect_sqlite", errors.New("sqlite_db_path cannot be empty"))
 	}
-	sqliteDB, err := sql1.Open("sqlite3", config.SqliteDBPath)
+
+	sqliteAbsPath, err := filepath.Abs(config.SqliteDBPath)
+	logErrorAndExit("cannot obtain abspath to sqlite db", err)
+
+	sqliteDB, err := sql1.Open("sqlite3", sqliteAbsPath)
 	logErrorAndExit("connect_sqlite", err)
+
+	err = sqliteDB.Ping()
+	logErrorAndExit("ping db", err)
+
+	logger.Info("database open", zap.String("path", sqliteAbsPath))
 
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)

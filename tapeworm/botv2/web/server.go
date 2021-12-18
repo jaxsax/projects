@@ -58,7 +58,7 @@ func (s *Server) apiLinks() http.Handler {
 		}
 
 		resp := struct {
-			Links []links.Link
+			Links []links.Link `json:"links"`
 		}{
 			Links: dbLinks,
 		}
