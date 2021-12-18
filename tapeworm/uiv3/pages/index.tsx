@@ -41,6 +41,7 @@ type Link = {
 
 type Props = {
     links: Link[]
+    searchDurationMs: number | null
 }
 
 function LinkItem(l: Link) {
@@ -56,27 +57,38 @@ function LinkItem(l: Link) {
 
     return (
         <div className="truncate" style={{ flexBasis: '100%' }}>
-            <a href={l.link}>
+            <a href={l.link} className="text-lg">
                 {title}
             </a>
-                {linkHostname !== null ?
-                    (
-                        <div className="text-gray-400">
-                            ({linkHostname})
-                        </div>
-                    ) : null}
+            {linkHostname !== null ?
+                (
+                    <div className="text-gray-400">
+                        ({linkHostname})
+                    </div>
+                ) : null}
         </div>
     )
 }
 
-function LinksContainer({ links }: Props) {
-    return (
-        <div className="flex flex-row flex-wrap gap-4">
-            {links.length !== 0
-                ? links.map((l) => <LinkItem key={l.id} {...l} />)
-                : <span className="text-xl">No results found</span>}
+function LinksContainer({ links, searchDurationMs }: Props) {
+    const Wrapper = ({ children }) => {
+        return <div>
+            {children}
         </div>
-    )
+    }
+
+    if (links.length === 0) {
+        return <Wrapper>
+            <span className="text-xl">No results found</span>
+        </Wrapper>
+    }
+
+    return <Wrapper>
+        <p className="text-gray-500">{links.length} records found {searchDurationMs ? `in ${searchDurationMs} ms` : ''} </p>
+        <div className="mt-4 flex flex-row flex-wrap gap-4">
+            {links.map((l) => <LinkItem key={l.id} {...l} />)}
+        </div>
+    </Wrapper>
 }
 
 // Generic reusable hook
@@ -97,7 +109,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
     const searchResults = useAsync(
         async () => {
             if (inputText.length === 0) {
-                return [];
+                return {};
             } else {
                 return debouncedSearchFunction(inputText);
             }
@@ -122,13 +134,18 @@ function IndexPage() {
 
         console.log(`finished in ${t1 - t0} ms`)
 
-        return r
+        return {
+            data: r,
+            elapsed: t1 - t0,
+        }
     })
 
     let items = data?.links
+    let searchDuration = null
     if (!searchResults.loading && data) {
-        const filteredItemIds = new Set(searchResults.result.map(x => x.ref))
+        const filteredItemIds = new Set(searchResults.result?.data?.map(x => x.ref))
         items = items.filter(x => filteredItemIds.has(String(x.id)))
+        searchDuration = searchResults.result?.elapsed
     }
 
     if (!items || items.length === 0) {
@@ -150,9 +167,9 @@ function IndexPage() {
                         onChange={(e) => setInputText(e.target.value)}
                         className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400 focus:border-blue-400" />
                 </div>
-                <div className="mt-4">
+                <div className="mt-2">
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
-                    {done ? <LinksContainer links={items} /> : null}
+                    {done ? <LinksContainer links={items} searchDurationMs={searchDuration} /> : null}
                 </div>
             </div>
         </>
