@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "queryrunner",
+    srcs = [
+        "lexer.go",
+        "runner.go",
+    ],
+    importpath = "github.com/jaxsax/projects/logging/internal/queryrunner",
+    visibility = ["//logging:__subpackages__"],
+    deps = [
+        "@com_github_pkg_errors//:errors",
+        "@com_github_scylladb_go_set//strset:go_default_library",
+    ],
+)
+
+go_test(
+    name = "queryrunner_test",
+    srcs = [
+        "lexer_test.go",
+        "queryconv_test.go",
+    ],
+    embed = [":queryrunner"],
+    deps = [
+        "@com_github_stretchr_testify//assert",
+        "@com_github_stretchr_testify//require",
+    ],
+)

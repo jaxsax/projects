@@ -63,15 +63,15 @@ next(
 
 next(
     name = "export",
-    args = [
-        "export",
-        "$(RULEDIR)"
-    ],
     outs = [
         "out",
     ],
+    args = [
+        "export",
+        "$(RULEDIR)",
+    ],
     data = [
-        ":build"
+        ":build",
     ],
     env = {
         "NODE_ENV": "production",
@@ -79,15 +79,17 @@ next(
 )
 
 load("@npm//http-server:index.bzl", "http_server")
+
 http_server(
     name = "server",
-    data = [
-        "export"
-    ],
     args = ["tapeworm/uiv3/out"],
+    data = [
+        "export",
+    ],
 )
 
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
+
 pkg_tar(
     name = "tar",
     srcs = [

@@ -1,4 +1,4 @@
-module github.com/jaxsax/infra/logging
+module github.com/jaxsax/projects/logging
 
 go 1.16
 
