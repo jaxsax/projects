@@ -4,6 +4,7 @@ import lunr from 'lunr';
 import { useAsync } from 'react-async-hook'
 import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
+import formatDistance from 'date-fns/formatDistance';
 
 async function getLinks() {
     return fetch('https://jaxsax.co/api/links').then((r) => r.json())
@@ -33,7 +34,7 @@ function useLinks() {
 
 type Link = {
     id: string
-    created_ts: string
+    created_ts: number
     created_by: number
     link: string
     title: string
@@ -62,10 +63,13 @@ function LinkItem(l: Link) {
             </a>
             {linkHostname !== null ?
                 (
-                    <div className="text-gray-400">
+                    <div className="text-gray-400 md:inline md:ml-2">
                         ({linkHostname})
                     </div>
                 ) : null}
+            <p className="text-gray-400">
+                {formatDistance(new Date(l.created_ts * 1000), new Date(), { addSuffix: true })}
+            </p>
         </div>
     )
 }
@@ -167,7 +171,7 @@ function IndexPage() {
                         onChange={(e) => setInputText(e.target.value)}
                         className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400 focus:border-blue-400" />
                 </div>
-                <div className="mt-2">
+                <div className="mt-2 mb-4">
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
                     {done ? <LinksContainer links={items} searchDurationMs={searchDuration} /> : null}
                 </div>

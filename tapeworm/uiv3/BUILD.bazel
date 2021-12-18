@@ -37,6 +37,7 @@ NPM_DEPENDENCIES = [
     "@npm//awesome-debounce-promise",
     "@npm//use-constant",
     "@npm//react-async-hook",
+    "@npm//date-fns",
 ]
 
 next(
