@@ -5,9 +5,10 @@ import { useAsync } from 'react-async-hook'
 import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 import formatDistance from 'date-fns/formatDistance';
+import formatISO from 'date-fns/formatISO';
 
 async function getLinks() {
-    return fetch('https://jaxsax.co/api/links').then((r) => r.json())
+    return fetch('/api/links').then((r) => r.json())
 }
 
 let index = lunr(() => { })
@@ -42,7 +43,7 @@ type Link = {
 
 type Props = {
     links: Link[]
-    searchDurationMs: number | null
+    searchDurationSeconds: number | null
 }
 
 function LinkItem(l: Link) {
@@ -56,6 +57,7 @@ function LinkItem(l: Link) {
     } catch (error) {
     }
 
+    const date = new Date(l.created_ts * 1000)
     return (
         <div className="truncate" style={{ flexBasis: '100%' }}>
             <a href={l.link} className="text-lg">
@@ -67,14 +69,14 @@ function LinkItem(l: Link) {
                         ({linkHostname})
                     </div>
                 ) : null}
-            <p className="text-gray-400">
-                {formatDistance(new Date(l.created_ts * 1000), new Date(), { addSuffix: true })}
+            <p className="text-gray-400" title={formatISO(date)}>
+                {formatDistance(date, new Date(), { addSuffix: true })}
             </p>
         </div>
     )
 }
 
-function LinksContainer({ links, searchDurationMs }: Props) {
+function LinksContainer({ links, searchDurationSeconds }: Props) {
     const Wrapper = ({ children }) => {
         return <div>
             {children}
@@ -88,7 +90,7 @@ function LinksContainer({ links, searchDurationMs }: Props) {
     }
 
     return <Wrapper>
-        <p className="text-gray-500">{links.length} records found {searchDurationMs ? `in ${searchDurationMs} ms` : ''} </p>
+        <p className="text-gray-500">{links.length} records found {searchDurationSeconds ? `in ${searchDurationSeconds} ms` : ''} </p>
         <div className="mt-4 flex flex-row flex-wrap gap-4">
             {links.map((l) => <LinkItem key={l.id} {...l} />)}
         </div>
@@ -130,7 +132,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 };
 
 function IndexPage() {
-    const { isSuccess, isLoading, data } = useLinks()
+    const { isSuccess, isLoading, data, dataUpdatedAt } = useLinks()
     const { inputText, setInputText, searchResults } = useDebouncedSearch((term: string) => {
         const t0 = performance.now()
         let r = index.search(term)
@@ -164,6 +166,18 @@ function IndexPage() {
         <>
             <div className="mx-2 xl:container xl:mx-auto mt-24">
                 <h1 className="text-center text-7xl text-bold">link search</h1>
+                {dataUpdatedAt
+                    ? (
+                        <p className="text-center text-gray-400 text-md">
+                            index last rebuilt {' '}
+                            {
+                                formatDistance(new Date(dataUpdatedAt), new Date(),
+                                    { addSuffix: true, includeSeconds: true })
+                            }
+                        </p>
+                    )
+                    : null
+                }
                 <div className="mt-4">
                     <input
                         type="text" name="query" placeholder="Enter search terms"
@@ -173,7 +187,10 @@ function IndexPage() {
                 </div>
                 <div className="mt-2 mb-4">
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
-                    {done ? <LinksContainer links={items} searchDurationMs={searchDuration} /> : null}
+                    {done
+                        ? <LinksContainer links={items}
+                            searchDurationSeconds={searchDuration} />
+                        : null}
                 </div>
             </div>
         </>
