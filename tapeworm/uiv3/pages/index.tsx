@@ -20,6 +20,7 @@ let index = lunr(() => { })
 function useLinks() {
     return useQuery(['links'], getLinks, {
         onSuccess: (data) => {
+            let t0 = performance.now()
             const tmpIndex = lunr((inst) => {
                 inst.ref('id')
                 inst.field('title')
@@ -28,6 +29,7 @@ function useLinks() {
                     inst.add(e)
                 })
             })
+            console.log(`index rebuilt in ${performance.now() - t0} ms`)
 
             index = tmpIndex
         },
@@ -91,7 +93,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 
     // Debounce the original search async function
     const debouncedSearchFunction = useConstant(() =>
-        AwesomeDebouncePromise(searchFunction, 1000)
+        AwesomeDebouncePromise(searchFunction, 300)
     );
 
     // The async callback is run each time the text changes,
@@ -134,6 +136,10 @@ function IndexPage() {
         items = items.filter(x => filteredItemIds.has(String(x.id)))
     }
 
+    if (items.length === 0) {
+        items = data?.links
+    }
+
     return (
         <>
             <div className="mx-2 xl:container xl:mx-auto mt-24">
@@ -147,7 +153,7 @@ function IndexPage() {
                 </form>
                 <div className="mt-4">
                     {isLoading || searchResults.loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
-                    {isSuccess || !searchResults.loading ? <LinksContainer links={items} /> : null}
+                    {isSuccess && !searchResults.loading ? <LinksContainer links={items} /> : null}
                 </div>
             </div>
         </>
