@@ -55,7 +55,7 @@ function LinkItem(l: Link) {
     }
 
     return (
-        <div className="truncate">
+        <div className="truncate" style={{ flexBasis: '100%' }}>
             <a href={l.link}>
                 {title}
                 {linkHostname !== null ?
@@ -148,7 +148,7 @@ function IndexPage() {
                         type="text" name="query" placeholder="Enter search terms"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
-                        className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400" />
+                        className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400 focus:border-blue-400" />
                 </div>
                 <div className="mt-4">
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
