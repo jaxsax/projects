@@ -22,6 +22,7 @@ if [ $err -eq 1 ]; then
 fi
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd)"
+mkdir -p $DIR/secrets/
 secrets_config=$DIR/secrets/config.yml
 
 if [ ! -f "$secrets_config" ]; then
@@ -29,10 +30,7 @@ if [ ! -f "$secrets_config" ]; then
 	cat <<-EOF > "$secrets_config"
 		token: "default_token"
 		database:
-			host: 127.0.0.1
-			user: postgres
-			password: example
-			name: tapeworm_bot
+            sqlite_db_path: database.db
 	EOF
 fi
 

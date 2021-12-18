@@ -1,0 +1,38 @@
+diff --git a/node_modules/next/dist/export/index.js b/node_modules/next/dist/export/index.js
+index 772a319..e63dcc3 100644
+--- a/node_modules/next/dist/export/index.js
++++ b/node_modules/next/dist/export/index.js
+@@ -212,11 +212,11 @@ async function exportApp(dir, options, span, configuration) {
+         await _fs.promises.mkdir((0, _path).join(outDir, '_next', buildId), {
+             recursive: true
+         });
+-        (0, _fs).writeFileSync((0, _path).join(distDir, _constants1.EXPORT_DETAIL), JSON.stringify({
+-            version: 1,
+-            outDirectory: outDir,
+-            success: false
+-        }), 'utf8');
++        //(0, _fs).writeFileSync((0, _path).join(distDir, _constants1.EXPORT_DETAIL), JSON.stringify({
++        //    version: 1,
++        //    outDirectory: outDir,
++        //    success: false
++        //}), 'utf8');
+         // Copy static directory
+         if (!options.buildExport && (0, _fs).existsSync((0, _path).join(dir, 'static'))) {
+             if (!options.silent) {
+@@ -499,11 +499,11 @@ async function exportApp(dir, options, span, configuration) {
+         if (renderError) {
+             throw new Error(`Export encountered errors on following paths:\n\t${errorPaths.sort().join('\n\t')}`);
+         }
+-        (0, _fs).writeFileSync((0, _path).join(distDir, _constants1.EXPORT_DETAIL), JSON.stringify({
+-            version: 1,
+-            outDirectory: outDir,
+-            success: true
+-        }), 'utf8');
++        //(0, _fs).writeFileSync((0, _path).join(distDir, _constants1.EXPORT_DETAIL), JSON.stringify({
++        //    version: 1,
++        //    outDirectory: outDir,
++        //    success: true
++        //}), 'utf8');
+         if (telemetry) {
+             await telemetry.flush();
+         }

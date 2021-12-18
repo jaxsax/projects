@@ -1,8 +1,10 @@
-const pkg = require("./package.json");
-
 module.exports = {
   reactStrictMode: true,
-  generatedBuildId: () => pkg.version,
+  generatedBuildId: () => "0.0.1",
+  webpack: (config) => {
+    config.watchOptions = { poll: 300 };
+    return config;
+  },
   async rewrites() {
     return [
       {
