@@ -79,7 +79,7 @@ next(
     ],
     data = [
         ":build",
-    ],
+    ] + NPM_DEPENDENCIES,
     env = {
         "NODE_ENV": "production",
     },
