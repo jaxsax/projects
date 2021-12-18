@@ -58,13 +58,13 @@ function LinkItem(l: Link) {
         <div className="truncate" style={{ flexBasis: '100%' }}>
             <a href={l.link}>
                 {title}
+            </a>
                 {linkHostname !== null ?
                     (
                         <div className="text-gray-400">
                             ({linkHostname})
                         </div>
                     ) : null}
-            </a>
         </div>
     )
 }
