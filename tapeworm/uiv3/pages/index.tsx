@@ -6,11 +6,12 @@ import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 import formatDistance from 'date-fns/formatDistance';
 import formatISO from 'date-fns/formatISO';
-import { Menu, Transition } from '@headlessui/react'
-import { ChevronDownIcon } from '@heroicons/react/solid'
+import { Menu } from '@headlessui/react'
+import { AutoSizer, WindowScroller, List } from 'react-virtualized'
+import 'react-virtualized/styles.css'
 
 async function getLinks() {
-    return fetch('/api/links').then((r) => r.json())
+    return fetch('https://jaxsax.co/api/links').then((r) => r.json())
 }
 
 let index = lunr(() => { })
@@ -49,8 +50,9 @@ type Props = {
 }
 
 function LinkItem(l: Link) {
-    let title = l.title.replace(/(\r\n|\n|\r)/gm, " ");
-    title = l.title.replace(/(\s+)/g, " ");
+    let title = l.title
+    title = title.replace(/(\r\n|\n|\r)/gm, " ");
+    title = title.replace(/(\s+)/g, " ");
 
     let linkHostname: string | null = null;
     try {
@@ -61,7 +63,7 @@ function LinkItem(l: Link) {
 
     const date = new Date(l.created_ts * 1000)
     return (
-        <div className="truncate" style={{ flexBasis: '100%' }}>
+        <div className="truncate">
             <a href={l.link} className="text-lg">
                 {title}
             </a>
@@ -71,6 +73,7 @@ function LinkItem(l: Link) {
                         ({linkHostname})
                     </div>
                 ) : null}
+
             <p className="text-gray-400" title={formatISO(date)}>
                 {formatDistance(date, new Date(), { addSuffix: true })}
             </p>
@@ -80,7 +83,7 @@ function LinkItem(l: Link) {
 
 function LinksContainer({ links, searchDurationSeconds }: Props) {
     const Wrapper = ({ children }) => {
-        return <div>
+        return <div className="h-screen">
             {children}
         </div>
     }
@@ -89,6 +92,24 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
         return <Wrapper>
             <span className="text-xl">No results found</span>
         </Wrapper>
+    }
+
+    function rowRenderer({
+        index, // Index of row
+        isScrolling, // The List is currently being scrolled
+        isVisible, // This row is visible within the List (eg it is not an overscanned row)
+        key, // Unique key within array of rendered rows
+        parent, // Reference to the parent List (instance)
+        style, // Style object to be applied to row (to position it);
+        // This must be passed through to the rendered row element.
+    }) {
+        const link = links[index];
+
+        return (
+            <div key={key} style={style}>
+                <LinkItem {...link} />
+            </div>
+        )
     }
 
     return <Wrapper>
@@ -114,10 +135,57 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
                 </Menu>
             </div>
         </div>
-        <div className="mt-4 flex flex-row flex-wrap gap-4">
+        <div className="h-full">
+            <WindowScroller>
+                {({ height, width, isScrolling, onChildScroll, scrollTop }) => {
+                    let heightMultiplier = 0.06
+                    let widthMultiplier = 0.75
+
+                    // 2xl
+                    if (width <= 1536) {
+                        heightMultiplier = 0.05
+                    }
+
+                    // xl
+                    if (width <= 1280) {
+                        heightMultiplier = 0.06
+                    }
+
+                    // lg
+                    if (width <= 1024) {
+                        heightMultiplier = 0.05
+                        widthMultiplier = 0.75
+                    }
+
+                    // md
+                    if (width <= 768) {
+                        heightMultiplier = 0.05
+                    }
+                    // sm
+                    if (width <= 640) {
+                        heightMultiplier = 0.135
+                    }
+
+                    // console.debug(heightMultiplier, width, widthMultiplier)
+                    return <List
+                        autoHeight
+                        height={height}
+                        rowCount={links.length}
+                        rowHeight={height * heightMultiplier}
+                        rowRenderer={rowRenderer}
+                        isScrolling={isScrolling}
+                        onScroll={onChildScroll}
+                        scrollTop={scrollTop}
+                        width={width * widthMultiplier}
+                    />
+                }}
+            </WindowScroller>
+        </div>
+        {/*<div className="mt-4 flex flex-row flex-wrap gap-4">
             {links.map((l) => <LinkItem key={l.id} {...l} />)}
         </div>
-    </Wrapper >
+        */}
+    </Wrapper>
 }
 
 // Generic reusable hook
@@ -187,7 +255,7 @@ function IndexPage() {
     const done = isSuccess && searchResults.result
     return (
         <>
-            <div className="mx-2 xl:container xl:mx-auto mt-24">
+            <div className="mx-2 xl:container xl:mx-auto mt-24 min-h-screen">
                 <h1 className="text-center text-7xl text-bold">link search</h1>
                 {dataUpdatedAt
                     ? (

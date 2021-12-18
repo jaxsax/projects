@@ -40,6 +40,7 @@ NPM_DEPENDENCIES = [
     "@npm//use-constant",
     "@npm//react-async-hook",
     "@npm//date-fns",
+    "@npm//react-virtualized",
 ]
 
 next(
