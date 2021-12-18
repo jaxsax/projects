@@ -93,7 +93,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 
     // Debounce the original search async function
     const debouncedSearchFunction = useConstant(() =>
-        AwesomeDebouncePromise(searchFunction, 300)
+        AwesomeDebouncePromise(searchFunction, 50)
     );
 
     // The async callback is run each time the text changes,
