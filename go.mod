@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/BTBurke/cannon v0.2.0
+	github.com/ClickHouse/clickhouse-go v1.5.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dustin/go-humanize v1.0.0
 	github.com/expectedsh/go-sonic v0.0.0-20210126110405-bcfc86192634
@@ -15,7 +16,10 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.6
+	github.com/mitchellh/mapstructure v1.1.2
+	github.com/oklog/run v1.1.0
 	github.com/pkg/errors v0.8.1
+	github.com/scylladb/go-set v1.0.2
 	github.com/spf13/viper v1.6.3
 	github.com/stretchr/testify v1.5.1
 	github.com/twitchtv/twirp v7.1.1+incompatible

@@ -9,5 +9,6 @@ fi
 
 set -o xtrace
 bazelisk run //:gazelle -- update-repos \
-    --from_file=go.mod --to_macro=repos.bzl%go_repositories \
+    --from_file=go.mod \
+    --to_macro=repos.bzl%go_repositories \
     --prune

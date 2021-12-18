@@ -6,9 +6,9 @@ go_library(
     importpath = "github.com/jaxsax/projects/logging",
     visibility = ["//visibility:private"],
     deps = [
-        "@com_github_clickhouse_clickhouse_go//:go_default_library",
+        "@com_github_clickhouse_clickhouse_go//:clickhouse-go",
         "@com_github_mitchellh_mapstructure//:mapstructure",
-        "@com_github_oklog_run//:go_default_library",
+        "@com_github_oklog_run//:run",
     ],
 )
 

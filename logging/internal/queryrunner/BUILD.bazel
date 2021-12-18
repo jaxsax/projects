@@ -10,7 +10,7 @@ go_library(
     visibility = ["//logging:__subpackages__"],
     deps = [
         "@com_github_pkg_errors//:errors",
-        "@com_github_scylladb_go_set//strset:go_default_library",
+        "@com_github_scylladb_go_set//strset",
     ],
 )
 
