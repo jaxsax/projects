@@ -77,7 +77,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 			zap.String("from", message.From.UserName),
 			zap.Int("from_userid", message.From.ID),
 			zap.Int("message_id", message.MessageID),
-			zap.Duration("update_duration", time.Now().Sub(start)),
+			zap.Duration("update_duration", time.Since(start)),
 		)
 	}()
 
