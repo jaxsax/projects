@@ -132,7 +132,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 };
 
 function IndexPage() {
-    const { isSuccess, isLoading, data, dataUpdatedAt } = useLinks()
+    const { isSuccess, isLoading, isError, data, dataUpdatedAt } = useLinks()
     const { inputText, setInputText, searchResults } = useDebouncedSearch((term: string) => {
         const t0 = performance.now()
         let r = index.search(term)
@@ -160,7 +160,7 @@ function IndexPage() {
         }
     }
 
-    const loading = isLoading || searchResults.loading
+    const loading = (isLoading || searchResults.loading) && !isError
     const done = isSuccess && searchResults.result
     return (
         <>
@@ -186,6 +186,7 @@ function IndexPage() {
                         className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400 focus:border-blue-400" />
                 </div>
                 <div className="mt-2 mb-4">
+                    {isError ? <h1 className="text-center text-2xl">Failed to retrieve links</h1> : null}
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
                     {done
                         ? <LinksContainer links={items}
