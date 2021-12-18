@@ -10,8 +10,6 @@ function sleep(ms: number) {
 }
 
 async function getLinks() {
-    await sleep(1000)
-
     return fetch('https://jaxsax.co/api/links').then((r) => r.json())
 }
 
@@ -80,7 +78,9 @@ function LinkItem(l: Link) {
 function LinksContainer({ links }: Props) {
     return (
         <div className="flex flex-row flex-wrap gap-4">
-            {links.map((l) => <LinkItem key={l.id} {...l} />)}
+            {links.length !== 0
+                ? links.map((l) => <LinkItem key={l.id} {...l} />)
+                : <span className="text-xl">No results found</span>}
         </div>
     )
 }
@@ -93,7 +93,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 
     // Debounce the original search async function
     const debouncedSearchFunction = useConstant(() =>
-        AwesomeDebouncePromise(searchFunction, 50)
+        AwesomeDebouncePromise(searchFunction, 100)
     );
 
     // The async callback is run each time the text changes,
@@ -136,24 +136,28 @@ function IndexPage() {
         items = items.filter(x => filteredItemIds.has(String(x.id)))
     }
 
-    if (items.length === 0) {
-        items = data?.links
+    if (!items || items.length === 0) {
+        if (inputText === '') {
+            items = data?.links
+        }
     }
 
+    const loading = isLoading || searchResults.loading
+    const done = isSuccess && !loading
     return (
         <>
             <div className="mx-2 xl:container xl:mx-auto mt-24">
                 <h1 className="text-center text-7xl text-bold">link search</h1>
-                <form className="mt-4">
+                <div className="mt-4">
                     <input
                         type="text" name="query" placeholder="Enter search terms"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400" />
-                </form>
+                </div>
                 <div className="mt-4">
-                    {isLoading || searchResults.loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
-                    {isSuccess && !searchResults.loading ? <LinksContainer links={items} /> : null}
+                    {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
+                    {done ? <LinksContainer links={items} /> : null}
                 </div>
             </div>
         </>
