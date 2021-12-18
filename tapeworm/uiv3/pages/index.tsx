@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Fragment, useEffect, useRef } from 'react'
 import { useQuery } from 'react-query';
 import lunr from 'lunr';
 import { useAsync } from 'react-async-hook'
@@ -6,6 +6,8 @@ import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 import formatDistance from 'date-fns/formatDistance';
 import formatISO from 'date-fns/formatISO';
+import { Menu, Transition } from '@headlessui/react'
+import { ChevronDownIcon } from '@heroicons/react/solid'
 
 async function getLinks() {
     return fetch('/api/links').then((r) => r.json())
@@ -90,11 +92,32 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
     }
 
     return <Wrapper>
-        <p className="text-gray-500">{links.length} records found {searchDurationSeconds ? `in ${searchDurationSeconds} ms` : ''} </p>
+        <div className="flex justify-between">
+            <p className="text-gray-500">{links.length} records found {searchDurationSeconds ? `in ${searchDurationSeconds} ms` : ''} </p>
+            <div className="text-right">
+                <Menu as="div" className="relative inline-block text-left border-2 border-blue-600 px-4 py-2 rounded-md">
+                    <Menu.Button>Sort by</Menu.Button>
+                    <Menu.Items className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className="py-1 px-1">
+                            <Menu.Item>
+                                <div className="px-4 py-2 text-sm rounded-md hover:bg-purple-600 hover:text-white">
+                                    Newest
+                                </div>
+                            </Menu.Item>
+                            <Menu.Item>
+                                <div className="px-4 py-2 text-sm rounded-md hover:bg-purple-600 hover:text-white">
+                                    Oldest
+                                </div>
+                            </Menu.Item>
+                        </div>
+                    </Menu.Items>
+                </Menu>
+            </div>
+        </div>
         <div className="mt-4 flex flex-row flex-wrap gap-4">
             {links.map((l) => <LinkItem key={l.id} {...l} />)}
         </div>
-    </Wrapper>
+    </Wrapper >
 }
 
 // Generic reusable hook
@@ -189,7 +212,8 @@ function IndexPage() {
                     {isError ? <h1 className="text-center text-2xl">Failed to retrieve links</h1> : null}
                     {loading ? <h1 className="text-center text-2xl">Loading...</h1> : null}
                     {done
-                        ? <LinksContainer links={items}
+                        ? <LinksContainer
+                            links={items}
                             searchDurationSeconds={searchDuration} />
                         : null}
                 </div>
