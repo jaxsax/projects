@@ -5,10 +5,6 @@ import { useAsync } from 'react-async-hook'
 import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 
-function sleep(ms: number) {
-    return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 async function getLinks() {
     return fetch('https://jaxsax.co/api/links').then((r) => r.json())
 }
@@ -23,7 +19,7 @@ function useLinks() {
                 inst.ref('id')
                 inst.field('title')
 
-                data.links.forEach((e) => {
+                data.links.forEach((e: any) => {
                     inst.add(e)
                 })
             })
@@ -51,7 +47,7 @@ function LinkItem(l: Link) {
     let title = l.title.replace(/(\r\n|\n|\r)/gm, " ");
     title = l.title.replace(/(\s+)/g, " ");
 
-    let linkHostname = null;
+    let linkHostname: string | null = null;
     try {
         const { hostname } = new URL(l.link)
         linkHostname = hostname

@@ -23,6 +23,7 @@ copy_to_bin(
 NPM_DEPENDENCIES = [
     "@npm//@types/node",
     "@npm//@types/react",
+    "@npm//@types/lunr",
     "@npm//react",
     "@npm//react-dom",
     "@npm//typescript",
