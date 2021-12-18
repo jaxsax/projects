@@ -19,6 +19,7 @@ type Server struct {
 	cfg             *internal.Config
 	linksRepository links.Repository
 	searcher        search.LinkSearcher
+	staticDirPath   string
 }
 
 func NewServer(
@@ -26,12 +27,14 @@ func NewServer(
 	cfg *internal.Config,
 	linksRepository links.Repository,
 	searcher search.LinkSearcher,
+	staticDirPath string,
 ) *Server {
 	return &Server{
 		Logger:          logger,
 		cfg:             cfg,
 		linksRepository: linksRepository,
 		searcher:        searcher,
+		staticDirPath:   staticDirPath,
 	}
 }
 
@@ -131,7 +134,13 @@ func (s *Server) search() http.Handler {
 }
 
 func (s *Server) Run() error {
-	s.Logger.Info("listening")
+	s.Info("listening", zap.Int("port", s.cfg.Port))
+
+	if s.staticDirPath != "" {
+		s.Info("launching with static dirs", zap.String("dir", s.staticDirPath))
+		fs := http.FileServer(http.Dir(s.staticDirPath))
+		http.Handle("/", fs)
+	}
 
 	http.Handle("/api/links", Gzip(s.LoggerMiddleware(s.apiLinks())))
 	http.Handle("/api/search", Gzip(s.LoggerMiddleware(s.search())))

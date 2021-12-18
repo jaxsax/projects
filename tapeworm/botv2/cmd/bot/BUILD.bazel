@@ -1,6 +1,6 @@
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
-load("@io_bazel_rules_docker//container:container.bzl", "container_bundle")
+load("@io_bazel_rules_docker//container:container.bzl", "container_bundle", "container_image")
 load("@io_bazel_rules_docker//contrib:push-all.bzl", "container_push")
 
 go_library(
@@ -28,12 +28,28 @@ go_binary(
     visibility = ["//visibility:public"],
 )
 
+container_image(
+    name = "base",
+    base = "@base-images-ubuntu-2004//image",
+    tars = [
+        "//tapeworm/uiv3:tar"
+    ],
+)
+
 go_image(
     name = "docker",
-    base = "@base-images-ubuntu-2004//image",
+    base = ":base",
     binary = ":bot",
     tag = "latest",
     visibility = ["//visibility:public"],
+)
+
+container_image(
+    name = "localtest",
+    base = ":docker",
+    cmd = [
+        "--static-dir", "/app/static/out"
+    ],
 )
 
 container_bundle(

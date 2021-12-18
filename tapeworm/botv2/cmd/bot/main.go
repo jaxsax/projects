@@ -22,7 +22,13 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var configPath = flag.String("config_path", "config.yml", "path to config file")
+var (
+	configPath    = flag.String("config_path", "config.yml", "path to config file")
+	sqlitedbpath  = flag.String("sqlite-db-path", "database.db", "path to sqlite .db file")
+	port          = flag.Int("port", 8080, "port for webapplication")
+	token         = flag.String("telegram-token", "", "telegram token")
+	staticDirPath = flag.String("static-dir", "", "path to static dir")
+)
 
 func readConfig() (*internal.Config, error) {
 	fp, err := filepath.Abs(*configPath)
@@ -32,10 +38,20 @@ func readConfig() (*internal.Config, error) {
 
 	f, err := os.Open(fp)
 	if err != nil {
+		if os.IsNotExist(err) {
+			// Create something with sane defaults
+			var config internal.Config
+			config.SqliteDBPath = *sqlitedbpath
+			config.Token = *token
+			config.Port = *port
+
+			return &config, nil
+		}
 		return nil, err
 	}
 
-	return internal.ReadConfig(f)
+	cf, err := internal.ReadConfig(f)
+	return cf, err
 }
 
 func main() {
@@ -128,6 +144,7 @@ func main() {
 			config,
 			linksRepository,
 			linkSearcher,
+			*staticDirPath,
 		)
 
 		err := webServer.Run()

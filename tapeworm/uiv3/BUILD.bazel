@@ -96,4 +96,5 @@ pkg_tar(
     mode = "0755",
     package_dir = "/app/static",
     strip_prefix = "./out",
+    visibility = ["//visibility:public"],
 )
