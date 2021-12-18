@@ -45,7 +45,6 @@ genrule(
         mv next.tar.gz $(@D)
     """,
     tools = [":next"],
-    # executable = True,
 )
 
 nodejs_binary(
@@ -59,44 +58,28 @@ nodejs_binary(
     entry_point = "@npm//:node_modules/next/dist/bin/next",
 )
 
-load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
-load("@io_bazel_rules_docker//container:container.bzl", "container_image")
-
-pkg_tar(
-    name = "webapp-uiv3-tar",
+genrule(
+    name = "export",
     srcs = [
-        ":config",
-        ":sources",
+        ":build",
+        "@npm//:node_modules",
     ],
-    package_dir = "tapeworm/uiv3",
-    strip_prefix = ".",
+    outs = ["next.export.tar.gz"],
+    cmd = """
+        tar xvf $(location //tapeworm/uiv3:build)
+        $(location next) export tapeworm/uiv3
+        tar czvf next.export.tar.gz tapeworm/uiv3/out
+        mv next.export.tar.gz $(@D)
+    """,
+    tools = [":next"]
 )
 
-container_image(
-   name = "image" ,
-   base = "@node_image-14181//image",
-   workdir = "/home/app/",
-   directory = "/home/app/",
-   tars = [
-        ":webapp-uiv3-tar"
-   ],
-   ports = ["3000"],
-   cmd = """
-        apk --no-cache add git autoconf automake bash g++ libc6-compat libjpeg-turbo-dev libpng-dev make nasm
-        yarn install --frozen-lockfile --production=false
-        yarn workspace @tapeworm/$PACKAGE run build
-        yarn workspace @tapeworm/$PACKAGE run start
-    """,
-    env = {
-        "PACKAGE": "uiv3",
-        "NODE_ENV": "production",
-        "ENV": "{ENV}",
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
 
-    },
-    labels = {
-        "PACKAGE": "uiv3",
-        "ENV": "{ENV}",
-    },
-    stamp = True,
-    visibility = ["//visibility:public"],
+pkg_tar(
+    name = "webapp",
+    deps = [
+        ":export"
+    ],
+    strip_prefix = ".",
 )
