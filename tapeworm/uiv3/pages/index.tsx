@@ -7,7 +7,7 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise'
 import formatDistance from 'date-fns/formatDistance';
 import formatISO from 'date-fns/formatISO';
 // import { Menu } from '@headlessui/react'
-import { WindowScroller, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized'
+import { WindowScroller, AutoSizer, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized'
 import 'react-virtualized/styles.css'
 
 async function getLinks() {
@@ -73,7 +73,7 @@ function LinkItem(l: Link) {
             </a>
             {linkHostname !== null ?
                 (
-                    <div className="text-gray-400 md:inline md:ml-2">
+                    <div className="block text-gray-400 md:inline md:ml-2">
                         ({linkHostname})
                     </div>
                 ) : null}
@@ -150,19 +150,24 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
         </div>
         <div className="h-full">
             <WindowScroller>
-                {({ height, width, isScrolling, onChildScroll, scrollTop }) => {
-                    return <List
-                        autoHeight
-                        height={height}
-                        width={width}
-                        rowCount={links.length}
-                        deferredMeasurementCache={cellCache}
-                        rowHeight={cellCache.rowHeight}
-                        rowRenderer={rowRenderer}
-                        isScrolling={isScrolling}
-                        onScroll={onChildScroll}
-                        scrollTop={scrollTop}
-                    />
+                {({ height, scrollTop }) => {
+                    return (
+                        <AutoSizer disableHeight>
+                            {({ width }) =>
+                                <List
+                                    autoHeight
+                                    height={height}
+                                    width={width}
+                                    rowCount={links.length}
+                                    deferredMeasurementCache={cellCache}
+                                    rowHeight={cellCache.rowHeight}
+                                    rowRenderer={rowRenderer}
+                                    scrollTop={scrollTop}
+                                    overscanRowCount={5}
+                                />
+                            }
+                        </AutoSizer>
+                    )
                 }}
             </WindowScroller>
         </div>
