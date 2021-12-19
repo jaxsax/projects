@@ -5,6 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"regexp"
+	"strings"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -28,6 +31,12 @@ func dbLinksToLink(m *models.Link) *Link {
 
 	_ = json.Unmarshal([]byte(m.ExtraData), &data)
 
+	var domain *string
+	if u, err := url.Parse(m.Link); err == nil {
+		var host = u.Hostname()
+		domain = &host
+	}
+
 	return &Link{
 		ID:        m.ID,
 		CreatedTS: m.CreatedTS,
@@ -35,9 +44,12 @@ func dbLinksToLink(m *models.Link) *Link {
 		DeletedAt: m.DeletedAt,
 		Link:      m.Link,
 		Title:     m.Title,
+		Domain:    domain,
 		ExtraData: data,
 	}
 }
+
+var successiveSpaces = regexp.MustCompile(`\s+`)
 
 func linkToDBLink(link *Link) *models.Link {
 	var extraData = "{}"
@@ -46,13 +58,18 @@ func linkToDBLink(link *Link) *models.Link {
 		extraData = string(marshalled)
 	}
 
+	// Cleanup titles
+	var title = link.Title
+	title = strings.TrimSpace(title)
+	title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+
 	return &models.Link{
 		ID:        link.ID,
 		CreatedTS: link.CreatedTS,
 		CreatedBy: link.CreatedBy,
 		DeletedAt: link.DeletedAt,
 		Link:      link.Link,
-		Title:     link.Title,
+		Title:     title,
 		ExtraData: extraData,
 	}
 }

@@ -11,7 +11,7 @@ import { WindowScroller, AutoSizer, List, CellMeasurer, CellMeasurerCache } from
 import 'react-virtualized/styles.css'
 
 async function getLinks() {
-    return fetch('https://jaxsax.co/api/links').then((r) => r.json())
+    return fetch('/api/links').then((r) => r.json())
 }
 
 let index = lunr(() => { })
@@ -44,6 +44,7 @@ type Link = {
     id: string
     created_ts: number
     created_by: number
+    domain: string | undefined
     link: string
     title: string
 }
@@ -54,27 +55,16 @@ type Props = {
 }
 
 function LinkItem(l: Link) {
-    let title = l.title
-    title = title.replace(/(\r\n|\n|\r)/gm, " ");
-    title = title.replace(/(\s+)/g, " ");
-
-    let linkHostname: string | null = null;
-    try {
-        const { hostname } = new URL(l.link)
-        linkHostname = hostname
-    } catch (error) {
-    }
-
     const date = new Date(l.created_ts * 1000)
     return (
         <div className="truncate">
             <a href={l.link} className="text-lg">
-                {title}
+                {l.title}
             </a>
-            {linkHostname !== null ?
+            {l.domain ?
                 (
                     <div className="block text-gray-400 md:inline md:ml-2">
-                        ({linkHostname})
+                        ({l.domain})
                     </div>
                 ) : null}
 
