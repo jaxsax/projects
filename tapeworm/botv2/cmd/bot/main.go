@@ -17,7 +17,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
-	_ "github.com/mattn/go-sqlite3"
+	sq3 "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -88,7 +88,13 @@ func main() {
 	err = sqliteDB.Ping()
 	logErrorAndExit("ping db", err)
 
-	logger.Info("database open", zap.String("path", sqliteAbsPath))
+	maj, min, source := sq3.Version()
+	logger.Info("database open",
+		zap.String("path", sqliteAbsPath),
+		zap.String("major", maj),
+		zap.Int("minor", min),
+		zap.String("sourceID", source),
+	)
 
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)
