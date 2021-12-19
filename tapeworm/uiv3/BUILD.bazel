@@ -41,6 +41,7 @@ NPM_DEPENDENCIES = [
     "@npm//react-async-hook",
     "@npm//date-fns",
     "@npm//react-virtualized",
+    "@npm//@types/react-virtualized",
 ]
 
 next(

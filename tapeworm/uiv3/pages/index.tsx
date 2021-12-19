@@ -1,4 +1,4 @@
-import { useState, Fragment, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { useQuery } from 'react-query';
 import lunr from 'lunr';
 import { useAsync } from 'react-async-hook'
@@ -6,8 +6,8 @@ import useConstant from 'use-constant'
 import AwesomeDebouncePromise from 'awesome-debounce-promise'
 import formatDistance from 'date-fns/formatDistance';
 import formatISO from 'date-fns/formatISO';
-import { Menu } from '@headlessui/react'
-import { AutoSizer, WindowScroller, List } from 'react-virtualized'
+// import { Menu } from '@headlessui/react'
+import { WindowScroller, List, CellMeasurer, CellMeasurerCache } from 'react-virtualized'
 import 'react-virtualized/styles.css'
 
 async function getLinks() {
@@ -15,6 +15,10 @@ async function getLinks() {
 }
 
 let index = lunr(() => { })
+let cellCache = new CellMeasurerCache({
+    fixedWidth: true,
+    defaultHeight: 100,
+})
 
 function useLinks() {
     return useQuery(['links'], getLinks, {
@@ -106,15 +110,23 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
         const link = links[index];
 
         return (
-            <div key={key} style={style}>
-                <LinkItem {...link} />
-            </div>
+            <CellMeasurer
+                key={key}
+                cache={cellCache}
+                parent={parent}
+                columnIndex={0}
+                rowIndex={index}>
+                <div style={style}>
+                    <LinkItem {...link} />
+                </div>
+            </CellMeasurer>
         )
     }
 
     return <Wrapper>
         <div className="flex justify-between">
             <p className="text-gray-500">{links.length} records found {searchDurationSeconds ? `in ${searchDurationSeconds} ms` : ''} </p>
+            {/*
             <div className="text-right">
                 <Menu as="div" className="relative inline-block text-left border-2 border-blue-600 px-4 py-2 rounded-md">
                     <Menu.Button>Sort by</Menu.Button>
@@ -134,57 +146,26 @@ function LinksContainer({ links, searchDurationSeconds }: Props) {
                     </Menu.Items>
                 </Menu>
             </div>
+            */}
         </div>
         <div className="h-full">
             <WindowScroller>
                 {({ height, width, isScrolling, onChildScroll, scrollTop }) => {
-                    let heightMultiplier = 0.06
-                    let widthMultiplier = 0.75
-
-                    // 2xl
-                    if (width <= 1536) {
-                        heightMultiplier = 0.05
-                    }
-
-                    // xl
-                    if (width <= 1280) {
-                        heightMultiplier = 0.06
-                    }
-
-                    // lg
-                    if (width <= 1024) {
-                        heightMultiplier = 0.05
-                        widthMultiplier = 0.75
-                    }
-
-                    // md
-                    if (width <= 768) {
-                        heightMultiplier = 0.05
-                    }
-                    // sm
-                    if (width <= 640) {
-                        heightMultiplier = 0.135
-                    }
-
-                    // console.debug(heightMultiplier, width, widthMultiplier)
                     return <List
                         autoHeight
                         height={height}
+                        width={width}
                         rowCount={links.length}
-                        rowHeight={height * heightMultiplier}
+                        deferredMeasurementCache={cellCache}
+                        rowHeight={cellCache.rowHeight}
                         rowRenderer={rowRenderer}
                         isScrolling={isScrolling}
                         onScroll={onChildScroll}
                         scrollTop={scrollTop}
-                        width={width * widthMultiplier}
                     />
                 }}
             </WindowScroller>
         </div>
-        {/*<div className="mt-4 flex flex-row flex-wrap gap-4">
-            {links.map((l) => <LinkItem key={l.id} {...l} />)}
-        </div>
-        */}
     </Wrapper>
 }
 
