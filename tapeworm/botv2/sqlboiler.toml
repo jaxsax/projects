@@ -1,2 +1,2 @@
 [sqlite3]
-dbname = "bot.db"
+dbname = "/tmp/database.db"

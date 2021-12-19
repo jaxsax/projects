@@ -3,12 +3,12 @@
 
 package models
 
-var TableNames = struct {
-	Links        string
-	SkippedLinks string
-	Updates      string
-}{
-	Links:        "links",
-	SkippedLinks: "skipped_links",
-	Updates:      "updates",
+import "testing"
+
+func TestUpsert(t *testing.T) {
+	t.Run("Links", testLinksUpsert)
+
+	t.Run("SkippedLinks", testSkippedLinksUpsert)
+
+	t.Run("Updates", testUpdatesUpsert)
 }
