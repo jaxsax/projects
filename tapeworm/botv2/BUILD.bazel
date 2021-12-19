@@ -4,7 +4,6 @@ go_library(
     name = "botv2",
     srcs = [
         "bot.go",
-        "db.go",
         "entities.go",
         "telegram.go",
     ],
@@ -17,7 +16,6 @@ go_library(
         "//tapeworm/botv2/skippedlinks",
         "//tapeworm/botv2/updates",
         "@com_github_go_telegram_bot_api_telegram_bot_api//:telegram-bot-api",
-        "@com_github_jmoiron_sqlx//:sqlx",
         "@org_uber_go_zap//:zap",
     ],
 )
