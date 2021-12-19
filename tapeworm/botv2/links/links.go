@@ -6,6 +6,7 @@ type Link struct {
 	ID        int64             `json:"id"`
 	CreatedTS int64             `json:"created_ts"`
 	CreatedBy int64             `json:"created_by"`
+	DeletedAt int64             `json:"deleted_at"`
 	Link      string            `json:"link"`
 	Title     string            `json:"title"`
 	ExtraData map[string]string `json:"extra_data"`

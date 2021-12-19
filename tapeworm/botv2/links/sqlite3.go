@@ -32,6 +32,7 @@ func dbLinksToLink(m *models.Link) *Link {
 		ID:        m.ID,
 		CreatedTS: m.CreatedTS,
 		CreatedBy: m.CreatedBy,
+		DeletedAt: m.DeletedAt,
 		Link:      m.Link,
 		Title:     m.Title,
 		ExtraData: data,
@@ -49,6 +50,7 @@ func linkToDBLink(link *Link) *models.Link {
 		ID:        link.ID,
 		CreatedTS: link.CreatedTS,
 		CreatedBy: link.CreatedBy,
+		DeletedAt: link.DeletedAt,
 		Link:      link.Link,
 		Title:     link.Title,
 		ExtraData: extraData,
@@ -85,6 +87,7 @@ func (sq *Sqlite3) CreateMany(links []Link) error {
 
 func (sq *Sqlite3) List() ([]Link, error) {
 	objs, err := models.Links(
+		models.LinkWhere.DeletedAt.EQ(0),
 		qm.OrderBy("created_ts desc"),
 	).All(context.TODO(), sq.db)
 	if err != nil {
