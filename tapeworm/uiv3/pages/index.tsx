@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from 'react-query';
 import lunr from 'lunr';
 import { useAsync } from 'react-async-hook'
@@ -199,6 +199,7 @@ const useDebouncedSearch = (searchFunction: (term: string) => any) => {
 };
 
 function IndexPage() {
+    const searchTermInput = useRef<HTMLInputElement>(null);
     const { isSuccess, isLoading, isError, data, dataUpdatedAt } = useLinks()
     const { inputText, setInputText, searchResults } = useDebouncedSearch((term: string) => {
         const t0 = performance.now()
@@ -212,6 +213,12 @@ function IndexPage() {
             elapsed: t1 - t0,
         }
     })
+
+    useEffect(() => {
+        if (searchTermInput.current) {
+            searchTermInput.current.focus()
+        }
+    }, [])
 
     let items = data?.links
     let searchDuration = null
@@ -247,6 +254,7 @@ function IndexPage() {
                 }
                 <div className="mt-4">
                     <input
+                        ref={searchTermInput}
                         type="text" name="query" placeholder="Enter search terms"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
