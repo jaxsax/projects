@@ -5,7 +5,7 @@ CREATE TABLE links (
     link VARCHAR(1024) NOT NULL,
     title VARCHAR(1024) NOT NULL,
     extra_data TEXT NOT NULL,
-    deleted_at bigint not null
+    deleted_at bigint not null default '0'
 );
 
 CREATE TABLE skipped_links (
