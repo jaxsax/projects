@@ -9,6 +9,7 @@ import (
 	"github.com/felixge/httpsnoop"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/utils"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 
 	"go.uber.org/zap"
@@ -60,7 +61,8 @@ func (s *Server) txMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		SetTransaction(r.Context(), tx)
+		ctx := utils.SetTransaction(r.Context(), tx)
+		r = r.WithContext(ctx)
 		next.ServeHTTP(rw, r)
 
 		if err := tx.Commit(); err != nil {
@@ -73,22 +75,22 @@ func (s *Server) txMiddleware(next http.Handler) http.Handler {
 
 func (s *Server) apiLinks() http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		dbLinks, err := s.linksRepository.List()
+		linkValues, err := links.GetLinks(r.Context())
 		if err != nil {
-			s.Logger.Error("error listing", zap.Error(err))
+			s.Error("error listing", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		resp := struct {
-			Links []links.Link `json:"links"`
+			Links []*links.Link `json:"links"`
 		}{
-			Links: dbLinks,
+			Links: linkValues,
 		}
 
 		js, err := json.Marshal(resp)
 		if err != nil {
-			s.Logger.Error("error marshalling", zap.Error(err))
+			s.Error("error marshalling", zap.Error(err))
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}

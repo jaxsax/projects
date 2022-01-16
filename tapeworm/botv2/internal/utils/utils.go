@@ -1,29 +1,32 @@
-package web
+package utils
 
 import (
 	"context"
 	"database/sql"
+	"fmt"
 )
 
 type transactionContextKey struct{}
+
+var ErrTransactionNotfound = fmt.Errorf("transaction not found")
 
 func SetTransaction(ctx context.Context, tx *sql.Tx) context.Context {
 	return context.WithValue(ctx, transactionContextKey{}, tx)
 }
 
-func GetTx(ctx context.Context) (*sql.Tx, bool) {
+func GetTx(ctx context.Context) (*sql.Tx, error) {
 	tx, ok := ctx.Value(transactionContextKey{}).(*sql.Tx)
 	if !ok {
-		return nil, false
+		return nil, ErrTransactionNotfound
 	}
 
-	return tx, true
+	return tx, nil
 }
 
 func MustGetTx(ctx context.Context) *sql.Tx {
-	tx, ok := GetTx(ctx)
-	if !ok {
-		panic("could not find transaction")
+	tx, err := GetTx(ctx)
+	if err != nil {
+		panic(err)
 	}
 
 	return tx
