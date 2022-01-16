@@ -147,6 +147,7 @@ func main() {
 			config,
 			linksRepository,
 			*staticDirPath,
+			sqliteDB,
 		)
 
 		err := webServer.Run()

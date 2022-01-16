@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "gzip_writer.go",
         "server.go",
+        "utils.go",
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/web",
     visibility = ["//visibility:public"],
