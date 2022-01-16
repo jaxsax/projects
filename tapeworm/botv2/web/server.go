@@ -42,8 +42,9 @@ func NewServer(
 func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		m := httpsnoop.CaptureMetrics(next, w, r)
-		internal.Emit(
-			s.Logger,
+
+		s.Info(
+			"request complete",
 			zap.String("request.method", r.Method),
 			zap.String("request.path", r.URL.String()),
 			zap.Int("response.status_code", m.Code),
