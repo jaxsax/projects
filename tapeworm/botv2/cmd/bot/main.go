@@ -18,6 +18,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
 	sq3 "github.com/mattn/go-sqlite3"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var (
@@ -50,6 +51,15 @@ func readConfig() (*internal.Config, error) {
 
 	cf, err := internal.ReadConfig(f)
 	return cf, err
+}
+
+type zapDebugLogger struct {
+	logger *zap.Logger
+}
+
+func (zl *zapDebugLogger) Write(p []byte) (n int, err error) {
+	zl.logger.Info("sql query", zap.String("stmt", string(p)))
+	return len(p), nil
 }
 
 func main() {
@@ -95,6 +105,9 @@ func main() {
 		zap.Int("minor", min),
 		zap.String("sourceID", source),
 	)
+
+	boil.DebugMode = true
+	boil.DebugWriter = &zapDebugLogger{logger}
 
 	var (
 		linksRepository        = links.NewSqliteRepository(sqliteDB)
