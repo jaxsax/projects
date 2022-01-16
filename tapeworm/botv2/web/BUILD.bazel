@@ -13,6 +13,7 @@ go_library(
         "//tapeworm/botv2/internal/utils",
         "//tapeworm/botv2/links",
         "@com_github_felixge_httpsnoop//:httpsnoop",
+        "@com_github_google_uuid//:uuid",
         "@org_uber_go_zap//:zap",
     ],
 )

@@ -7,8 +7,10 @@ import (
 )
 
 type transactionContextKey struct{}
+type requestIDContextKey struct{}
 
 var ErrTransactionNotfound = fmt.Errorf("transaction not found")
+var ErrRequestIDNotFound = fmt.Errorf("request id not found")
 
 func SetTransaction(ctx context.Context, tx *sql.Tx) context.Context {
 	return context.WithValue(ctx, transactionContextKey{}, tx)
@@ -30,4 +32,17 @@ func MustGetTx(ctx context.Context) *sql.Tx {
 	}
 
 	return tx
+}
+
+func SetRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDContextKey{}, id)
+}
+
+func MustGetRequestID(ctx context.Context) string {
+	v, ok := ctx.Value(requestIDContextKey{}).(string)
+	if !ok {
+		panic(ErrRequestIDNotFound)
+	}
+
+	return v
 }

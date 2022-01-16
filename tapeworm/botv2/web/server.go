@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/felixge/httpsnoop"
+	"github.com/google/uuid"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/utils"
@@ -39,17 +40,40 @@ func NewServer(
 	}
 }
 
+func useRequestIDMiddleware(next http.Handler) http.Handler {
+	const headerName = "x-request-id"
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		println("@@@@@@")
+		id := r.Header.Get(headerName)
+		if id == "" {
+			id = uuid.New().String()
+		}
+
+		ctx := utils.SetRequestID(r.Context(), id)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(rw, r)
+	})
+}
+
 func (s *Server) LoggerMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestId := utils.MustGetRequestID(r.Context())
+		s.Info("request started",
+			zap.String("request.method", r.Method),
+			zap.String("request.path", r.URL.String()),
+			zap.String("request.id", requestId),
+		)
+
 		m := httpsnoop.CaptureMetrics(next, w, r)
 
 		s.Info(
 			"request complete",
-			zap.String("request.method", r.Method),
-			zap.String("request.path", r.URL.String()),
 			zap.Int("response.status_code", m.Code),
 			zap.Duration("duration", m.Duration),
 			zap.Int64("bytes_written", m.Written),
+			zap.String("request.method", r.Method),
+			zap.String("request.path", r.URL.String()),
+			zap.String("request.id", requestId),
 		)
 	})
 }
@@ -105,8 +129,8 @@ func (s *Server) apiLinks() http.Handler {
 
 func middlewareWrapper(handlers ...func(http.Handler) http.Handler) func(http.Handler) http.Handler {
 	return func(h http.Handler) http.Handler {
-		for _, mw := range handlers {
-			h = mw(h)
+		for i := len(handlers) - 1; i >= 0; i-- {
+			h = handlers[i](h)
 		}
 
 		return h
@@ -123,6 +147,7 @@ func (s *Server) Run() error {
 	}
 
 	mwStack := []func(http.Handler) http.Handler{
+		useRequestIDMiddleware,
 		s.LoggerMiddleware,
 		s.txMiddleware,
 		Gzip,
