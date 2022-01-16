@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/scylladb/go-set/strset"
 )
 
 type HandleEntitiesResponse struct {
@@ -15,27 +16,28 @@ func ignoreURL(s string) bool {
 	return s == "readme.md"
 }
 
-func HandleEntities(entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
-	// Decide how to do contextual logging, in the caller of this function, we've already
-	// defined a context aware logger but passing a logger instance all over the place
-	// seems iffy
-
+func HandleEntities(msg string, entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
+	runeText := []rune(msg)
 	entitiesValue := *entities
-	urlsToParse := make([]string, 0, len(entitiesValue))
+	uniqueUrls := strset.New()
 	for _, entity := range entitiesValue {
-		if entity.URL == "" {
+		if !entity.IsTextLink() && !entity.IsUrl() {
 			continue
 		}
 
-		url := entity.URL
+		url := string(runeText[entity.Offset : entity.Offset+entity.Length])
+		if url == "" {
+			continue
+		}
+
 		if ignoreURL(url) {
 			continue
 		}
 
-		urlsToParse = append(urlsToParse, string(url))
+		uniqueUrls.Add(url)
 	}
 
 	return &HandleEntitiesResponse{
-		Parsed: urlsToParse,
+		Parsed: uniqueUrls.List(),
 	}
 }

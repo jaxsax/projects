@@ -13,12 +13,11 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
-	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
-	"github.com/jaxsax/projects/tapeworm/botv2/updates"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	_ "github.com/lib/pq"
 	sq3 "github.com/mattn/go-sqlite3"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	sqldblogger "github.com/simukti/sqldb-logger"
+	"github.com/simukti/sqldb-logger/logadapter/zapadapter"
 )
 
 var (
@@ -51,15 +50,6 @@ func readConfig() (*internal.Config, error) {
 
 	cf, err := internal.ReadConfig(f)
 	return cf, err
-}
-
-type zapDebugLogger struct {
-	logger *zap.Logger
-}
-
-func (zl *zapDebugLogger) Write(p []byte) (n int, err error) {
-	zl.logger.Debug("sql query", zap.String("stmt", string(p)))
-	return len(p), nil
 }
 
 func main() {
@@ -95,6 +85,9 @@ func main() {
 	sqliteDB, err := sql1.Open("sqlite3", sqliteAbsPath)
 	logErrorAndExit("connect_sqlite", err)
 
+	loggeradapter := zapadapter.New(logger)
+	sqliteDB = sqldblogger.OpenDriver(config.SqliteDBPath, sqliteDB.Driver(), loggeradapter)
+
 	err = sqliteDB.Ping()
 	logErrorAndExit("ping db", err)
 
@@ -106,13 +99,8 @@ func main() {
 		zap.String("sourceID", source),
 	)
 
-	boil.DebugMode = true
-	boil.DebugWriter = &zapDebugLogger{logger}
-
 	var (
-		linksRepository        = links.NewSqliteRepository(sqliteDB)
-		skippedLinksRepository = skippedlinks.NewSqliteRepository(sqliteDB)
-		updatesRepository      = updates.NewSqliteRepository(sqliteDB)
+		linksRepository = links.NewSqliteRepository(sqliteDB)
 	)
 
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
@@ -132,9 +120,6 @@ func main() {
 		b := botv2.NewBot(
 			componentLogger,
 			config,
-			linksRepository,
-			updatesRepository,
-			skippedLinksRepository,
 			botAPI,
 			sqliteDB,
 		)

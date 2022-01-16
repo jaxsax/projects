@@ -586,6 +586,19 @@ def go_repositories():
         version = "v1.0.0",
     )
     go_repository(
+        name = "com_github_simukti_sqldb_logger",
+        importpath = "github.com/simukti/sqldb-logger",
+        sum = "h1:Mg3203uzYP3wyvD55A/kDp42Tyrh6/rWFXmPtRqIsek=",
+        version = "v0.0.0-20201125162808-c35f87e285f2",
+    )
+    go_repository(
+        name = "com_github_simukti_sqldb_logger_logadapter_zapadapter",
+        importpath = "github.com/simukti/sqldb-logger/logadapter/zapadapter",
+        sum = "h1:rbh2/jEhOA5vDqaQCTuIdSjmTYQoCXSJZxwHL4ksAV8=",
+        version = "v0.0.0-20201125162808-c35f87e285f2",
+    )
+
+    go_repository(
         name = "com_github_sirupsen_logrus",
         importpath = "github.com/sirupsen/logrus",
         sum = "h1:juTguoYk5qI21pwyTXY3B3Y5cOTH3ZUyZCg1v/mihuo=",
@@ -655,14 +668,14 @@ def go_repositories():
     go_repository(
         name = "com_github_stretchr_objx",
         importpath = "github.com/stretchr/objx",
-        sum = "h1:2vfRuCMp5sSVIDSqO8oNnWJq7mPa6KVP3iPIwFBuy8A=",
-        version = "v0.1.1",
+        sum = "h1:Hbg2NidpLE8veEBkEZTL3CvlkUIVzuU9jDplZO54c48=",
+        version = "v0.2.0",
     )
     go_repository(
         name = "com_github_stretchr_testify",
         importpath = "github.com/stretchr/testify",
-        sum = "h1:nOGnQDM7FYENwehXlg/kFVnos3rEvtKTjRvOWSzb6H4=",
-        version = "v1.5.1",
+        sum = "h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=",
+        version = "v1.6.1",
     )
     go_repository(
         name = "com_github_subosito_gotenv",
@@ -781,6 +794,13 @@ def go_repositories():
         version = "v2.2.8",
     )
     go_repository(
+        name = "in_gopkg_yaml_v3",
+        importpath = "gopkg.in/yaml.v3",
+        sum = "h1:VEmvx0P+GVTgkNu2EdTN988YCZPcD3lo9AoczZpucwc=",
+        version = "v3.0.0-20200601152816-913338de1bd2",
+    )
+
+    go_repository(
         name = "io_etcd_go_bbolt",
         importpath = "go.etcd.io/bbolt",
         sum = "h1:Z/90sZLPOeCy2PwprqkFa25PdkusRzaj9P8zm/KNyvk=",
@@ -893,6 +913,6 @@ def go_repositories():
     go_repository(
         name = "org_uber_go_zap",
         importpath = "go.uber.org/zap",
-        sum = "h1:ZZCA22JRF2gQE5FoNmhmrf7jeJJ2uhqDUNRYKm8dvmM=",
-        version = "v1.15.0",
+        sum = "h1:uFRZXykJGK9lLY4HtgSw44DnIcAM+kRBP7x5m+NpAOM=",
+        version = "v1.16.0",
     )
