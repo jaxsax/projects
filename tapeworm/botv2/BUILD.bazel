@@ -12,6 +12,7 @@ go_library(
     deps = [
         "//tapeworm/botv2/enhancers",
         "//tapeworm/botv2/internal",
+        "//tapeworm/botv2/internal/utils",
         "//tapeworm/botv2/links",
         "//tapeworm/botv2/skippedlinks",
         "//tapeworm/botv2/updates",
