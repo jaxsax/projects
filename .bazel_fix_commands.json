@@ -3,5 +3,10 @@
     "regex": "^Check that imports in Go sources match importpath attributes in deps.$",
     "command": "bazelisk",
     "args": ["run", "//:gazelle"]
+  },
+  {
+    "regex": "^compilepkg: missing strict dependencies:$",
+    "command": "bazelisk",
+    "args": ["run", "//:gazelle"]
   }
 ]

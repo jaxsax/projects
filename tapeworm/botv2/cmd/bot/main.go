@@ -123,6 +123,7 @@ func main() {
 			updatesRepository,
 			skippedLinksRepository,
 			botAPI,
+			sqliteDB,
 		)
 
 		err := b.Run()

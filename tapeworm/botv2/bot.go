@@ -2,12 +2,15 @@
 package botv2
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/utils"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/skippedlinks"
 	"github.com/jaxsax/projects/tapeworm/botv2/updates"
@@ -21,6 +24,7 @@ type Bot struct {
 	updatesRepository      updates.Repository
 	linksRepository        links.Repository
 	skippedLinksRepository skippedlinks.Repository
+	db                     *sql.DB
 }
 
 func NewBot(
@@ -30,6 +34,7 @@ func NewBot(
 	updatesRepository updates.Repository,
 	skippedLinksRepository skippedlinks.Repository,
 	botAPI *tgbotapi.BotAPI,
+	db *sql.DB,
 ) *Bot {
 	return &Bot{
 		Logger:                 logger,
@@ -38,6 +43,7 @@ func NewBot(
 		botAPI:                 botAPI,
 		updatesRepository:      updatesRepository,
 		skippedLinksRepository: skippedLinksRepository,
+		db:                     db,
 	}
 }
 
@@ -68,6 +74,25 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	start := time.Now()
 	ctxLogger := b.Logger.With()
 
+	tx, err := b.db.Begin()
+	if err != nil {
+		ctxLogger.Error("failed to make transaction", zap.Error(err))
+		return
+	}
+
+	ctx := context.Background()
+	ctx = utils.SetTransaction(ctx, tx)
+
+	defer func() {
+		if r := recover(); r != nil {
+			_ = tx.Rollback()
+			ctxLogger.Error("recovered panic")
+			return
+		}
+
+		_ = tx.Commit()
+	}()
+
 	defer func() {
 		// Placing this here until I figure out why using b.Logger.With() causes duplicates
 		// in canonical logs
@@ -81,7 +106,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		)
 	}()
 
-	err := b.updatesRepository.Create(updates.Update{Data: &update})
+	err = b.updatesRepository.Create(updates.Update{Data: &update})
 	if err != nil {
 		ctxLogger.Error("save update failed", zap.Error(err))
 	}
@@ -104,8 +129,10 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		if message.Entities != nil {
 			ctxLogger.Debug(
 				"parsing entities",
+				zap.String("text", message.Text),
+				zap.Any("entities", message.Entities),
 			)
-			res := HandleEntities(message.Text, message.Entities)
+			res := HandleEntities(message.Entities)
 
 			if len(res.Parsed) == 0 {
 				return
@@ -148,7 +175,8 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 				})
 				bodyParsed += fmt.Sprintf("%v. %v\n", i+1, enhancedLink.Title)
 			}
-			err := b.linksRepository.CreateMany(linksToAdd)
+
+			err := links.CreateMany(ctx, linksToAdd)
 			if err != nil {
 				ctxLogger.Error(
 					"store links failed",

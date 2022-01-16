@@ -12,26 +12,22 @@ type HandleEntitiesResponse struct {
 
 func ignoreURL(s string) bool {
 	s = strings.ToLower(s)
-	if s == "readme.md" {
-		return true
-	}
-	return false
+	return s == "readme.md"
 }
 
-func HandleEntities(text string, entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
+func HandleEntities(entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
 	// Decide how to do contextual logging, in the caller of this function, we've already
 	// defined a context aware logger but passing a logger instance all over the place
 	// seems iffy
 
-	runeText := []rune(text)
 	entitiesValue := *entities
 	urlsToParse := make([]string, 0, len(entitiesValue))
 	for _, entity := range entitiesValue {
-		if !entity.IsUrl() {
+		if entity.URL == "" {
 			continue
 		}
 
-		url := string(runeText[entity.Offset : entity.Offset+entity.Length])
+		url := entity.URL
 		if ignoreURL(url) {
 			continue
 		}

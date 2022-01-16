@@ -6,6 +6,7 @@ import (
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/utils"
 	"github.com/jaxsax/projects/tapeworm/botv2/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -29,4 +30,25 @@ func GetLinks(ctx context.Context) ([]*Link, error) {
 	}
 
 	return links, nil
+}
+
+func CreateMany(ctx context.Context, links []Link) error {
+	tx, err := utils.GetTx(ctx)
+	if err != nil {
+		return fmt.Errorf("get tx: %w", err)
+	}
+
+	dbLinks := make([]*models.Link, 0, len(links))
+	for _, link := range links {
+		dbLinks = append(dbLinks, linkToDBLink(&link))
+	}
+
+	for _, link := range dbLinks {
+		err = link.Insert(ctx, tx, boil.Blacklist("id"))
+		if err != nil {
+			return fmt.Errorf("insert: %w", err)
+		}
+	}
+
+	return nil
 }
