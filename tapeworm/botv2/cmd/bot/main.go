@@ -12,7 +12,6 @@ import (
 
 	"github.com/jaxsax/projects/tapeworm/botv2"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
-	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
 	sq3 "github.com/mattn/go-sqlite3"
 	sqldblogger "github.com/simukti/sqldb-logger"
@@ -95,10 +94,6 @@ func main() {
 		zap.String("sourceID", source),
 	)
 
-	var (
-		linksRepository = links.NewSqliteRepository(sqliteDB)
-	)
-
 	botAPI, err := botv2.NewTelegramBotAPI(config.Token)
 	logErrorAndExit("connect_telegram", err)
 
@@ -140,7 +135,6 @@ func main() {
 		webServer := web.NewServer(
 			componentLogger,
 			config,
-			linksRepository,
 			*staticDirPath,
 			sqliteDB,
 		)

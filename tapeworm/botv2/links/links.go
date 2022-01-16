@@ -12,10 +12,3 @@ type Link struct {
 	Title     string            `json:"title"`
 	ExtraData map[string]string `json:"extra_data"`
 }
-
-// Repository provides access to a links store
-type Repository interface {
-	CreateMany(link []Link) error
-	ListMatchingIDs(IDs []int64) ([]Link, error)
-	List() ([]Link, error)
-}

@@ -18,25 +18,22 @@ import (
 
 type Server struct {
 	*zap.Logger
-	cfg             *internal.Config
-	linksRepository links.Repository
-	staticDirPath   string
-	db              *sql.DB
+	cfg           *internal.Config
+	staticDirPath string
+	db            *sql.DB
 }
 
 func NewServer(
 	logger *zap.Logger,
 	cfg *internal.Config,
-	linksRepository links.Repository,
 	staticDirPath string,
 	db *sql.DB,
 ) *Server {
 	return &Server{
-		Logger:          logger,
-		cfg:             cfg,
-		linksRepository: linksRepository,
-		staticDirPath:   staticDirPath,
-		db:              db,
+		Logger:        logger,
+		cfg:           cfg,
+		staticDirPath: staticDirPath,
+		db:            db,
 	}
 }
 

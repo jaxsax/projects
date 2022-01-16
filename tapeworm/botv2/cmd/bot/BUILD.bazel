@@ -11,7 +11,6 @@ go_library(
     deps = [
         "//tapeworm/botv2",
         "//tapeworm/botv2/internal",
-        "//tapeworm/botv2/links",
         "//tapeworm/botv2/web",
         "@com_github_mattn_go_sqlite3//:go-sqlite3",
         "@com_github_simukti_sqldb_logger//:sqldb-logger",

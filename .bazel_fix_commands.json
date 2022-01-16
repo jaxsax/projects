@@ -8,5 +8,10 @@
     "regex": "^compilepkg: missing strict dependencies:$",
     "command": "bazelisk",
     "args": ["run", "//:gazelle"]
+  },
+  {
+    "regex": "missing input file",
+    "command": "bazelisk",
+    "args": ["run", "//:gazelle"]
   }
 ]
