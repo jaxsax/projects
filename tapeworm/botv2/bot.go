@@ -5,7 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
@@ -70,8 +69,6 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	}
 
 	message := update.Message
-
-	start := time.Now()
 	ctxLogger := b.Logger.With()
 
 	tx, err := b.db.Begin()
@@ -93,18 +90,18 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		_ = tx.Commit()
 	}()
 
-	defer func() {
-		// Placing this here until I figure out why using b.Logger.With() causes duplicates
-		// in canonical logs
-		internal.Emit(
-			ctxLogger,
-			zap.Int("update_id", update.UpdateID),
-			zap.String("from", message.From.UserName),
-			zap.Int("from_userid", message.From.ID),
-			zap.Int("message_id", message.MessageID),
-			zap.Duration("update_duration", time.Since(start)),
-		)
-	}()
+	//defer func() {
+	//	// Placing this here until I figure out why using b.Logger.With() causes duplicates
+	//	// in canonical logs
+	//	internal.Emit(
+	//		ctxLogger,
+	//		zap.Int("update_id", update.UpdateID),
+	//		zap.String("from", message.From.UserName),
+	//		zap.Int("from_userid", message.From.ID),
+	//		zap.Int("message_id", message.MessageID),
+	//		zap.Duration("update_duration", time.Since(start)),
+	//	)
+	//}()
 
 	err = b.updatesRepository.Create(updates.Update{Data: &update})
 	if err != nil {
