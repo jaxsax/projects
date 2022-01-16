@@ -8,6 +8,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200319042609-5e339ed016b0
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.9
