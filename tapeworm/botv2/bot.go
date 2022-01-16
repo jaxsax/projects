@@ -81,19 +81,6 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		_ = tx.Commit()
 	}()
 
-	//defer func() {
-	//	// Placing this here until I figure out why using b.Logger.With() causes duplicates
-	//	// in canonical logs
-	//	internal.Emit(
-	//		ctxLogger,
-	//		zap.Int("update_id", update.UpdateID),
-	//		zap.String("from", message.From.UserName),
-	//		zap.Int("from_userid", message.From.ID),
-	//		zap.Int("message_id", message.MessageID),
-	//		zap.Duration("update_duration", time.Since(start)),
-	//	)
-	//}()
-
 	err = updates.Create(ctx, updates.Update{Data: &update})
 	if err != nil {
 		ctxLogger.Error("save update failed", zap.Error(err))
@@ -106,13 +93,6 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 		reply := tgbotapi.NewMessage(message.Chat.ID, "pong")
 		reply.ReplyToMessageID = message.MessageID
 		b.botAPI.Send(reply)
-	case "!links":
-		// all := b.linksRepository.List()
-
-		ctxLogger.Info(
-			"command received",
-			zap.String("cmd", "links"),
-		)
 	default:
 		if message.Entities != nil {
 			ctxLogger.Debug(

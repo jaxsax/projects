@@ -8,7 +8,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.1
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-telegram-bot-api/telegram-bot-api v1.0.1-0.20200319042609-5e339ed016b0
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.3.0
 	github.com/mattn/go-sqlite3 v1.14.9
@@ -16,10 +16,10 @@ require (
 	github.com/oklog/run v1.1.0
 	github.com/pkg/errors v0.8.1
 	github.com/scylladb/go-set v1.0.2
-	github.com/simukti/sqldb-logger v0.0.0-20201125162808-c35f87e285f2 // indirect
-	github.com/simukti/sqldb-logger/logadapter/zapadapter v0.0.0-20201125162808-c35f87e285f2 // indirect
+	github.com/simukti/sqldb-logger v0.0.0-20201125162808-c35f87e285f2
+	github.com/simukti/sqldb-logger/logadapter/zapadapter v0.0.0-20201125162808-c35f87e285f2
 	github.com/spf13/viper v1.6.3
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 	github.com/volatiletech/null/v8 v8.1.1 // indirect
 	github.com/volatiletech/randomize v0.0.1
 	github.com/volatiletech/sqlboiler/v4 v4.4.0
