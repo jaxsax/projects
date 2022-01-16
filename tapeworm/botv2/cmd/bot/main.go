@@ -58,7 +58,7 @@ type zapDebugLogger struct {
 }
 
 func (zl *zapDebugLogger) Write(p []byte) (n int, err error) {
-	zl.logger.Info("sql query", zap.String("stmt", string(p)))
+	zl.logger.Debug("sql query", zap.String("stmt", string(p)))
 	return len(p), nil
 }
 
