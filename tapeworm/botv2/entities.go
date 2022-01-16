@@ -13,7 +13,7 @@ type HandleEntitiesResponse struct {
 
 func ignoreURL(s string) bool {
 	s = strings.ToLower(s)
-	return s == "readme.md"
+	return s == "readme.md" || s == ""
 }
 
 func HandleEntities(msg string, entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
@@ -26,10 +26,6 @@ func HandleEntities(msg string, entities *[]tgbotapi.MessageEntity) *HandleEntit
 		}
 
 		url := string(runeText[entity.Offset : entity.Offset+entity.Length])
-		if url == "" {
-			continue
-		}
-
 		if ignoreURL(url) {
 			continue
 		}
