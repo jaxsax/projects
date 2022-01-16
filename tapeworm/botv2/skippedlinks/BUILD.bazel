@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "service.go",
         "skipped_links.go",
-        "sqlite3.go",
     ],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/skippedlinks",
     visibility = ["//visibility:public"],

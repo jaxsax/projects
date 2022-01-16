@@ -7,8 +7,3 @@ type SkippedLink struct {
 	Link        string
 	ErrorReason string `db:"error_reason"`
 }
-
-// Repository provides access to a links store
-type Repository interface {
-	Create(skippedLink SkippedLink) error
-}
