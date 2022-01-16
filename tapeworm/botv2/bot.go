@@ -17,32 +17,23 @@ import (
 )
 
 type Bot struct {
-	Logger                 *zap.Logger
-	cfg                    *internal.Config
-	botAPI                 *tgbotapi.BotAPI
-	updatesRepository      updates.Repository
-	linksRepository        links.Repository
-	skippedLinksRepository skippedlinks.Repository
-	db                     *sql.DB
+	Logger *zap.Logger
+	cfg    *internal.Config
+	botAPI *tgbotapi.BotAPI
+	db     *sql.DB
 }
 
 func NewBot(
 	logger *zap.Logger,
 	config *internal.Config,
-	linksRepository links.Repository,
-	updatesRepository updates.Repository,
-	skippedLinksRepository skippedlinks.Repository,
 	botAPI *tgbotapi.BotAPI,
 	db *sql.DB,
 ) *Bot {
 	return &Bot{
-		Logger:                 logger,
-		cfg:                    config,
-		linksRepository:        linksRepository,
-		botAPI:                 botAPI,
-		updatesRepository:      updatesRepository,
-		skippedLinksRepository: skippedLinksRepository,
-		db:                     db,
+		Logger: logger,
+		cfg:    config,
+		botAPI: botAPI,
+		db:     db,
 	}
 }
 
@@ -103,7 +94,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 	//	)
 	//}()
 
-	err = b.updatesRepository.Create(updates.Update{Data: &update})
+	err = updates.Create(ctx, updates.Update{Data: &update})
 	if err != nil {
 		ctxLogger.Error("save update failed", zap.Error(err))
 	}
@@ -129,7 +120,7 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 				zap.String("text", message.Text),
 				zap.Any("entities", message.Entities),
 			)
-			res := HandleEntities(message.Entities)
+			res := HandleEntities(message.Text, message.Entities)
 
 			if len(res.Parsed) == 0 {
 				return
@@ -150,7 +141,8 @@ func (b *Bot) handleUpdate(update tgbotapi.Update) {
 						Link:        entity,
 						ErrorReason: err.Error(),
 					}
-					serr := b.skippedLinksRepository.Create(skippedLink)
+
+					serr := skippedlinks.Create(ctx, skippedLink)
 					if serr != nil {
 						ctxLogger.Error(
 							"store skipped link failed",

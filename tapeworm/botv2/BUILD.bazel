@@ -17,6 +17,7 @@ go_library(
         "//tapeworm/botv2/skippedlinks",
         "//tapeworm/botv2/updates",
         "@com_github_go_telegram_bot_api_telegram_bot_api//:telegram-bot-api",
+        "@com_github_scylladb_go_set//strset",
         "@org_uber_go_zap//:zap",
     ],
 )
