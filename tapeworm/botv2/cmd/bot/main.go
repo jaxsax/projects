@@ -14,7 +14,6 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/links"
 	"github.com/jaxsax/projects/tapeworm/botv2/web"
-	_ "github.com/lib/pq"
 	sq3 "github.com/mattn/go-sqlite3"
 	sqldblogger "github.com/simukti/sqldb-logger"
 	"github.com/simukti/sqldb-logger/logadapter/zapadapter"
@@ -58,10 +57,7 @@ func main() {
 	lcfg := zap.NewDevelopmentConfig()
 	lcfg.OutputPaths = []string{"stdout"}
 
-	options := []zap.Option{
-		internal.Core(),
-	}
-	logger, err := lcfg.Build(options...)
+	logger, err := lcfg.Build()
 	if err != nil {
 		zap.L().Fatal("error building logger", zap.Error(err))
 	}

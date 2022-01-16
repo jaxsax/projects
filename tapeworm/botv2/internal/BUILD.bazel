@@ -2,19 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "internal",
-    srcs = [
-        "canonlog.go",
-        "config.go",
-        "core.go",
-        "logger.go",
-    ],
+    srcs = ["config.go"],
     importpath = "github.com/jaxsax/projects/tapeworm/botv2/internal",
     visibility = ["//tapeworm/botv2:__subpackages__"],
-    deps = [
-        "@in_gopkg_yaml_v2//:yaml_v2",
-        "@org_uber_go_zap//:zap",
-        "@org_uber_go_zap//zapcore",
-    ],
+    deps = ["@in_gopkg_yaml_v2//:yaml_v2"],
 )
 
 go_test(
