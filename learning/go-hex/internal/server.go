@@ -1,7 +1,8 @@
-package main
+package internal
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
@@ -10,6 +11,8 @@ import (
 
 type Application struct {
 	httpServer *http.Server
+
+	Router *gin.Engine
 }
 
 func NewApplication() *Application {
@@ -24,6 +27,7 @@ func NewApplication() *Application {
 	}
 
 	app.httpServer = httpServer
+	app.Router = g
 
 	return app
 }
@@ -41,13 +45,14 @@ func (a *Application) Run() error {
 }
 
 func (a *Application) Stop(ctx context.Context) error {
+	log.Printf("Stopping http")
 	return a.httpServer.Shutdown(ctx)
 }
 
 func (a *Application) setupRouter(g *gin.Engine) {
 	g.GET("/upper", func(ctx *gin.Context) {
 		q := ctx.Query("q")
-		q = strings.ToLower(q)
+		q = strings.ToUpper(q)
 		_, _ = ctx.Writer.Write([]byte(q))
 	})
 }
