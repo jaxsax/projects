@@ -15,7 +15,14 @@ func main() {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, os.Interrupt)
 
-	app := internal.NewApplication()
+	registry, err := internal.NewRegistry(&internal.Config{
+		SQLPath: "./store.db",
+	})
+	if err != nil {
+		log.Fatalf("registry create err: %v", err)
+	}
+
+	app := internal.NewApplication(registry)
 
 	go func() {
 		if err := app.Run(); err != nil {
