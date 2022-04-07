@@ -16,7 +16,7 @@ func main() {
 	signal.Notify(ch, os.Interrupt)
 
 	registry, err := internal.NewRegistry(&internal.Config{
-		SQLPath: "./store.db",
+		SQLPath: "./store.db?_journal_mode=WAL",
 	})
 	if err != nil {
 		log.Fatalf("registry create err: %v", err)
