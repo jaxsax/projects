@@ -6,7 +6,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/utils"
@@ -41,10 +41,7 @@ func (b *Bot) Run() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
-	updates, err := b.botAPI.GetUpdatesChan(u)
-	if err != nil {
-		return fmt.Errorf("get updates: %w", err)
-	}
+	updates := b.botAPI.GetUpdatesChan(u)
 
 	b.Logger.Info("listening for messages")
 	for update := range updates {

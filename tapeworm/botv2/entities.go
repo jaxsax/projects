@@ -3,7 +3,7 @@ package botv2
 import (
 	"strings"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/scylladb/go-set/strset"
 )
 
@@ -16,12 +16,11 @@ func ignoreURL(s string) bool {
 	return s == "readme.md" || s == ""
 }
 
-func HandleEntities(msg string, entities *[]tgbotapi.MessageEntity) *HandleEntitiesResponse {
+func HandleEntities(msg string, entities []tgbotapi.MessageEntity) *HandleEntitiesResponse {
 	runeText := []rune(msg)
-	entitiesValue := *entities
 	uniqueUrls := strset.New()
-	for _, entity := range entitiesValue {
-		if !entity.IsTextLink() && !entity.IsUrl() {
+	for _, entity := range entities {
+		if !entity.IsTextLink() && !entity.IsURL() {
 			continue
 		}
 
