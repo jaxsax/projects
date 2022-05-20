@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/go-logr/logr"
+	"github.com/gorilla/mux"
 )
 
 type Options struct {
@@ -30,7 +31,8 @@ func (s *Server) Start() error {
 	s.logger.V(0).Info("starting", "addr", s.opts.HTTPAddress)
 
 	s.httpServer = &http.Server{
-		Addr: s.opts.HTTPAddress,
+		Addr:    s.opts.HTTPAddress,
+		Handler: s.buildMux(),
 	}
 
 	if err := s.httpServer.ListenAndServe(); err != nil {
@@ -42,6 +44,16 @@ func (s *Server) Start() error {
 	}
 
 	return nil
+}
+
+func (s *Server) buildMux() *mux.Router {
+	m := mux.NewRouter().StrictSlash(true)
+
+	m.HandleFunc("/liveness", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}).Methods(http.MethodGet)
+
+	return m
 }
 
 func (s *Server) Stop(ctx context.Context) error {
