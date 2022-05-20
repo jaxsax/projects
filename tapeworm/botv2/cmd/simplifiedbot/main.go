@@ -10,14 +10,17 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 	"github.com/jessevdk/go-flags"
 	"go.uber.org/zap"
 )
 
 var (
+	logger logr.Logger
+
 	flagParser        = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
-	logger            logr.Logger
 	httpserverOptions = &httpserver.Options{}
+	telegramOptions   = &telegrampoller.Options{}
 	logOptions        = &loggingOptions{}
 )
 
@@ -27,6 +30,10 @@ type loggingOptions struct {
 
 func main() {
 	if _, err := flagParser.AddGroup("http", "", httpserverOptions); err != nil {
+		panic(err)
+	}
+
+	if _, err := flagParser.AddGroup("telegram", "", telegramOptions); err != nil {
 		panic(err)
 	}
 
@@ -54,6 +61,14 @@ func main() {
 		}
 	}()
 
+	telegramPoller := telegrampoller.New(telegramOptions, logger)
+	go func() {
+		if err := telegramPoller.Start(); err != nil {
+			logger.V(0).Error(err, "start telegram poller")
+			done <- struct{}{}
+		}
+	}()
+
 	go func() {
 		<-waitSigterm
 
@@ -64,6 +79,10 @@ func main() {
 	<-done
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+
+	if err := telegramPoller.Stop(shutdownCtx); err != nil {
+		logger.V(0).Error(err, "telegram poller shutdown")
+	}
 
 	if err := httpserver.Stop(shutdownCtx); err != nil {
 		logger.V(0).Error(err, "httpserver shutdown")
