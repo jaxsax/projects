@@ -2,17 +2,21 @@ package httpserver
 
 import (
 	"context"
+	"errors"
+	"net/http"
 
 	"github.com/go-logr/logr"
 )
 
 type Options struct {
-	HTTPAddress string `long:"http_address" description:"address to listen for http requests on" default:"0.0.0.0:8080" env:"HTTP_ADDRESS"`
+	HTTPAddress string `long:"http_address" description:"address to listen for http requests on" default:"0.0.0.0:8081" env:"HTTP_ADDRESS"`
 }
 
 type Server struct {
 	opts   *Options
 	logger logr.Logger
+
+	httpServer *http.Server
 }
 
 func New(opts *Options, logger logr.Logger) *Server {
@@ -23,9 +27,24 @@ func New(opts *Options, logger logr.Logger) *Server {
 }
 
 func (s *Server) Start() error {
-	s.logger.V(0).Info("starting")
+	s.logger.V(0).Info("starting", "addr", s.opts.HTTPAddress)
+
+	s.httpServer = &http.Server{
+		Addr: s.opts.HTTPAddress,
+	}
+
+	if err := s.httpServer.ListenAndServe(); err != nil {
+		if errors.Is(err, http.ErrServerClosed) {
+			return nil
+		}
+
+		return err
+	}
+
 	return nil
 }
+
 func (s *Server) Stop(ctx context.Context) error {
-	return nil
+	s.logger.V(0).Info("shutting down")
+	return s.httpServer.Shutdown(ctx)
 }

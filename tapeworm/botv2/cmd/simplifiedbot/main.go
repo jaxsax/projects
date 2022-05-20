@@ -42,20 +42,31 @@ func main() {
 		panic(err)
 	}
 
-	term := make(chan os.Signal, 1)
-	signal.Notify(term, os.Interrupt, syscall.SIGTERM)
+	done := make(chan struct{}, 1)
+	waitSigterm := make(chan os.Signal, 1)
+	signal.Notify(waitSigterm, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	httpserver := httpserver.New(httpserverOptions, logger)
-	if err := httpserver.Start(); err != nil {
-		panic(err)
-	}
+	go func() {
+		if err := httpserver.Start(); err != nil {
+			logger.V(0).Error(err, "start httpserver")
+			done <- struct{}{}
+		}
+	}()
 
-	<-term
+	go func() {
+		<-waitSigterm
+
+		logger.V(0).Info("interrupt received")
+		done <- struct{}{}
+	}()
+
+	<-done
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	if err := httpserver.Stop(shutdownCtx); err != nil {
-		logger.V(1).Error(err, "httpserver shutdown")
+		logger.V(0).Error(err, "httpserver shutdown")
 	}
 }
 
