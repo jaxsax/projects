@@ -19,12 +19,12 @@ type EnhancedLink struct {
 
 type Strategy interface {
 	Name() string
-	Accepts(*url.URL) bool
-	Provide(*url.URL) (*EnhancedLink, error)
+	Accepts(u *url.URL) bool
+	Provide(u *url.URL) (*EnhancedLink, error)
 }
 
 var StrategyList = []Strategy{
-	&Youtube{},
+	&OEmbedStrategy{},
 	&DefaultStrategy{},
 }
 
@@ -60,14 +60,18 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 	removeUTMParameters(url)
 
 	for _, strategy := range StrategyList {
+		lg := logr.FromContextOrDiscard(ctx).WithValues("strategy", strategy.Name(), "url", url)
 		if strategy.Accepts(url) {
-			logr.FromContextOrDiscard(ctx).V(0).Info(
-				"using strategy",
-				"strategy_name", strategy.Name(),
-				"url", url,
-				"host", url.Hostname(),
-			)
-			return strategy.Provide(url)
+			lg.Info("accepted")
+
+			e, err := strategy.Provide(url)
+			if err != nil {
+				lg.Error(err, "strategy failed to provide")
+				continue
+			}
+
+			lg.Info("strategy provided", "info", e)
+			return e, nil
 		}
 	}
 
