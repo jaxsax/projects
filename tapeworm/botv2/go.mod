@@ -6,8 +6,11 @@ require (
 	github.com/davecgh/go-spew v1.1.1
 	github.com/felixge/httpsnoop v1.0.3
 	github.com/friendsofgo/errors v0.9.2
+	github.com/go-logr/logr v1.2.3
+	github.com/go-logr/zapr v1.2.3
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
 	github.com/google/uuid v1.3.0
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/lib/pq v1.10.5
 	github.com/mattn/go-sqlite3 v1.14.13
