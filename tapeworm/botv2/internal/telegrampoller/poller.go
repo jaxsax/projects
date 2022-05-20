@@ -3,9 +3,11 @@ package telegrampoller
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 )
 
 type Options struct {
@@ -53,9 +55,107 @@ func (p *TelegramPoller) Start() error {
 }
 
 func (p *TelegramPoller) handle(update tgbotapi.Update) {
-	l := p.logger.WithValues("message_id", update.Message.MessageID)
+	l := p.logger.WithValues(
+		"from_chat_id", update.FromChat().ID,
+		"messsage_id", update.Message.MessageID,
+	)
+	ctx := logr.NewContext(context.Background(), l)
 
-	l.Info("telegram message", "update", update)
+	l.Info("telegram message received", "update", update)
+
+	if update.Message != nil {
+		p.handleMessage(ctx, update.Message)
+	}
+}
+
+func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Message) {
+	if len(message.Entities) == 0 {
+		return
+	}
+
+	var processedLinkGroup []*processLinkResponse
+	for _, entity := range message.Entities {
+		if !entity.IsURL() {
+			continue
+		}
+
+		req := &processLinkRequest{
+			URL: message.Text[entity.Offset : entity.Offset+entity.Length],
+		}
+
+		resp, err := p.linkProcessor(req)
+		if err != nil {
+			p.replyWithError(ctx, err, "failed to process link", message)
+			return
+		}
+
+		processedLinkGroup = append(processedLinkGroup, resp)
+	}
+
+	if len(processedLinkGroup) == 0 {
+		p.replyWithError(ctx, fmt.Errorf("no links found"), "no link found", message)
+		return
+	}
+
+	// Persist to storage
+
+	// Reply to the user
+	processedMessage := processedLinkGroupMessageBody(processedLinkGroup)
+	m := NewReplyToMessage(processedMessage, message)
+	_, err := p.botapi.Send(m)
+	if err != nil {
+		logr.FromContextOrDiscard(ctx).Error(err, "failed to send processed message")
+		return
+	}
+}
+
+func processedLinkGroupMessageBody(g []*processLinkResponse) string {
+	var sb strings.Builder
+
+	for i, r := range g {
+		sb.WriteString(fmt.Sprintf("%d. %s\n", i+1, r.Title))
+	}
+
+	return sb.String()
+}
+
+func (p *TelegramPoller) replyWithError(
+	ctx context.Context,
+	processErr error,
+	clientFacingMessage string,
+	originMessage *tgbotapi.Message,
+) {
+	// todo: mask server sided errors
+	m := tgbotapi.NewMessage(originMessage.Chat.ID, clientFacingMessage)
+	m.ReplyToMessageID = originMessage.MessageID
+
+	logr.FromContextOrDiscard(ctx).Error(processErr, clientFacingMessage)
+	_, err := p.botapi.Send(m)
+	if err != nil {
+		logr.FromContextOrDiscard(ctx).Error(err, "failed to reply with error")
+		return
+	}
+}
+
+type processLinkRequest struct {
+	URL string
+}
+
+type processLinkResponse struct {
+	Title string
+	Link  string
+}
+
+func (p *TelegramPoller) linkProcessor(req *processLinkRequest) (*processLinkResponse, error) {
+	l, err := enhancers.EnhanceLink(req.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	return &processLinkResponse{
+		Title: l.Title,
+		Link:  l.Link,
+	}, nil
 }
 
 func (p *TelegramPoller) Stop(ctx context.Context) error {
