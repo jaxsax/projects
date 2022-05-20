@@ -83,7 +83,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 			URL: message.Text[entity.Offset : entity.Offset+entity.Length],
 		}
 
-		resp, err := p.linkProcessor(req)
+		resp, err := p.linkProcessor(ctx, req)
 		if err != nil {
 			p.replyWithError(ctx, err, "failed to process link", message)
 			return
@@ -146,8 +146,8 @@ type processLinkResponse struct {
 	Link  string
 }
 
-func (p *TelegramPoller) linkProcessor(req *processLinkRequest) (*processLinkResponse, error) {
-	l, err := enhancers.EnhanceLink(req.URL)
+func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequest) (*processLinkResponse, error) {
+	l, err := enhancers.EnhanceLinkWithContext(ctx, req.URL)
 	if err != nil {
 		return nil, err
 	}

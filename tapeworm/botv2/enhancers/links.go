@@ -1,19 +1,31 @@
 package enhancers
 
 import (
-	"bytes"
+	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/go-logr/logr"
 )
 
 type EnhancedLink struct {
 	Original string
 	Link     string
 	Title    string
+}
+
+type Strategy interface {
+	Name() string
+	Accepts(*url.URL) bool
+	Provide(*url.URL) (*EnhancedLink, error)
+}
+
+var StrategyList = []Strategy{
+	&Youtube{},
+	&DefaultStrategy{},
 }
 
 var httpClient = &http.Client{
@@ -32,6 +44,10 @@ func removeUTMParameters(url *url.URL) {
 }
 
 func EnhanceLink(link string) (*EnhancedLink, error) {
+	return EnhanceLinkWithContext(context.Background(), link)
+}
+
+func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, error) {
 	url, err := url.Parse(link)
 	if err != nil {
 		return nil, err
@@ -42,52 +58,18 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 	}
 
 	removeUTMParameters(url)
-	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
-	if err != nil {
-		return nil, fmt.Errorf("new request: %w", err)
-	}
 
-	req.Header.Set(
-		"User-Agent",
-		"Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
-	)
-
-	res, err := httpClient.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		_ = res.Body.Close()
-	}()
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	contentType := http.DetectContentType(body)
-	switch contentType {
-	case "text/xml; charset=utf-8":
-		fallthrough
-	case "text/html; charset=utf-8":
-		title, err := ReadTitle(bytes.NewReader(body))
-		if err != nil {
-			return nil, fmt.Errorf("read title: %w", err)
+	for _, strategy := range StrategyList {
+		if strategy.Accepts(url) {
+			logr.FromContextOrDiscard(ctx).V(0).Info(
+				"using strategy",
+				"strategy_name", strategy.Name(),
+				"url", url,
+				"host", url.Hostname(),
+			)
+			return strategy.Provide(url)
 		}
-
-		return &EnhancedLink{
-			Original: link,
-			Link:     url.String(),
-			Title:    title,
-		}, nil
-	case "application/pdf":
-		return &EnhancedLink{
-			Original: link,
-			Link:     url.String(),
-			Title:    url.String(),
-		}, nil
 	}
 
-	return nil, fmt.Errorf("unimplemented type %v", contentType)
+	return nil, fmt.Errorf("no acceptable strategy")
 }
