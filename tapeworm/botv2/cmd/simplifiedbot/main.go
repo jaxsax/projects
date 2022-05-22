@@ -10,6 +10,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 	"github.com/jessevdk/go-flags"
 	"go.uber.org/zap"
@@ -48,6 +49,9 @@ func main() {
 	if err := setupLogger(logOptions); err != nil {
 		panic(err)
 	}
+
+	// Disgusting, but lazy to thread ctx all the way to utility functions
+	logging.Logger = logger
 
 	done := make(chan struct{}, 1)
 	waitSigterm := make(chan os.Signal, 1)
