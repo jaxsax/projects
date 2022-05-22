@@ -9,6 +9,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
@@ -22,6 +23,7 @@ var (
 	flagParser        = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
 	httpserverOptions = &httpserver.Options{}
 	telegramOptions   = &telegrampoller.Options{}
+	dbOptions         = &db.Options{}
 	logOptions        = &loggingOptions{}
 )
 
@@ -38,6 +40,10 @@ func main() {
 		panic(err)
 	}
 
+	if _, err := flagParser.AddGroup("db", "", dbOptions); err != nil {
+		panic(err)
+	}
+
 	if _, err := flagParser.AddGroup("logging", "", logOptions); err != nil {
 		panic(err)
 	}
@@ -50,6 +56,11 @@ func main() {
 		panic(err)
 	}
 
+	store, err := db.Setup(dbOptions)
+	if err != nil {
+		panic(err)
+	}
+
 	// Disgusting, but lazy to thread ctx all the way to utility functions
 	logging.Logger = logger
 
@@ -57,7 +68,7 @@ func main() {
 	waitSigterm := make(chan os.Signal, 1)
 	signal.Notify(waitSigterm, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	httpserver := httpserver.New(httpserverOptions, logger)
+	httpserver := httpserver.New(httpserverOptions, store, logger)
 	go func() {
 		if err := httpserver.Start(); err != nil {
 			logger.V(0).Error(err, "start httpserver")
@@ -65,7 +76,7 @@ func main() {
 		}
 	}()
 
-	telegramPoller := telegrampoller.New(telegramOptions, logger)
+	telegramPoller := telegrampoller.New(telegramOptions, store, logger)
 	go func() {
 		if err := telegramPoller.Start(); err != nil {
 			logger.V(0).Error(err, "start telegram poller")

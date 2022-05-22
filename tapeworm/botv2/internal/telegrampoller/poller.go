@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
 type Options struct {
@@ -20,12 +23,14 @@ type TelegramPoller struct {
 	logger  logr.Logger
 
 	botapi *tgbotapi.BotAPI
+	store  *db.Store
 	done   chan struct{}
 }
 
-func New(opt *Options, logger logr.Logger) *TelegramPoller {
+func New(opt *Options, store *db.Store, logger logr.Logger) *TelegramPoller {
 	return &TelegramPoller{
 		options: opt,
+		store:   store,
 		logger:  logger,
 		done:    make(chan struct{}, 1),
 	}
@@ -98,6 +103,24 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	}
 
 	// Persist to storage
+	processedLinks := make([]*types.Link, 0, len(processedLinkGroup))
+	for _, link := range processedLinkGroup {
+		lt := &types.Link{
+			Link:        link.Link,
+			Title:       link.Title,
+			CreatedAt:   time.Now(),
+			CreatedByID: uint64(message.From.ID),
+			ExtraData:   map[string]string{},
+		}
+
+		processedLinks = append(processedLinks, lt)
+	}
+
+	if err := p.store.CreateLinks(ctx, processedLinks); err != nil {
+		logr.FromContextOrDiscard(ctx).Error(err, "failed to persist links to storage")
+		p.replyWithError(ctx, err, "failed to store links", message)
+		return
+	}
 
 	// Reply to the user
 	processedMessage := processedLinkGroupMessageBody(processedLinkGroup)

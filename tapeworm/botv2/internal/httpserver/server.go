@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 )
 
 type Options struct {
@@ -18,11 +19,13 @@ type Server struct {
 	logger logr.Logger
 
 	httpServer *http.Server
+	store      *db.Store
 }
 
-func New(opts *Options, logger logr.Logger) *Server {
+func New(opts *Options, s *db.Store, logger logr.Logger) *Server {
 	return &Server{
 		opts:   opts,
+		store:  s,
 		logger: logger,
 	}
 }
