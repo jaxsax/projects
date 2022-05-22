@@ -61,12 +61,18 @@ func (p *TelegramPoller) Start() error {
 
 func (p *TelegramPoller) handle(update tgbotapi.Update) {
 	l := p.logger.WithValues(
-		"from_chat_id", update.FromChat().ID,
-		"messsage_id", update.Message.MessageID,
+		"update_id", update.UpdateID,
 	)
 	ctx := logr.NewContext(context.Background(), l)
 
 	l.Info("telegram message received", "update", update)
+
+	err := p.store.CreateTelegramUpdate(ctx, &types.TelegramUpdate{
+		Data: update,
+	})
+	if err != nil {
+		l.Error(err, "failed to save update")
+	}
 
 	if update.Message != nil {
 		p.handleMessage(ctx, update.Message)

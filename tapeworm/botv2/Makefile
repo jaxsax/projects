@@ -12,3 +12,6 @@ image-build:
 
 image-push:
 	docker push $(BOT_IMAGE_NAME)
+
+dev:
+	go run ./cmd/simplifiedbot
