@@ -78,11 +78,16 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 		return
 	}
 
-	var processedLinkGroup []*processLinkResponse
+	var (
+		processedLinkGroup []*processLinkResponse
+		anyLinks           bool
+	)
 	for _, entity := range message.Entities {
 		if !entity.IsURL() {
 			continue
 		}
+
+		anyLinks = true
 
 		req := &processLinkRequest{
 			URL: message.Text[entity.Offset : entity.Offset+entity.Length],
@@ -97,7 +102,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 		processedLinkGroup = append(processedLinkGroup, resp)
 	}
 
-	if len(processedLinkGroup) == 0 {
+	if len(processedLinkGroup) == 0 && anyLinks {
 		p.replyWithError(ctx, fmt.Errorf("no links found"), "no link found", message)
 		return
 	}
