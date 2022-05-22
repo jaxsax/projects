@@ -70,6 +70,8 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 				continue
 			}
 
+			e.Title = strings.TrimSpace(e.Title)
+
 			lg.Info("strategy provided", "info", e)
 			return e, nil
 		}

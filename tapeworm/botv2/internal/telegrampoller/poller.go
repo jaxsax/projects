@@ -102,6 +102,8 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	// Reply to the user
 	processedMessage := processedLinkGroupMessageBody(processedLinkGroup)
 	m := NewReplyToMessage(processedMessage, message)
+	m.DisableNotification = true
+
 	_, err := p.botapi.Send(m)
 	if err != nil {
 		logr.FromContextOrDiscard(ctx).Error(err, "failed to send processed message")
