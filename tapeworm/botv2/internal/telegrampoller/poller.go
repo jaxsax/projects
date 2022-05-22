@@ -102,7 +102,11 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 		processedLinkGroup = append(processedLinkGroup, resp)
 	}
 
-	if len(processedLinkGroup) == 0 && anyLinks {
+	if !anyLinks {
+		return
+	}
+
+	if len(processedLinkGroup) == 0 {
 		p.replyWithError(ctx, fmt.Errorf("no links found"), "no link found", message)
 		return
 	}
