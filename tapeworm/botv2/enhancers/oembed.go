@@ -82,7 +82,6 @@ done:
 }
 
 func (s *OEmbedStrategy) cacheCleanup() {
-	logging.Info("cleaning http response cache")
 	var keysToDelete []string
 
 	// Collect keys to delete
@@ -92,7 +91,7 @@ func (s *OEmbedStrategy) cacheCleanup() {
 		}
 
 		expiredAt := value.(time.Time)
-		logging.Info("expiry check", "key", key, "expiry", expiredAt)
+		logging.V(1).Info("expiry check", "key", key, "expiry", expiredAt)
 		if expiredAt.Before(time.Now()) {
 			keysToDelete = append(keysToDelete, key.(string))
 			keysToDelete = append(keysToDelete, strings.TrimPrefix(key.(string), "expiry."))
@@ -104,7 +103,7 @@ func (s *OEmbedStrategy) cacheCleanup() {
 	// Use LoadAndDelete
 	for _, k := range keysToDelete {
 		s.responseCache.LoadAndDelete(k)
-		logging.Info("deleted key", "key", k)
+		logging.V(1).Info("deleted key", "key", k)
 	}
 }
 
