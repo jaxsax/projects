@@ -95,8 +95,9 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 
 		anyLinks = true
 
+		runeText := []rune(message.Text)
 		req := &processLinkRequest{
-			URL: message.Text[entity.Offset : entity.Offset+entity.Length],
+			URL: string(runeText[entity.Offset : entity.Offset+entity.Length]),
 		}
 
 		resp, err := p.linkProcessor(ctx, req)
