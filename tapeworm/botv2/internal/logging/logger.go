@@ -13,9 +13,9 @@ func Error(err error, msg string, keysAndValues ...interface{}) {
 }
 
 func V(level int) logr.Logger {
-	return Logger.WithCallDepth(1).V(level)
+	return Logger.V(level)
 }
 
 func WithValues(keysAndValues ...interface{}) logr.Logger {
-	return Logger.WithCallDepth(1).WithValues(keysAndValues...)
+	return Logger.WithValues(keysAndValues...)
 }
