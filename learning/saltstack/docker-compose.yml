@@ -1,0 +1,24 @@
+version: '3.7'
+services:
+  master:
+    build:
+      dockerfile: master.Dockerfile
+      context: .
+    volumes:
+      - $PWD/master-state:/srv/salt
+  srv1:
+    build:
+      dockerfile: minion.Dockerfile
+      context: .
+  srv1:
+    build:
+      dockerfile: minion.Dockerfile
+      context: .
+  srv2:
+    build:
+      dockerfile: minion.Dockerfile
+      context: .
+  srv3:
+    build:
+      dockerfile: minion.Dockerfile
+      context: .
