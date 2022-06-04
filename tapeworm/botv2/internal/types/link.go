@@ -10,10 +10,11 @@ type Link struct {
 	ID          uint64            `json:"id"`
 	Link        string            `json:"link"`
 	Title       string            `json:"title"`
-	CreatedAt   time.Time         `json:"created_at"`
+	CreatedAt   uint64            `json:"created_ts"`
 	CreatedByID uint64            `json:"created_by"`
 	ExtraData   map[string]string `json:"extra_data"`
 	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
+	Domain      string            `json:"domain"`
 }
 
 type TelegramUpdate struct {

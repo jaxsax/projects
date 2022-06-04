@@ -20,28 +20,31 @@ type Store struct {
 
 func NewStore(db *sqlx.DB) *Store {
 	return &Store{
-		db:      db,
-		Queries: &Queries{db},
+		db: db,
+		Queries: &Queries{
+			db, db,
+		},
 	}
 }
 
 type Queries struct {
 	sqlx.ExecerContext
+	sqlx.QueryerContext
 }
 
 func (q *Queries) WithTx(tx *sqlx.Tx) *Queries {
 	return &Queries{
-		tx,
+		tx, tx,
 	}
 }
 
 func (s *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{})
+	tx, err := s.db.BeginTxx(ctx, &sql.TxOptions{})
 	if err != nil {
 		return err
 	}
 
-	q := &Queries{tx}
+	q := &Queries{tx, tx}
 	err = fn(q)
 	if err != nil {
 		rbErr := tx.Rollback()

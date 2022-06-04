@@ -124,7 +124,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 		lt := &types.Link{
 			Link:        link.Link,
 			Title:       link.Title,
-			CreatedAt:   time.Now(),
+			CreatedAt:   uint64(time.Now().Unix()),
 			CreatedByID: uint64(message.From.ID),
 			ExtraData:   map[string]string{},
 		}

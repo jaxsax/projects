@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"net/url"
+	"time"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
@@ -22,7 +24,7 @@ func toDAOLink(link *types.Link) (*Link, error) {
 
 	l.Link = link.Link
 	l.Title = link.Title
-	l.CreatedTS = uint64(link.CreatedAt.Unix())
+	l.CreatedTS = uint64(link.CreatedAt)
 	l.CreatedBy = link.CreatedByID
 
 	extraDataBytes, err := json.Marshal(link.ExtraData)
@@ -31,6 +33,30 @@ func toDAOLink(link *types.Link) (*Link, error) {
 	}
 
 	l.ExtraData = string(extraDataBytes)
+
+	return &l, nil
+}
+
+func toTypesLink(link *Link) (*types.Link, error) {
+	var l types.Link
+
+	l.ID = link.ID
+	l.Link = link.Link
+	l.Title = link.Title
+	l.CreatedAt = link.CreatedTS
+	l.CreatedByID = link.CreatedBy
+
+	if link.DeletedAt > 0 {
+		deletedAt := time.Unix(int64(link.DeletedAt), 0)
+		l.DeletedAt = &deletedAt
+	}
+
+	u, err := url.Parse(l.Link)
+	if err != nil {
+		return nil, err
+	}
+
+	l.Domain = u.Hostname()
 
 	return &l, nil
 }
@@ -51,6 +77,32 @@ func (q *Queries) CreateLink(ctx context.Context, link *types.Link) error {
 	}
 
 	return nil
+}
+
+func (q *Queries) ListLinks(ctx context.Context) ([]*types.Link, error) {
+	rs, err := q.QueryxContext(ctx, `
+		SELECT * FROM links WHERE deleted_at = 0
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	links := make([]*types.Link, 0)
+	for rs.Next() {
+		var obj Link
+		if err := rs.StructScan(&obj); err != nil {
+			return nil, err
+		}
+
+		link, err := toTypesLink(&obj)
+		if err != nil {
+			return nil, err
+		}
+
+		links = append(links, link)
+	}
+
+	return links, nil
 }
 
 func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {

@@ -16,6 +16,9 @@
     "tailwindcss": "^2.2.11",
     "typescript": "^4.5.4"
   },
+  "scripts": {
+    "dev": "next dev"
+  },
   "dependencies": {
     "@headlessui/react": "^1.4.2",
     "@heroicons/react": "^1.0.5",
