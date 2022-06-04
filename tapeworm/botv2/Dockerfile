@@ -7,6 +7,16 @@ RUN go mod download -x
 ADD . .
 RUN go build -x -o bin/bot ./cmd/simplifiedbot/
 
+FROM node:17.9.0-slim AS fe_builder
+
+WORKDIR /workspace/app
+
+ADD app/package.json app/yarn.lock .
+RUN yarn
+
+ADD app/ .
+RUN yarn run build:prod
+
 FROM ubuntu:focal-20220426
 
 WORKDIR /workspace
@@ -22,6 +32,8 @@ ENTRYPOINT ["/tini", "--"]
 RUN apt-get update && apt-get install -y \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
+
 COPY --from=golang_builder /workspace/bin/bot ./
+COPY --from=fe_builder /workspace/app/out/ ./frontend
 
 CMD ["./bot"]  

@@ -14,7 +14,8 @@ import (
 )
 
 type Options struct {
-	HTTPAddress string `long:"http_address" description:"address to listen for http requests on" default:"0.0.0.0:8081" env:"HTTP_ADDRESS"`
+	HTTPAddress       string `long:"http_address" description:"address to listen for http requests on" default:"0.0.0.0:8081" env:"HTTP_ADDRESS"`
+	FrontendAssetPath string `long:"frontend_asset_path" description:"path to frontend build" env:"FRONTEND_ASSET_PATH"`
 }
 
 type Server struct {
@@ -83,6 +84,11 @@ func (s *Server) buildMux() *mux.Router {
 
 		_, _ = w.Write(responseBytes)
 	}).Methods(http.MethodGet)
+
+	if s.opts.FrontendAssetPath != "" {
+		fs := http.FileServer(http.Dir(s.opts.FrontendAssetPath))
+		m.PathPrefix("/").Handler(fs)
+	}
 
 	return m
 }

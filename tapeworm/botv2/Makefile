@@ -10,6 +10,9 @@ deploy-bot: image-build image-push
 image-build:
 	DOCKER_BUILDKIT=1 docker build -t $(BOT_IMAGE_NAME) .
 
+image-exec:
+	docker run -it --rm $(BOT_IMAGE_NAME) bash	
+
 image-push:
 	docker push $(BOT_IMAGE_NAME)
 
