@@ -81,7 +81,7 @@ func (q *Queries) CreateLink(ctx context.Context, link *types.Link) error {
 
 func (q *Queries) ListLinks(ctx context.Context) ([]*types.Link, error) {
 	rs, err := q.QueryxContext(ctx, `
-		SELECT * FROM links WHERE deleted_at = 0
+		SELECT * FROM links WHERE deleted_at = 0 ORDER BY created_ts DESC
 	`)
 	if err != nil {
 		return nil, err
