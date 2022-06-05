@@ -67,22 +67,34 @@ func (s *Server) buildMux() *mux.Router {
 
 		links, err := s.store.ListLinks(r.Context())
 		if err != nil {
-			logging.Logger.Error(err, "failed to list links")
-			w.WriteHeader(http.StatusInternalServerError)
-			_, _ = w.Write([]byte("error"))
+			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
 		resp := &response{
 			Links: links,
 		}
-		responseBytes, err := json.Marshal(resp)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+	}).Methods(http.MethodGet)
+
+	m.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
+		ctx := logging.WithContext(r.Context())
+
+		query := r.URL.Query().Get("q")
+		if query == "" {
+			respondWithError(ctx, w, http.StatusBadRequest, "Invalid query")
 			return
 		}
 
-		_, _ = w.Write(responseBytes)
+		resp, err := s.store.Search(ctx, &types.SearchRequest{
+			FullText: query,
+		})
+		if err != nil {
+			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to search links")
+			return
+		}
+
+		respondWithJSON(ctx, w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)
 
 	if s.opts.FrontendAssetPath != "" {
@@ -91,6 +103,35 @@ func (s *Server) buildMux() *mux.Router {
 	}
 
 	return m
+}
+
+func respondWithError(ctx context.Context, w http.ResponseWriter, code int, message string) {
+	respondWithJSON(ctx, w, code, map[string]string{
+		"error": message,
+	})
+}
+
+func respondWithJSON(ctx context.Context, w http.ResponseWriter, code int, payload interface{}) {
+	responseBytes, err := json.Marshal(payload)
+	if err != nil {
+		logr.FromContextOrDiscard(ctx).
+			Error(
+				err, "failed to marshal response payload",
+				"code", code,
+				"payload", payload,
+			)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("hi"))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	_, err = w.Write(responseBytes)
+	if err != nil {
+		logr.FromContextOrDiscard(ctx).Error(err, "failed to write to response to client")
+	}
 }
 
 func (s *Server) Stop(ctx context.Context) error {

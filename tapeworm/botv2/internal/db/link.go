@@ -105,6 +105,21 @@ func (q *Queries) ListLinks(ctx context.Context) ([]*types.Link, error) {
 	return links, nil
 }
 
+func (q *Queries) GetLink(ctx context.Context, id uint64) (*types.Link, error) {
+	link := new(Link)
+	err := q.GetContext(ctx, link, "SELECT * FROM links WHERE id = ? and deleted_at = 0", id)
+	if err != nil {
+		return nil, err
+	}
+
+	typesLink, err := toTypesLink(link)
+	if err != nil {
+		return nil, err
+	}
+
+	return typesLink, nil
+}
+
 func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {
 	err := s.execTx(ctx, func(q *Queries) error {
 		for _, link := range links {

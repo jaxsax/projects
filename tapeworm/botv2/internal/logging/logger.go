@@ -1,6 +1,10 @@
 package logging
 
-import "github.com/go-logr/logr"
+import (
+	"context"
+
+	"github.com/go-logr/logr"
+)
 
 var Logger logr.Logger
 
@@ -18,4 +22,8 @@ func V(level int) logr.Logger {
 
 func WithValues(keysAndValues ...interface{}) logr.Logger {
 	return Logger.WithValues(keysAndValues...)
+}
+
+func WithContext(ctx context.Context) context.Context {
+	return logr.NewContext(ctx, Logger)
 }
