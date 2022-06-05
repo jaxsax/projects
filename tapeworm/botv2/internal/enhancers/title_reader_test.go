@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/enhancers"
 	"github.com/stretchr/testify/require"
 )
 
