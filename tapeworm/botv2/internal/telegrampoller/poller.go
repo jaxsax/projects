@@ -16,6 +16,7 @@ import (
 type Options struct {
 	Token                string `long:"telegram_token" description:"telegram bot token" env:"TELEGRAM_BOT_TOKEN"`
 	UpdateRequestTimeout int    `long:"telegram_update_request_timeout" description:"how long to keep updates channel open" env:"TELEGRAM_UPDATE_REQUEST_TIMEOUT" default:"30"`
+	Enable               bool   `long:"enable_telegram_bot" description:"Whether to enable bot message polling" env:"TELEGRAM_BOT-ENABLE"`
 }
 
 type TelegramPoller struct {
@@ -49,9 +50,11 @@ func (p *TelegramPoller) Start() error {
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = p.options.UpdateRequestTimeout
 
-	updatesChan := api.GetUpdatesChan(u)
-	for update := range updatesChan {
-		p.handle(update)
+	if p.options.Enable {
+		updatesChan := api.GetUpdatesChan(u)
+		for update := range updatesChan {
+			p.handle(update)
+		}
 	}
 
 	p.done <- struct{}{}
@@ -200,6 +203,10 @@ func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequ
 }
 
 func (p *TelegramPoller) Stop(ctx context.Context) error {
+	if !p.options.Enable {
+		return nil
+	}
+
 	p.botapi.StopReceivingUpdates()
 
 	p.logger.V(0).Info("waiting for telegram updates to drain")
