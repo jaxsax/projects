@@ -1,7 +1,5 @@
 # Pending
 
-- [ ] Delete all the old code (things that aren't launched from simplifiedbot)
-- [ ] Cleanup all the bazel stuff it's not being used anymore
 - [ ] Domain blacklist
 - [ ] Whitelist messages only from certain chat areas
 - [ ] Some ways to label links around topics??

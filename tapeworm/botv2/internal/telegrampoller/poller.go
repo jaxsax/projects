@@ -8,8 +8,8 @@ import (
 
 	"github.com/go-logr/logr"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/jaxsax/projects/tapeworm/botv2/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/enhancers"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
