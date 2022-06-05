@@ -3,7 +3,9 @@ module github.com/jaxsax/projects/tapeworm/botv2
 go 1.18
 
 require (
+	github.com/apple/foundationdb/bindings/go v0.0.0-20220521054011-a88e049b28d8
 	github.com/blevesearch/bleve/v2 v2.3.2
+	github.com/blevesearch/upsidedown_store_api v1.0.1
 	github.com/go-logr/logr v1.2.3
 	github.com/go-logr/zapr v1.2.3
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1
@@ -26,7 +28,6 @@ require (
 	github.com/blevesearch/scorch_segment_api/v2 v2.1.0 // indirect
 	github.com/blevesearch/segment v0.9.0 // indirect
 	github.com/blevesearch/snowballstem v0.9.0 // indirect
-	github.com/blevesearch/upsidedown_store_api v1.0.1 // indirect
 	github.com/blevesearch/vellum v1.0.7 // indirect
 	github.com/blevesearch/zapx/v11 v11.3.3 // indirect
 	github.com/blevesearch/zapx/v12 v12.3.3 // indirect

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/blevesearch/bleve/v2"
+	fdbbleve "github.com/jaxsax/projects/tapeworm/botv2/internal/fdb-bleve"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -90,17 +91,21 @@ func Setup(opt *Options) (*Store, error) {
 	var linkIndex bleve.Index
 
 	_, err = os.Stat(pathName)
+	fdbConfig := map[string]interface{}{
+		"fdbAPIVersion": 710,
+		"clusterFile":   "/tmp/fdb.cluster",
+	}
 	if os.IsNotExist(err) {
-		index, err := bleve.New(pathName, indexingRule)
+		index, err := bleve.NewUsing(pathName, indexingRule, "upside_down", fdbbleve.Name, fdbConfig)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("new using: %w", err)
 		}
 
 		linkIndex = index
 	} else {
-		index, err := bleve.Open(pathName)
+		index, err := bleve.OpenUsing(pathName, fdbConfig)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("open using: %w", err)
 		}
 
 		linkIndex = index
