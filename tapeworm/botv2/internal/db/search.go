@@ -16,13 +16,6 @@ func (q *Store) Search(ctx context.Context, req *types.SearchRequest) (*types.Se
 		return nil, err
 	}
 
-	c, err := q.linkIndex.DocCount()
-	if err != nil {
-		panic(err)
-	}
-
-	logr.FromContextOrDiscard(ctx).Info("search result", "sr", sr, "req", req.FullText, "c", c)
-
 	itemsFound := make([]types.Link, 0, len(sr.Hits))
 	for _, item := range sr.Hits {
 		asID, err := strconv.Atoi(item.ID)
