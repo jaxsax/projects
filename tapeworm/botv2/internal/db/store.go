@@ -88,12 +88,14 @@ func Setup(opt *Options) (*Store, error) {
 
 	pathName := "/tmp/links.bleve"
 	indexingRule := bleve.NewIndexMapping()
+
+
 	var linkIndex bleve.Index
 
 	_, err = os.Stat(pathName)
 	fdbConfig := map[string]interface{}{
 		"fdbAPIVersion": 710,
-		"clusterFile":   "/tmp/fdb.cluster",
+		"clusterFile":   "fdb.cluster",
 	}
 	if os.IsNotExist(err) {
 		index, err := bleve.NewUsing(pathName, indexingRule, "upside_down", fdbbleve.Name, fdbConfig)

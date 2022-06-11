@@ -11,13 +11,17 @@ import (
 
 func (q *Store) Search(ctx context.Context, req *types.SearchRequest) (*types.SearchResponse, error) {
 	query := bleve.NewMatchQuery(req.FullText)
-	sr, err := q.linkIndex.Search(bleve.NewSearchRequest(query))
+	searchRequest := bleve.NewSearchRequest(query)
+	searchRequest.Highlight = bleve.NewHighlight()
+
+	sr, err := q.linkIndex.Search(searchRequest)
 	if err != nil {
 		return nil, err
 	}
 
 	itemsFound := make([]types.Link, 0, len(sr.Hits))
 	for _, item := range sr.Hits {
+		logr.FromContextOrDiscard(ctx).Info("search result", "item", item, "locs", item.FieldTermLocations, "fragments", item.Fragments)
 		asID, err := strconv.Atoi(item.ID)
 		if err != nil {
 			return nil, err

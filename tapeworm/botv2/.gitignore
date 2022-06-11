@@ -1,3 +1,4 @@
 *.db
 secrets/
 .envrc
+fdb.cluster
