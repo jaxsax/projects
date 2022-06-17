@@ -99,7 +99,15 @@ func (s *Server) buildMux() *mux.Router {
 
 	if s.opts.FrontendAssetPath != "" {
 		fs := http.FileServer(http.Dir(s.opts.FrontendAssetPath))
-		m.PathPrefix("/").Handler(fs)
+		cacheBust := func(h http.Handler) http.HandlerFunc {
+			return func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/" || r.URL.Path == "index.html" {
+					w.Header().Set("Cache-Control", "max-age=0, must-revalidate")
+				}
+				h.ServeHTTP(w, r)
+			}
+		}
+		m.PathPrefix("/").HandlerFunc(cacheBust(fs))
 	}
 
 	return m
