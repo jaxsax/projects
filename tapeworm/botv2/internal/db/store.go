@@ -13,7 +13,8 @@ import (
 )
 
 type Options struct {
-	URI string `long:"db_uri" description:"uri to connect to database" default:"./bot.db" env:"DB_URI"`
+	URI               string `long:"db_uri" description:"uri to connect to database" default:"./bot.db" env:"DB_URI"`
+	EnableBleveSearch bool   `long:"enable_bleve_search" default:"false" env:"enable_bleve_search"`
 }
 
 type Store struct {
@@ -86,31 +87,31 @@ func Setup(opt *Options) (*Store, error) {
 		return nil, err
 	}
 
-	pathName := "/tmp/links.bleve"
-	indexingRule := bleve.NewIndexMapping()
-
-
 	var linkIndex bleve.Index
+	if opt.EnableBleveSearch {
+		pathName := "/tmp/links.bleve"
+		indexingRule := bleve.NewIndexMapping()
 
-	_, err = os.Stat(pathName)
-	fdbConfig := map[string]interface{}{
-		"fdbAPIVersion": 710,
-		"clusterFile":   "fdb.cluster",
-	}
-	if os.IsNotExist(err) {
-		index, err := bleve.NewUsing(pathName, indexingRule, "upside_down", fdbbleve.Name, fdbConfig)
-		if err != nil {
-			return nil, fmt.Errorf("new using: %w", err)
+		_, err = os.Stat(pathName)
+		fdbConfig := map[string]interface{}{
+			"fdbAPIVersion": 710,
+			"clusterFile":   "fdb.cluster",
 		}
+		if os.IsNotExist(err) {
+			index, err := bleve.NewUsing(pathName, indexingRule, "upside_down", fdbbleve.Name, fdbConfig)
+			if err != nil {
+				return nil, fmt.Errorf("new using: %w", err)
+			}
 
-		linkIndex = index
-	} else {
-		index, err := bleve.OpenUsing(pathName, fdbConfig)
-		if err != nil {
-			return nil, fmt.Errorf("open using: %w", err)
+			linkIndex = index
+		} else {
+			index, err := bleve.OpenUsing(pathName, fdbConfig)
+			if err != nil {
+				return nil, fmt.Errorf("open using: %w", err)
+			}
+
+			linkIndex = index
 		}
-
-		linkIndex = index
 	}
 
 	return NewStore(db, linkIndex), nil

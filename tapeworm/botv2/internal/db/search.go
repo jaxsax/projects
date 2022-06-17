@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/blevesearch/bleve/v2"
@@ -10,6 +11,9 @@ import (
 )
 
 func (q *Store) Search(ctx context.Context, req *types.SearchRequest) (*types.SearchResponse, error) {
+	if q.linkIndex == nil {
+		return nil, fmt.Errorf("unsupported feature")
+	}
 	query := bleve.NewMatchQuery(req.FullText)
 	searchRequest := bleve.NewSearchRequest(query)
 	searchRequest.Highlight = bleve.NewHighlight()
@@ -41,6 +45,10 @@ func (q *Store) Search(ctx context.Context, req *types.SearchRequest) (*types.Se
 }
 
 func (q *Store) IndexAllItems(ctx context.Context) error {
+	if q.linkIndex == nil {
+		return fmt.Errorf("unsupported feature")
+	}
+
 	b := q.linkIndex.NewBatch()
 	logr.FromContextOrDiscard(ctx).Info("listing items")
 	items, err := q.ListLinks(ctx)

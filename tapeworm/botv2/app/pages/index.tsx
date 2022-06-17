@@ -42,6 +42,7 @@ function useLinks() {
 
       index = tmpIndex;
     },
+    refetchOnWindowFocus: false,
   });
 }
 
