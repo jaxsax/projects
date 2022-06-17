@@ -5,7 +5,7 @@ ADD go.mod go.sum ./
 RUN go mod download -x
 
 ADD . .
-RUN go build -x -o bin/bot ./cmd/simplifiedbot/
+RUN go build -o bin/bot ./cmd/simplifiedbot/
 
 FROM node:17.9.0-slim AS fe_builder
 
