@@ -14,7 +14,7 @@ import (
 
 type Options struct {
 	URI               string `long:"db_uri" description:"uri to connect to database" default:"./bot.db" env:"DB_URI"`
-	EnableBleveSearch bool   `long:"enable_bleve_search" default:"false" env:"enable_bleve_search"`
+	EnableBleveSearch bool   `long:"enable_bleve_search" env:"enable_bleve_search"`
 }
 
 type Store struct {
