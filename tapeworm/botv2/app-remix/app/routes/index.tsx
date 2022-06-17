@@ -57,7 +57,7 @@ function LinkItem({ link, title, domain, created_ts }) {
         <div className="block text-gray-400 md:inline md:ml-2">({domain})</div>
       ) : null}
 
-      <ClientOnly fallback={<span>...</span>}>
+      <ClientOnly fallback={<div>...</div>}>
         {() => <LinkTimingInfo created_ts={created_ts} />}
       </ClientOnly>
     </div>
