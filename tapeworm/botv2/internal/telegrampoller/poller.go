@@ -16,7 +16,7 @@ import (
 type Options struct {
 	Token                string `long:"telegram_token" description:"telegram bot token" env:"TELEGRAM_BOT_TOKEN"`
 	UpdateRequestTimeout int    `long:"telegram_update_request_timeout" description:"how long to keep updates channel open" env:"TELEGRAM_UPDATE_REQUEST_TIMEOUT" default:"30"`
-	Enable               bool   `long:"enable_telegram_bot" description:"Whether to enable bot message polling" env:"TELEGRAM_BOT-ENABLE"`
+	Enable               bool   `long:"enable_telegram_bot" description:"Whether to enable bot message polling" env:"ENABLE_TELEGRAM_BOT"`
 }
 
 type TelegramPoller struct {
