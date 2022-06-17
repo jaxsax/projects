@@ -11,7 +11,7 @@ import { ClientOnly } from "remix-utils";
 
 let apiHost =
   process.env.NODE_ENV === "production"
-    ? "https://v2.jaxsax.co"
+    ? "https://jaxsax.co"
     : "http://localhost:8081";
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const body = await resp.json();
 
   let filteredLinks = [];
-  if (term.length > 0) {
+  if (term) {
     filteredLinks = body["links"].filter((x) => {
       return x.title.toLowerCase().includes(term?.toLowerCase());
     });
