@@ -1,6 +1,7 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import {
   Form,
+  Link,
   useLoaderData,
   useSubmit,
   useTransition,
@@ -10,22 +11,11 @@ import formatISO from "date-fns/formatISO";
 import React from "react";
 import { ClientOnly } from "remix-utils";
 
-let apiHost =
-  process.env.NODE_ENV === "production"
-    ? "https://jaxsax.co"
-    : "http://localhost:8081";
-
-type Link = {
-  id: number;
-  link: string;
-  title: string;
-  domain: string;
-  created_ts: number;
-  created_by: number;
-};
+import { LinkItem } from "~/models/link";
+import { ListLinks } from "~/utils/api.server";
 
 type LoaderData = {
-  items: Array<Link>;
+  items: Array<LinkItem>;
   q: string | undefined;
 };
 
@@ -34,16 +24,11 @@ export const loader: LoaderFunction = async ({ request }) => {
   let term = url.searchParams.get("q") ?? "";
   term = term.trim();
 
-  const apiRequest = new Request(`${apiHost}/api/links`, {
-    method: "GET",
-  });
-
-  const resp = await fetch(apiRequest);
-  const body = await resp.json();
+  let body = await ListLinks();
 
   let filteredLinks = [];
   if (term) {
-    filteredLinks = body["links"].filter((x: Link) => {
+    filteredLinks = body["links"].filter((x: LinkItem) => {
       return x.title.toLowerCase().includes(term.toLowerCase());
     });
   } else {
@@ -59,13 +44,19 @@ export const loader: LoaderFunction = async ({ request }) => {
 const LinkTimingInfo: React.FC<{ created_ts: number }> = ({ created_ts }) => {
   const date = new Date(created_ts * 1000);
   return (
-    <p className="text-gray-400" title={formatISO(date)}>
+    <span title={formatISO(date)}>
       {formatDistance(date, new Date(), { addSuffix: true })}
-    </p>
+    </span>
   );
 };
 
-const LinkItem: React.FC<Link> = ({ link, domain, created_ts, title }) => {
+const LinkItem: React.FC<LinkItem> = ({
+  id,
+  link,
+  domain,
+  created_ts,
+  title,
+}) => {
   return (
     <div className="truncate">
       <a href={link} className="text-lg">
@@ -75,9 +66,17 @@ const LinkItem: React.FC<Link> = ({ link, domain, created_ts, title }) => {
         <div className="block text-gray-400 md:inline md:ml-2">({domain})</div>
       ) : null}
 
-      <ClientOnly fallback={<div>...</div>}>
-        {() => <LinkTimingInfo created_ts={created_ts} />}
-      </ClientOnly>
+      <div className="text-gray-400">
+        <ClientOnly fallback={<span>...</span>}>
+          {() => <LinkTimingInfo created_ts={created_ts} />}
+        </ClientOnly>
+        {" | "}
+        <span className="hover:underline">
+          <Link to={`/detail?url=${encodeURIComponent(link)}&from=${id}`}>
+            details
+          </Link>
+        </span>
+      </div>
     </div>
   );
 };

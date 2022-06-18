@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
@@ -69,6 +70,42 @@ func (s *Server) buildMux() *mux.Router {
 		if err != nil {
 			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
+		}
+
+		resp := &response{
+			Links: links,
+		}
+		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+	}).Methods(http.MethodGet)
+
+	m.HandleFunc("/api/links/get", func(w http.ResponseWriter, r *http.Request) {
+		linkByUrl := r.URL.Query().Get("url")
+		if linkByUrl == "" {
+			respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid url")
+			return
+		}
+
+		linkWithoutScheme := linkByUrl
+		if strings.Contains(linkByUrl, "://") {
+			parts := strings.Split(linkByUrl, "://")
+			if len(parts) < 2 {
+				respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid url, failed to remove scheme")
+				return
+			}
+
+			linkWithoutScheme = parts[1]
+		}
+
+		links, err := s.store.ListLinksWithFilter(r.Context(), &types.LinkFilter{
+			LinkWithoutScheme: linkWithoutScheme,
+		})
+		if err != nil {
+			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to list links")
+			return
+		}
+
+		type response struct {
+			Links []*types.Link `json:"links"`
 		}
 
 		resp := &response{

@@ -3,7 +3,9 @@ package db
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
@@ -80,9 +82,47 @@ func (q *Queries) CreateLink(ctx context.Context, link *types.Link) error {
 }
 
 func (q *Queries) ListLinks(ctx context.Context) ([]*types.Link, error) {
-	rs, err := q.QueryxContext(ctx, `
-		SELECT * FROM links WHERE deleted_at = 0 ORDER BY created_ts DESC
-	`)
+	return q.ListLinksWithFilter(ctx, &types.LinkFilter{})
+}
+
+type andPair struct {
+	fieldName string
+	operator  string
+	value     interface{}
+}
+
+func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFilter) ([]*types.Link, error) {
+	var andPairs []andPair
+
+	andPairs = append(andPairs, andPair{
+		fieldName: "deleted_at",
+		operator:  "=",
+		value:     0,
+	})
+
+	if filter.LinkWithoutScheme != "" {
+		andPairs = append(andPairs, andPair{
+			fieldName: "link",
+			operator:  "LIKE",
+			value:     fmt.Sprintf("%%://%s", filter.LinkWithoutScheme),
+		})
+	}
+
+	stmt := "SELECT * FROM links"
+	values := make([]interface{}, 0)
+	if len(andPairs) > 0 {
+		andStatements := make([]string, 0, len(andPairs))
+		for _, p := range andPairs {
+			andStatements = append(andStatements, fmt.Sprintf("%s %s ?", p.fieldName, p.operator))
+			values = append(values, p.value)
+		}
+
+		stmt += " WHERE "
+		stmt += strings.Join(andStatements, " AND ")
+	}
+
+	stmt += " ORDER BY created_ts DESC"
+	rs, err := q.QueryxContext(ctx, stmt, values...)
 	if err != nil {
 		return nil, err
 	}

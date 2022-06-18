@@ -17,6 +17,10 @@ type Link struct {
 	Domain      string            `json:"domain"`
 }
 
+type LinkFilter struct {
+	LinkWithoutScheme string
+}
+
 type TelegramUpdate struct {
 	ID   uint64 `json:"id"`
 	Data tgbotapi.Update
