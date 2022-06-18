@@ -1,7 +1,13 @@
 import { json, LoaderFunction } from "@remix-run/node";
-import { Form, useLoaderData, useTransition } from "@remix-run/react";
+import {
+  Form,
+  useLoaderData,
+  useSubmit,
+  useTransition,
+} from "@remix-run/react";
 import formatDistance from "date-fns/formatDistance";
 import formatISO from "date-fns/formatISO";
+import React from "react";
 import { ClientOnly } from "remix-utils";
 
 let apiHost =
@@ -31,6 +37,7 @@ export const loader: LoaderFunction = async ({ request }) => {
   const apiRequest = new Request(`${apiHost}/api/links`, {
     method: "GET",
   });
+
   const resp = await fetch(apiRequest);
   const body = await resp.json();
 
@@ -77,15 +84,20 @@ const LinkItem: React.FC<Link> = ({ link, domain, created_ts, title }) => {
 
 export default function Index() {
   const { items, q = "" } = useLoaderData<LoaderData>();
+  const submit = useSubmit();
   const transition = useTransition();
-  const shouldDisplayNoItems = items?.length === 0 && q !== "";
+
+  function handleChange(event: React.ChangeEvent<HTMLFormElement>) {
+    submit(event.currentTarget, { replace: true });
+  }
 
   return (
     <div className="mx-2 xl:container xl:mx-auto mt-24 min-h-screen">
       <h1 className="text-center text-7xl text-bold">link search</h1>
       <div className="mt-4">
-        <Form replace>
+        <Form onChange={handleChange}>
           <input
+            autoFocus
             type="text"
             name="q"
             placeholder="Enter search terms"
@@ -95,9 +107,14 @@ export default function Index() {
         </Form>
       </div>
       <div className="mt-2 mb-4">
-        {transition.state === "submitting" && <p>Loading...</p>}
-        {items && items.map((i) => <LinkItem key={i.id} {...i} />)}
-        {shouldDisplayNoItems && <div>No results</div>}
+        {transition.state === "submitting" ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            {items && items.map((i) => <LinkItem key={i.id} {...i} />)}
+            {items?.length == 0 && <div>No results</div>}
+          </>
+        )}
       </div>
     </div>
   );
