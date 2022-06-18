@@ -19,6 +19,7 @@ type Link struct {
 
 type LinkFilter struct {
 	LinkWithoutScheme string
+	Domain            string
 }
 
 type TelegramUpdate struct {

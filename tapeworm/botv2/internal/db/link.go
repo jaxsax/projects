@@ -108,6 +108,14 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 		})
 	}
 
+	if filter.Domain != "" {
+		andPairs = append(andPairs, andPair{
+			fieldName: "link",
+			operator:  "LIKE",
+			value:     fmt.Sprintf("%%%s%%", filter.Domain),
+		})
+	}
+
 	stmt := "SELECT * FROM links"
 	values := make([]interface{}, 0)
 	if len(andPairs) > 0 {

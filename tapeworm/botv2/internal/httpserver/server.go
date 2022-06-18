@@ -114,6 +114,38 @@ func (s *Server) buildMux() *mux.Router {
 		respondWithJSON(r.Context(), w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)
 
+	m.HandleFunc("/api/links/get_by_domain", func(w http.ResponseWriter, r *http.Request) {
+		linkByDomain := r.URL.Query().Get("domain")
+		if linkByDomain == "" {
+			respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid domain")
+			return
+		}
+
+		links, err := s.store.ListLinksWithFilter(r.Context(), &types.LinkFilter{
+			Domain: linkByDomain,
+		})
+		if err != nil {
+			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to list links")
+			return
+		}
+
+		filter2 := make([]*types.Link, 0, len(links))
+		for _, link := range links {
+			if link.Domain == linkByDomain {
+				filter2 = append(filter2, link)
+			}
+		}
+
+		type response struct {
+			Links []*types.Link `json:"links"`
+		}
+
+		resp := &response{
+			Links: filter2,
+		}
+		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+	})
+
 	m.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
 		ctx := logging.WithContext(r.Context())
 
