@@ -13,16 +13,6 @@ ADD cmd ./cmd/
 ADD internal ./internal/
 RUN go build -o bin/bot ./cmd/simplifiedbot/
 
-FROM node:17.9.0-slim AS fe_builder
-
-WORKDIR /workspace/app
-
-ADD app/package.json app/yarn.lock .
-RUN yarn
-
-ADD app/ .
-RUN yarn run build:prod
-
 FROM ubuntu:focal-20220426
 
 WORKDIR /workspace
@@ -45,6 +35,5 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=golang_builder /workspace/bin/bot ./
-COPY --from=fe_builder /workspace/app/out/ ./frontend
 
 CMD ["./bot"]  
