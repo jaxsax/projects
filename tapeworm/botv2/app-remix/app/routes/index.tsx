@@ -1,10 +1,5 @@
 import { json, LoaderFunction } from "@remix-run/node";
-import {
-  Form,
-  useLoaderData,
-  useSubmit,
-  useTransition,
-} from "@remix-run/react";
+import { Form, useLoaderData, useTransition } from "@remix-run/react";
 import formatDistance from "date-fns/formatDistance";
 import formatISO from "date-fns/formatISO";
 import { ClientOnly } from "remix-utils";
@@ -14,9 +9,24 @@ let apiHost =
     ? "https://jaxsax.co"
     : "http://localhost:8081";
 
+type Link = {
+  id: number;
+  link: string;
+  title: string;
+  domain: string;
+  created_ts: number;
+  created_by: number;
+};
+
+type LoaderData = {
+  items: Array<Link>;
+  q: string | undefined;
+};
+
 export const loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url);
-  let term = url.searchParams.get("q")?.trim();
+  let term = url.searchParams.get("q") ?? "";
+  term = term.trim();
 
   const apiRequest = new Request(`${apiHost}/api/links`, {
     method: "GET",
@@ -26,28 +36,29 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   let filteredLinks = [];
   if (term) {
-    filteredLinks = body["links"].filter((x) => {
-      return x.title.toLowerCase().includes(term?.toLowerCase());
+    filteredLinks = body["links"].filter((x: Link) => {
+      return x.title.toLowerCase().includes(term.toLowerCase());
     });
   } else {
     filteredLinks = body["links"];
   }
 
-  return json({
+  return json<LoaderData>({
     items: filteredLinks,
     q: term,
   });
 };
 
-function LinkTimingInfo({ created_ts }) {
+const LinkTimingInfo: React.FC<{ created_ts: number }> = ({ created_ts }) => {
   const date = new Date(created_ts * 1000);
   return (
     <p className="text-gray-400" title={formatISO(date)}>
       {formatDistance(date, new Date(), { addSuffix: true })}
     </p>
   );
-}
-function LinkItem({ link, title, domain, created_ts }) {
+};
+
+const LinkItem: React.FC<Link> = ({ link, domain, created_ts, title }) => {
   return (
     <div className="truncate">
       <a href={link} className="text-lg">
@@ -62,18 +73,18 @@ function LinkItem({ link, title, domain, created_ts }) {
       </ClientOnly>
     </div>
   );
-}
+};
 
 export default function Index() {
-  const { items, q = "" } = useLoaderData();
+  const { items, q = "" } = useLoaderData<LoaderData>();
   const transition = useTransition();
-  const shouldDisplayNoItems = items.length === 0 && q !== "";
+  const shouldDisplayNoItems = items?.length === 0 && q !== "";
 
   return (
     <div className="mx-2 xl:container xl:mx-auto mt-24 min-h-screen">
       <h1 className="text-center text-7xl text-bold">link search</h1>
       <div className="mt-4">
-        <Form action="/">
+        <Form replace>
           <input
             type="text"
             name="q"
