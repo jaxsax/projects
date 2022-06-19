@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -116,7 +117,10 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 		})
 	}
 
-	stmt := "SELECT * FROM links"
+	stmtParts := []string{
+		"SELECT * FROM links",
+	}
+
 	values := make([]interface{}, 0)
 	if len(andPairs) > 0 {
 		andStatements := make([]string, 0, len(andPairs))
@@ -125,11 +129,13 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 			values = append(values, p.value)
 		}
 
-		stmt += " WHERE "
-		stmt += strings.Join(andStatements, " AND ")
+		stmtParts = append(stmtParts, "WHERE")
+		stmtParts = append(stmtParts, strings.Join(andStatements, " AND "))
 	}
 
-	stmt += " ORDER BY created_ts DESC"
+	stmtParts = append(stmtParts, "ORDER BY created_ts DESC")
+	stmt := strings.Join(stmtParts, " ")
+	logr.FromContextOrDiscard(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 	rs, err := q.QueryxContext(ctx, stmt, values...)
 	if err != nil {
 		return nil, err

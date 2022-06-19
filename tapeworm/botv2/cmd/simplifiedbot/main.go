@@ -15,6 +15,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 	"github.com/jessevdk/go-flags"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var (
@@ -116,7 +117,9 @@ func setupLogger(opts *loggingOptions) error {
 	}
 
 	if opts.DevelopmentLog {
-		zapl, err = zap.NewDevelopment()
+		devConfig := zap.NewDevelopmentConfig()
+		devConfig.Level = zap.NewAtomicLevelAt(zapcore.Level(-2))
+		zapl, err = devConfig.Build()
 		if err != nil {
 			return err
 		}

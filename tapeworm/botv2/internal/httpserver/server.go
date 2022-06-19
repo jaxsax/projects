@@ -62,12 +62,14 @@ func (s *Server) buildMux() *mux.Router {
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links", func(w http.ResponseWriter, r *http.Request) {
+		ctx := logr.NewContext(r.Context(), s.logger)
 		type response struct {
 			Links []*types.Link `json:"links"`
 		}
 
-		links, err := s.store.ListLinks(r.Context())
+		links, err := s.store.ListLinks(ctx)
 		if err != nil {
+			logr.FromContextOrDiscard(ctx).Error(err, "failed to retrieve links")
 			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
