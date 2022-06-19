@@ -91,7 +91,7 @@ export default function Index() {
   }
 
   return (
-    <div className="mx-2 xl:container xl:mx-auto mt-24 min-h-screen">
+    <div className="mx-2 xl:container xl:mx-auto mt-24">
       <h1 className="text-center text-7xl text-bold">link search</h1>
       <div className="mt-4">
         <Form onChange={handleChange}>
