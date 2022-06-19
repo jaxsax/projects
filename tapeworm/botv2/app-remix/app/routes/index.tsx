@@ -96,7 +96,6 @@ export default function Index() {
       <div className="mt-4">
         <Form onChange={handleChange}>
           <input
-            autoFocus
             type="text"
             name="q"
             placeholder="Enter search terms"
