@@ -102,7 +102,7 @@ export default function Index() {
             type="text"
             name="q"
             placeholder="Enter search terms"
-            className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-gray-400 focus:border-blue-400"
+            className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-blue-400"
             defaultValue={q}
           />
           <div className="flex justify-between mt-4">
