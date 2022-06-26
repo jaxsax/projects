@@ -118,6 +118,7 @@ export default function Index() {
   function onChangeLimit(event: React.ChangeEvent<HTMLSelectElement>) {
     const newParam = new URLSearchParams(searchParams);
     newParam.set("limit", event.target.value);
+    newParam.delete("page");
     setSearchParams(newParam);
   }
 
