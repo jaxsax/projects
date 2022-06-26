@@ -1,3 +1,3 @@
-DROP TABLE links;
-DROP TABLE skipped_links;
-DROP TABLE updates;
+DROP TABLE IF EXISTS links;
+DROP TABLE IF EXISTS skipped_links;
+DROP TABLE IF EXISTS updates;

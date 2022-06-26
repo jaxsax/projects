@@ -28,6 +28,15 @@ image-push:
 dev:
 	go run ./cmd/simplifiedbot
 
+create_migration:
+	migrate create -ext sql -dir db/migrations $(name)
+
+migrate_up:
+	go run ./cmd/migrate --up	
+	
+migrate_down:
+	go run ./cmd/migrate --down
+
 download:
 	@echo Download go.mod dependencies
 	@go mod download

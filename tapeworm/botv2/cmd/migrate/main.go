@@ -12,11 +12,25 @@ import (
 )
 
 var (
-	flagParser = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
-	dbOptions  = &db.Options{}
+	flagParser     = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
+	dbOptions      = &db.Options{}
+	migrateOptions = &migrateOption{}
 )
 
+type migrateOption struct {
+	Up   bool `long:"up" description:"migrate forward" env:"MIGRATE_UP"`
+	Down bool `long:"down" description:"migrate backwards" env:"MIGRATE_DOWN"`
+}
+
 func main() {
+	if _, err := flagParser.AddGroup("db", "", dbOptions); err != nil {
+		panic(err)
+	}
+
+	if _, err := flagParser.AddGroup("migrate", "", migrateOptions); err != nil {
+		panic(err)
+	}
+
 	if _, err := flagParser.Parse(); err != nil {
 		panic(err)
 	}
@@ -48,10 +62,24 @@ func main() {
 		return
 	}
 
-	if err := m.Up(); err != nil {
-		log.Fatalf("migrate failed err=%v", err)
+	if migrateOptions.Up && migrateOptions.Down {
+		log.Fatalf("What are you doing???")
 		return
 	}
 
-	log.Printf("Migration succcessful")
+	if migrateOptions.Up {
+		if err := m.Up(); err != nil {
+			log.Fatalf("migrate ip failed err=%v", err)
+			return
+		}
+	}
+
+	if migrateOptions.Down {
+		if err := m.Down(); err != nil {
+			log.Fatalf("migrate down failed err=%v", err)
+			return
+		}
+	}
+
+	log.Printf("Migration succcessful|urn=%s", dbOptions.URI)
 }
