@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
@@ -25,13 +27,19 @@ type Server struct {
 
 	httpServer *http.Server
 	store      *db.Store
+
+	queryParamDecoder *schema.Decoder
 }
 
 func New(opts *Options, s *db.Store, logger logr.Logger) *Server {
+	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+
 	return &Server{
-		opts:   opts,
-		store:  s,
-		logger: logger,
+		opts:              opts,
+		store:             s,
+		logger:            logger,
+		queryParamDecoder: decoder,
 	}
 }
 
@@ -62,20 +70,69 @@ func (s *Server) buildMux() *mux.Router {
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links", func(w http.ResponseWriter, r *http.Request) {
-		ctx := logr.NewContext(r.Context(), s.logger)
-		type response struct {
-			Links []*types.Link `json:"links"`
+		if err := r.ParseForm(); err != nil {
+			respondWithError(r.Context(), w, http.StatusBadRequest, "Failed to parseform")
+			return
 		}
 
-		links, err := s.store.ListLinks(ctx)
+		ctx := logr.NewContext(r.Context(), s.logger)
+
+		type request struct {
+			PageNumber int
+			Limit      int
+			Query      string
+		}
+
+		type response struct {
+			Links        []*types.Link `json:"links"`
+			Total        int           `json:"total"`
+			Next         *string       `json:"next"`
+			Prev         *string       `json:"prev"`
+			ItemsPerPage int           `json:"items_per_page"`
+		}
+
+		var req request
+		err := s.queryParamDecoder.Decode(&req, r.Form)
+		if err != nil {
+			respondWithError(r.Context(), w, http.StatusBadRequest, "Failed to decode form")
+			return
+		}
+
+		if req.Limit == 0 {
+			req.Limit = 15
+		}
+
+		req.Limit = int(math.Min(float64(req.Limit), float64(100)))
+
+		filter := &types.LinkFilter{
+			PageNumber: req.PageNumber,
+			Limit:      req.Limit,
+		}
+
+		if req.Query != "" {
+			filter.TitleSearch = req.Query
+		}
+
+		links, err := s.store.ListLinksWithFilter(ctx, filter)
 		if err != nil {
 			logr.FromContextOrDiscard(ctx).Error(err, "failed to retrieve links")
 			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
+		countFilter := filter
+		countFilter.Limit = 0
+		totalCount, err := s.store.CountLinksWithFilter(ctx, countFilter)
+		if err != nil {
+			logr.FromContextOrDiscard(ctx).Error(err, "failed to count links")
+			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
+			return
+		}
+
 		resp := &response{
-			Links: links,
+			Links:        links,
+			Total:        totalCount,
+			ItemsPerPage: req.Limit,
 		}
 		respondWithJSON(r.Context(), w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)

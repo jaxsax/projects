@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -92,7 +93,7 @@ type andPair struct {
 	value     interface{}
 }
 
-func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFilter) ([]*types.Link, error) {
+func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilter) (string, []interface{}) {
 	var andPairs []andPair
 
 	andPairs = append(andPairs, andPair{
@@ -117,8 +118,16 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 		})
 	}
 
+	if filter.TitleSearch != "" {
+		andPairs = append(andPairs, andPair{
+			fieldName: "lower(title)",
+			operator:  "LIKE",
+			value:     "%" + filter.TitleSearch + "%",
+		})
+	}
+
 	stmtParts := []string{
-		"SELECT * FROM links",
+		selectStmt,
 	}
 
 	values := make([]interface{}, 0)
@@ -134,7 +143,30 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 	}
 
 	stmtParts = append(stmtParts, "ORDER BY created_ts DESC")
+
+	if filter.Limit > 0 {
+		stmtParts = append(stmtParts, "LIMIT ?")
+		values = append(values, strconv.Itoa(filter.Limit))
+	}
+
 	stmt := strings.Join(stmtParts, " ")
+	return stmt, values
+}
+
+func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFilter) (int, error) {
+	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links", filter)
+	logr.FromContextOrDiscard(ctx).V(1).Info("query", "stmt", stmt, "values", values)
+
+	var count int
+	if err := q.GetContext(ctx, &count, stmt, values...); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFilter) ([]*types.Link, error) {
+	stmt, values := q.buildLinkFilterStmt("SELECT * FROM links", filter)
 	logr.FromContextOrDiscard(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 	rs, err := q.QueryxContext(ctx, stmt, values...)
 	if err != nil {
