@@ -3,13 +3,15 @@ import {
   Form,
   Link,
   useLoaderData,
+  useSearchParams,
   useSubmit,
   useTransition,
 } from "@remix-run/react";
 import formatDistance from "date-fns/formatDistance";
 import formatISO from "date-fns/formatISO";
-import React from "react";
+import { useMemo } from "react";
 import { ClientOnly } from "remix-utils";
+import { classNames } from "~/lib/classnames";
 
 import { LinkItem } from "~/models/link";
 import { ListLinks } from "~/utils/api.server";
@@ -27,8 +29,9 @@ export const loader: LoaderFunction = async ({ request }) => {
   term = term.trim();
 
   let limit = url.searchParams.get("limit") ?? "";
+  let page = url.searchParams.get("page") ?? "";
 
-  let body = await ListLinks(term, limit);
+  let body = await ListLinks(term, page, limit);
 
   return json<LoaderData>({
     items: body.links,
@@ -87,6 +90,36 @@ export default function Index() {
   } = useLoaderData<LoaderData>();
   const submit = useSubmit();
   const transition = useTransition();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const pagination = useMemo(() => {
+    const currentPage = parseInt(searchParams.get("page") ?? "1", 10);
+
+    const prevPageNumber = currentPage - 1 || 1;
+    const prevPageParam = new URLSearchParams(searchParams);
+    prevPageParam.set("page", prevPageNumber.toString());
+
+    const nextPageNumber = currentPage + 1;
+    const nextPageParam = new URLSearchParams(searchParams);
+    nextPageParam.set("page", nextPageNumber.toString());
+
+    return {
+      prev: {
+        disabled: currentPage - 1 <= 0,
+        link: `?${prevPageParam.toString()}`,
+      },
+      next: {
+        disabled: currentPage * itemsPerPage >= totalCount,
+        link: `?${nextPageParam.toString()}`,
+      },
+    };
+  }, [searchParams]);
+
+  function onChangeLimit(event: React.ChangeEvent<HTMLSelectElement>) {
+    const newParam = new URLSearchParams(searchParams);
+    newParam.set("limit", event.target.value);
+    setSearchParams(newParam);
+  }
 
   function handleChange(event: React.ChangeEvent<HTMLFormElement>) {
     submit(event.currentTarget, { replace: true });
@@ -105,23 +138,30 @@ export default function Index() {
             className="w-full px-4 py-2 border-2 border-gray-400 outline-none focus:border-blue-400"
             defaultValue={q}
           />
-          <div className="flex justify-between mt-4">
-            <div className="text-gray-400">{totalCount} results</div>
-            <div>
-              <label htmlFor="limit">Items per page</label>
-              <select
-                name="limit"
-                className="ml-2 inline-block p-2 mb-6 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              >
-                {limitOptions.map((x) => (
-                  <option key={x} value={x} selected={x == itemsPerPage}>
-                    {x}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
         </Form>
+        <div className="flex justify-between mt-1">
+          <div className="text-gray-400 flex items-center">
+            {totalCount} results
+          </div>
+          <div>
+            <label htmlFor="limit">Items per page</label>
+            <select
+              name="limit"
+              defaultValue={parseInt(
+                searchParams.get("limit") || itemsPerPage.toString(),
+                10
+              )}
+              onChange={onChangeLimit}
+              className="ml-2 inline-block p-2 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+              {limitOptions.map((x) => (
+                <option key={x} value={x}>
+                  {x}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
       <div className="mt-2 mb-4">
         {transition.state === "submitting" ? (
@@ -129,6 +169,44 @@ export default function Index() {
         ) : (
           <>
             {items && items.map((i) => <LinkItem key={i.id} {...i} />)}
+            {items && items.length > 0 && (
+              <div className="mt-4">
+                <ul className="flex justify-center space-x-2">
+                  <li>
+                    <Link
+                      to={pagination.prev.link}
+                      className={classNames(
+                        "py-2 px-3 ml-0 leading-tight rounded-l-lg border ",
+                        pagination.prev.disabled
+                          ? "pointer-events-none cursor-not-allowed bg-slate-300 text-white opacity-75"
+                          : null,
+                        !pagination.prev.disabled
+                          ? "text-gray-500 bg-white"
+                          : null
+                      )}
+                    >
+                      Previous
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to={pagination.next.link}
+                      className={classNames(
+                        "py-2 px-3 ml-0 leading-tight rounded-r-lg border",
+                        pagination.next.disabled
+                          ? "pointer-events-none cursor-not-allowed bg-slate-300 text-white"
+                          : null,
+                        !pagination.next.disabled
+                          ? "text-gray-500 bg-white"
+                          : null
+                      )}
+                    >
+                      Next
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            )}
             {items?.length == 0 && <div>No results</div>}
           </>
         )}

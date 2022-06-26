@@ -5,13 +5,13 @@ let apiHost =
     ? "https://jaxsax.co"
     : "http://localhost:8081";
 
-export async function ListLinks(q: string, limit: string) {
+export async function ListLinks(q: string, page: string, limit: string) {
   let resp = await fetch(
-    apiURL("/api/links?") +
-      new URLSearchParams({
-        query: q,
-        limit: limit,
-      }),
+    withQuery(apiURL("/api/links"), {
+      query: q,
+      limit,
+      page,
+    }),
     {
       method: "GET",
     }

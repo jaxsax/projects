@@ -149,6 +149,11 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 		values = append(values, strconv.Itoa(filter.Limit))
 	}
 
+	if filter.PageNumber > 1 && filter.Limit > 0 {
+		stmtParts = append(stmtParts, "OFFSET ?")
+		values = append(values, strconv.Itoa((filter.PageNumber-1)*filter.Limit))
+	}
+
 	stmt := strings.Join(stmtParts, " ")
 	return stmt, values
 }

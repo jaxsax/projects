@@ -78,17 +78,16 @@ func (s *Server) buildMux() *mux.Router {
 		ctx := logr.NewContext(r.Context(), s.logger)
 
 		type request struct {
-			PageNumber int
-			Limit      int
-			Query      string
+			Page  int
+			Limit int
+			Query string
 		}
 
 		type response struct {
 			Links        []*types.Link `json:"links"`
 			Total        int           `json:"total"`
-			Next         *string       `json:"next"`
-			Prev         *string       `json:"prev"`
 			ItemsPerPage int           `json:"items_per_page"`
+			Page         int           `json:"page"`
 		}
 
 		var req request
@@ -102,10 +101,14 @@ func (s *Server) buildMux() *mux.Router {
 			req.Limit = 15
 		}
 
+		if req.Page == 0 {
+			req.Page = 1
+		}
+
 		req.Limit = int(math.Min(float64(req.Limit), float64(100)))
 
 		filter := &types.LinkFilter{
-			PageNumber: req.PageNumber,
+			PageNumber: req.Page,
 			Limit:      req.Limit,
 		}
 
@@ -133,6 +136,7 @@ func (s *Server) buildMux() *mux.Router {
 			Links:        links,
 			Total:        totalCount,
 			ItemsPerPage: req.Limit,
+			Page:         req.Page,
 		}
 		respondWithJSON(r.Context(), w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)
