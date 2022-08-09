@@ -75,7 +75,7 @@ const SingleLinkV2: React.FC<LinkItem> = ({
         <a className="text-blue-500" href={link}>
           {title}
         </a>
-        <div className="inline-block ml-1">
+        <div className="flex md:inline-flex md:ml-2 flex-row mt-2 justify-start gap-x-2">
           <ClientOnly fallback={"..."}>
             {() => {
               const date = new Date(created_ts * 1000);
@@ -92,12 +92,12 @@ const SingleLinkV2: React.FC<LinkItem> = ({
               );
             }}
           </ClientOnly>
-        </div>
-        <div
-          className="inline-block ml-1 border-2 border-red-400 p-2"
-          title="User ID"
-        >
-          {created_by}
+          <span
+            className="inline-block border-2 border-red-400 p-2"
+            title="User ID"
+          >
+            {created_by}
+          </span>
         </div>
       </div>
     </div>
