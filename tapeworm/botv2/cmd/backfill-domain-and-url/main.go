@@ -53,7 +53,6 @@ func main() {
 			panic(err)
 		}
 
-		link.Domain = linkURL.Hostname()
 		path := linkURL.EscapedPath()
 
 		if linkURL.RawQuery != "" {
@@ -63,6 +62,9 @@ func main() {
 		if linkURL.Fragment != "" {
 			path += "#" + linkURL.EscapedFragment()
 		}
+
+		link.Domain = linkURL.Hostname()
+		link.Path = path
 
 		linksToUpdate = append(linksToUpdate, link)
 	}
