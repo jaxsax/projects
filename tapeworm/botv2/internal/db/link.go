@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -28,6 +29,7 @@ type Link struct {
 func toDAOLink(link *types.Link) (*Link, error) {
 	var l Link
 
+	l.ID = link.ID
 	l.Link = link.Link
 	l.Title = link.Title
 	l.CreatedTS = uint64(link.CreatedAt)
@@ -215,6 +217,39 @@ func (q *Queries) GetLink(ctx context.Context, id uint64) (*types.Link, error) {
 	}
 
 	return typesLink, nil
+}
+
+func (q *Queries) UpdateLink(ctx context.Context, link *types.Link) error {
+	daoLink, err := toDAOLink(link)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("%+v\n", daoLink)
+	_, err = q.ExecContext(ctx, `
+			UPDATE links SET link = ?, title = ?, host = ?, path = ?
+			WHERE id = ?
+		`, daoLink.Link, daoLink.Title, daoLink.Host, daoLink.Path, daoLink.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Store) UpdateLinks(ctx context.Context, links []*types.Link) error {
+	err := s.execTx(ctx, func(q *Queries) error {
+		for _, link := range links {
+			if err := q.UpdateLink(ctx, link); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return err
 }
 
 func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {

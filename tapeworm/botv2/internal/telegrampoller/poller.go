@@ -125,6 +125,17 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	// Persist to storage
 	processedLinks := make([]*types.Link, 0, len(processedLinkGroup))
 	for _, link := range processedLinkGroup {
+		path := link.URL.EscapedPath()
+		if link.URL.RawQuery != "" {
+			path += "?" + link.URL.RawQuery
+		}
+
+		if link.URL.Fragment != "" {
+			path += "#" + link.URL.EscapedFragment()
+		}
+
+		logr.FromContextOrDiscard(ctx).Info("link", "item", link)
+
 		lt := &types.Link{
 			Link:        link.URL.String(),
 			Title:       link.Title,
@@ -132,9 +143,8 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 			CreatedByID: uint64(message.From.ID),
 			ExtraData:   map[string]string{},
 			Domain:      link.URL.Hostname(),
-			Path:        link.URL.Path,
+			Path:        path,
 		}
-
 		processedLinks = append(processedLinks, lt)
 	}
 
