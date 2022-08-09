@@ -120,7 +120,7 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 
 	if filter.Domain != "" {
 		andPairs = append(andPairs, andPair{
-			fieldName: "link",
+			fieldName: "host",
 			operator:  "=",
 			value:     filter.Domain,
 		})
@@ -148,6 +148,10 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 
 		stmtParts = append(stmtParts, "WHERE")
 		stmtParts = append(stmtParts, strings.Join(andStatements, " AND "))
+	}
+
+	if filter.UniqueLink {
+		stmtParts = append(stmtParts, "GROUP BY link")
 	}
 
 	stmtParts = append(stmtParts, "ORDER BY created_ts DESC")

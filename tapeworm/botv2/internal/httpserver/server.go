@@ -70,12 +70,12 @@ func (s *Server) buildMux() *mux.Router {
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links", func(w http.ResponseWriter, r *http.Request) {
+		ctx := logging.WithContext(r.Context())
+
 		if err := r.ParseForm(); err != nil {
-			respondWithError(r.Context(), w, http.StatusBadRequest, "Failed to parseform")
+			respondWithError(ctx, w, http.StatusBadRequest, "Failed to parseform")
 			return
 		}
-
-		ctx := logr.NewContext(r.Context(), s.logger)
 
 		type request struct {
 			Page  int
@@ -93,7 +93,7 @@ func (s *Server) buildMux() *mux.Router {
 		var req request
 		err := s.queryParamDecoder.Decode(&req, r.Form)
 		if err != nil {
-			respondWithError(r.Context(), w, http.StatusBadRequest, "Failed to decode form")
+			respondWithError(ctx, w, http.StatusBadRequest, "Failed to decode form")
 			return
 		}
 
@@ -119,7 +119,7 @@ func (s *Server) buildMux() *mux.Router {
 		links, err := s.store.ListLinksWithFilter(ctx, filter)
 		if err != nil {
 			logr.FromContextOrDiscard(ctx).Error(err, "failed to retrieve links")
-			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
+			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
@@ -128,7 +128,7 @@ func (s *Server) buildMux() *mux.Router {
 		totalCount, err := s.store.CountLinksWithFilter(ctx, countFilter)
 		if err != nil {
 			logr.FromContextOrDiscard(ctx).Error(err, "failed to count links")
-			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to retrieve links")
+			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
@@ -138,13 +138,15 @@ func (s *Server) buildMux() *mux.Router {
 			ItemsPerPage: req.Limit,
 			Page:         req.Page,
 		}
-		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+		respondWithJSON(ctx, w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links/get", func(w http.ResponseWriter, r *http.Request) {
+		ctx := logging.WithContext(r.Context())
+
 		linkByUrl := r.URL.Query().Get("url")
 		if linkByUrl == "" {
-			respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid url")
+			respondWithError(ctx, w, http.StatusBadRequest, "Invalid url")
 			return
 		}
 
@@ -152,18 +154,18 @@ func (s *Server) buildMux() *mux.Router {
 		if strings.Contains(linkByUrl, "://") {
 			parts := strings.Split(linkByUrl, "://")
 			if len(parts) < 2 {
-				respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid url, failed to remove scheme")
+				respondWithError(ctx, w, http.StatusBadRequest, "Invalid url, failed to remove scheme")
 				return
 			}
 
 			linkWithoutScheme = parts[1]
 		}
 
-		links, err := s.store.ListLinksWithFilter(r.Context(), &types.LinkFilter{
+		links, err := s.store.ListLinksWithFilter(ctx, &types.LinkFilter{
 			LinkWithoutScheme: linkWithoutScheme,
 		})
 		if err != nil {
-			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to list links")
+			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to list links")
 			return
 		}
 
@@ -174,29 +176,35 @@ func (s *Server) buildMux() *mux.Router {
 		resp := &response{
 			Links: links,
 		}
-		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+		respondWithJSON(ctx, w, http.StatusOK, resp)
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links/get_by_domain", func(w http.ResponseWriter, r *http.Request) {
-		linkByDomain := r.URL.Query().Get("domain")
-		if linkByDomain == "" {
-			respondWithError(r.Context(), w, http.StatusBadRequest, "Invalid domain")
+		ctx := logging.WithContext(r.Context())
+
+		if err := r.ParseForm(); err != nil {
+			respondWithError(ctx, w, http.StatusBadRequest, "Failed to parseform")
 			return
 		}
 
-		links, err := s.store.ListLinksWithFilter(r.Context(), &types.LinkFilter{
-			Domain: linkByDomain,
+		type request struct {
+			Domain string
+		}
+
+		var req request
+		err := s.queryParamDecoder.Decode(&req, r.Form)
+		if err != nil {
+			respondWithError(ctx, w, http.StatusBadRequest, "Failed to decode form")
+			return
+		}
+
+		links, err := s.store.ListLinksWithFilter(ctx, &types.LinkFilter{
+			Domain:     req.Domain,
+			UniqueLink: true,
 		})
 		if err != nil {
-			respondWithError(r.Context(), w, http.StatusInternalServerError, "Failed to list links")
+			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to list links")
 			return
-		}
-
-		filter2 := make([]*types.Link, 0, len(links))
-		for _, link := range links {
-			if link.Domain == linkByDomain {
-				filter2 = append(filter2, link)
-			}
 		}
 
 		type response struct {
@@ -204,9 +212,9 @@ func (s *Server) buildMux() *mux.Router {
 		}
 
 		resp := &response{
-			Links: filter2,
+			Links: links,
 		}
-		respondWithJSON(r.Context(), w, http.StatusOK, resp)
+		respondWithJSON(ctx, w, http.StatusOK, resp)
 	})
 
 	m.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {

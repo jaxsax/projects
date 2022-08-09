@@ -22,6 +22,23 @@ export async function ListLinks(q: string, page: string, limit: string) {
   return body;
 }
 
+export async function ListLinksByDomain(
+  domain: string
+): Promise<GetLinkResponse> {
+  let resp = await fetch(
+    withQuery(apiURL("/api/links/get_by_domain"), {
+      domain: domain,
+    }),
+    {
+      method: "GET",
+    }
+  );
+
+  let body = await resp.json();
+
+  return body;
+}
+
 export async function GetLink(url: string): Promise<GetLinkResponse> {
   let resp = await fetch(
     withQuery(apiURL("/api/links/get"), {

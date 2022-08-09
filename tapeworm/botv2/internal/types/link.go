@@ -25,6 +25,7 @@ type LinkFilter struct {
 	Limit             int
 
 	TitleSearch string
+	UniqueLink  bool
 }
 
 type TelegramUpdate struct {
