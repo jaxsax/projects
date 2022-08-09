@@ -13,8 +13,9 @@ type Link struct {
 	CreatedAt   uint64            `json:"created_ts"`
 	CreatedByID uint64            `json:"created_by"`
 	ExtraData   map[string]string `json:"extra_data"`
-	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
 	Domain      string            `json:"domain"`
+	Path        string            `json:"path"`
+	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
 }
 
 type LinkFilter struct {

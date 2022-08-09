@@ -3,6 +3,7 @@ package telegrampoller
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -125,11 +126,13 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	processedLinks := make([]*types.Link, 0, len(processedLinkGroup))
 	for _, link := range processedLinkGroup {
 		lt := &types.Link{
-			Link:        link.Link,
+			Link:        link.URL.String(),
 			Title:       link.Title,
 			CreatedAt:   uint64(time.Now().Unix()),
 			CreatedByID: uint64(message.From.ID),
 			ExtraData:   map[string]string{},
+			Domain:      link.URL.Hostname(),
+			Path:        link.URL.Path,
 		}
 
 		processedLinks = append(processedLinks, lt)
@@ -187,7 +190,7 @@ type processLinkRequest struct {
 
 type processLinkResponse struct {
 	Title string
-	Link  string
+	URL   *url.URL
 }
 
 func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequest) (*processLinkResponse, error) {
@@ -196,9 +199,14 @@ func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequ
 		return nil, err
 	}
 
+	lurl, err := url.Parse(l.Link)
+	if err != nil {
+		return nil, err
+	}
+
 	return &processLinkResponse{
 		Title: l.Title,
-		Link:  l.Link,
+		URL:   lurl,
 	}, nil
 }
 

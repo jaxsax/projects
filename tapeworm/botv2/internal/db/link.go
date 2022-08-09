@@ -20,6 +20,8 @@ type Link struct {
 	CreatedTS uint64 `db:"created_ts"`
 	CreatedBy uint64 `db:"created_by"`
 	ExtraData string `db:"extra_data"`
+	Host      string `db:"host"`
+	Path      string `db:"path"`
 	DeletedAt uint64 `db:"deleted_at"`
 }
 
@@ -30,6 +32,8 @@ func toDAOLink(link *types.Link) (*Link, error) {
 	l.Title = link.Title
 	l.CreatedTS = uint64(link.CreatedAt)
 	l.CreatedBy = link.CreatedByID
+	l.Host = link.Domain
+	l.Path = link.Path
 
 	extraDataBytes, err := json.Marshal(link.ExtraData)
 	if err != nil {
@@ -49,6 +53,8 @@ func toTypesLink(link *Link) (*types.Link, error) {
 	l.Title = link.Title
 	l.CreatedAt = link.CreatedTS
 	l.CreatedByID = link.CreatedBy
+	l.Domain = link.Host
+	l.Path = link.Path
 
 	if link.DeletedAt > 0 {
 		deletedAt := time.Unix(int64(link.DeletedAt), 0)
@@ -72,10 +78,10 @@ func (q *Queries) CreateLink(ctx context.Context, link *types.Link) error {
 	}
 
 	_, err = q.ExecContext(ctx, `
-		INSERT INTO links (link, title, created_ts, created_by, extra_data) VALUES (
-			?, ?, ?, ?, ?
+		INSERT INTO links (link, title, created_ts, created_by, extra_data, host, path) VALUES (
+			?, ?, ?, ?, ?, ?, ?
 		)
-	`, l.Link, l.Title, l.CreatedTS, l.CreatedBy, l.ExtraData)
+	`, l.Link, l.Title, l.CreatedTS, l.CreatedBy, l.ExtraData, l.Host, l.Path)
 	if err != nil {
 		return err
 	}
@@ -113,8 +119,8 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 	if filter.Domain != "" {
 		andPairs = append(andPairs, andPair{
 			fieldName: "link",
-			operator:  "LIKE",
-			value:     fmt.Sprintf("%%%s%%", filter.Domain),
+			operator:  "=",
+			value:     filter.Domain,
 		})
 	}
 
