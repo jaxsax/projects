@@ -43,6 +43,10 @@ func (s *DefaultStrategy) Provide(url *url.URL) (*EnhancedLink, error) {
 		return nil, err
 	}
 
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid status code: %d", res.StatusCode)
+	}
+
 	contentType := http.DetectContentType(body)
 	switch contentType {
 	case "text/xml; charset=utf-8":

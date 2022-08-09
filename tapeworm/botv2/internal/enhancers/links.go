@@ -47,30 +47,46 @@ func EnhanceLink(link string) (*EnhancedLink, error) {
 	return EnhanceLinkWithContext(context.Background(), link)
 }
 
+var remapHostMap = map[string]string{
+	"www.reddit.com": "old.reddit.com",
+	"reddit.com":     "old.reddit.com",
+}
+
 func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, error) {
-	url, err := url.Parse(link)
+	providedURL, err := url.Parse(link)
 	if err != nil {
 		return nil, err
 	}
 
-	if url.Scheme == "" {
-		url.Scheme = "http"
+	if providedURL.Scheme == "" {
+		providedURL.Scheme = "http"
 	}
 
-	removeUTMParameters(url)
+	removeUTMParameters(providedURL)
+
+	urlToRetrieveFrom, err := url.Parse(providedURL.String())
+	if err != nil {
+		return nil, err
+	}
+
+	rm, hasRemap := remapHostMap[urlToRetrieveFrom.Host]
+	if hasRemap {
+		urlToRetrieveFrom.Host = rm
+	}
 
 	for _, strategy := range StrategyList {
-		lg := logr.FromContextOrDiscard(ctx).WithValues("strategy", strategy.Name(), "url", url)
-		if strategy.Accepts(url) {
+		lg := logr.FromContextOrDiscard(ctx).WithValues("strategy", strategy.Name(), "url", urlToRetrieveFrom)
+		if strategy.Accepts(urlToRetrieveFrom) {
 			lg.Info("accepted")
 
-			e, err := strategy.Provide(url)
+			e, err := strategy.Provide(urlToRetrieveFrom)
 			if err != nil {
 				lg.Error(err, "strategy failed to provide")
 				continue
 			}
 
 			e.Title = strings.TrimSpace(e.Title)
+			e.Link = providedURL.String()
 
 			lg.Info("strategy provided", "info", e)
 			return e, nil
