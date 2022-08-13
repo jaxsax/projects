@@ -214,6 +214,10 @@ func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequ
 		return nil, err
 	}
 
+	if l.Title == "" {
+		return nil, fmt.Errorf("title is empty")
+	}
+
 	return &processLinkResponse{
 		Title: l.Title,
 		URL:   lurl,

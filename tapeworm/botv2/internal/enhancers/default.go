@@ -3,6 +3,7 @@ package enhancers
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -38,7 +39,8 @@ func (s *DefaultStrategy) Provide(url *url.URL) (*EnhancedLink, error) {
 		_ = res.Body.Close()
 	}()
 
-	body, err := ioutil.ReadAll(res.Body)
+	bodyReader := io.LimitReader(res.Body, 25*1024*1024)
+	body, err := ioutil.ReadAll(bodyReader)
 	if err != nil {
 		return nil, err
 	}

@@ -1,42 +1,46 @@
 package enhancers
 
 import (
-	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
-	"golang.org/x/net/html"
+	"github.com/PuerkitoBio/goquery"
 )
 
-func pageTitle(n *html.Node) string {
-	var title string
-	if n.Type == html.ElementNode && n.Data == "title" {
-		return n.FirstChild.Data
-	}
-	for c := n.FirstChild; c != nil; c = c.NextSibling {
-		title = pageTitle(c)
-		if title != "" {
-			break
-		}
-	}
-	return title
-}
-
-var successiveSpaces = regexp.MustCompile(`\s+`)
-
 func ReadTitle(body io.Reader) (string, error) {
-	doc, err := html.Parse(body)
+	doc, err := goquery.NewDocumentFromReader(body)
 	if err != nil {
 		return "", err
 	}
 
-	title := pageTitle(doc)
-	if title == "" {
-		return "", fmt.Errorf("not found")
-	}
+	var title = ""
+	doc.Find("title").Each(func(i int, s *goquery.Selection) {
+		if title == "" {
+			title = s.Text()
+		}
+	})
+
+	doc.Find("meta").Each(func(i int, s *goquery.Selection) {
+		propertyName, ok := s.Attr("property")
+		if !ok {
+			return
+		}
+
+		if propertyName != "og:title" {
+			return
+		}
+
+		propertyValue, ok := s.Attr("content")
+		if !ok {
+			return
+		}
+
+		if title == "" {
+			title = propertyValue
+		}
+	})
 
 	title = strings.TrimSpace(title)
-	title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+
 	return title, nil
 }

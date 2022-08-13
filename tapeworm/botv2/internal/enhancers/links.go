@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -52,6 +53,8 @@ var remapHostMap = map[string]string{
 	"reddit.com":     "old.reddit.com",
 }
 
+var successiveSpaces = regexp.MustCompile(`\s+`)
+
 func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, error) {
 	providedURL, err := url.Parse(link)
 	if err != nil {
@@ -85,7 +88,10 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 				continue
 			}
 
-			e.Title = strings.TrimSpace(e.Title)
+			title := strings.TrimSpace(e.Title)
+			title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+
+			e.Title = title
 			e.Link = providedURL.String()
 
 			lg.Info("strategy provided", "info", e)
