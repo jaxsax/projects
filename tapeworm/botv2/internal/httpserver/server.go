@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/gorilla/mux"
@@ -47,8 +48,11 @@ func (s *Server) Start() error {
 	s.logger.V(0).Info("starting", "addr", s.opts.HTTPAddress)
 
 	s.httpServer = &http.Server{
-		Addr:    s.opts.HTTPAddress,
-		Handler: s.buildMux(),
+		Addr:         s.opts.HTTPAddress,
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      s.buildMux(),
 	}
 
 	if err := s.httpServer.ListenAndServe(); err != nil {
@@ -65,12 +69,14 @@ func (s *Server) Start() error {
 func (s *Server) buildMux() *mux.Router {
 	m := mux.NewRouter().StrictSlash(true)
 
+	m.Use(loggingMiddleware(s.logger))
+
 	m.HandleFunc("/liveness", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("ok"))
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links", func(w http.ResponseWriter, r *http.Request) {
-		ctx := logging.WithContext(r.Context())
+		ctx := r.Context()
 
 		if err := r.ParseForm(); err != nil {
 			respondWithError(ctx, w, http.StatusBadRequest, "Failed to parseform")
