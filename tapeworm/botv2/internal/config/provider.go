@@ -19,13 +19,15 @@ var (
 	DB         = &db.Options{}
 	Log        = &logging.Options{}
 
-	m sync.Mutex
+	ProviderSet = wire.NewSet(
+		ProvideHTTP,
+		ProvideDB,
+		ProvideTelegram,
+		ProvideLogging,
+	)
 )
 
 func initParser() {
-	m.Lock()
-	defer m.Unlock()
-
 	once.Do(func() {
 		if _, err := flagParser.AddGroup("http", "", HTTP); err != nil {
 			panic(err)
@@ -48,13 +50,6 @@ func initParser() {
 		}
 	})
 }
-
-var ProviderSet = wire.NewSet(
-	ProvideHTTP,
-	ProvideDB,
-	ProvideTelegram,
-	ProvideLogging,
-)
 
 func ProvideHTTP() *httpserver.Options {
 	initParser()
