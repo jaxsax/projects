@@ -24,7 +24,9 @@ func NewStore(
 	return &Store{
 		db: db,
 		Queries: &Queries{
-			db, db, db,
+			ExecerContext:  db,
+			QueryerContext: db,
+			SingleRow:      db,
 		},
 	}
 }
@@ -41,7 +43,9 @@ type Queries struct {
 
 func (q *Queries) WithTx(tx *sqlx.Tx) *Queries {
 	return &Queries{
-		tx, tx, tx,
+		ExecerContext:  tx,
+		QueryerContext: tx,
+		SingleRow:      tx,
 	}
 }
 
