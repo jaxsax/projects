@@ -217,26 +217,6 @@ func (s *Server) buildMux() *mux.Router {
 		respondWithJSON(ctx, w, http.StatusOK, resp)
 	})
 
-	m.HandleFunc("/api/search", func(w http.ResponseWriter, r *http.Request) {
-		ctx := logging.WithContext(r.Context())
-
-		query := r.URL.Query().Get("q")
-		if query == "" {
-			respondWithError(ctx, w, http.StatusBadRequest, "Invalid query")
-			return
-		}
-
-		resp, err := s.store.Search(ctx, &types.SearchRequest{
-			FullText: query,
-		})
-		if err != nil {
-			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to search links")
-			return
-		}
-
-		respondWithJSON(ctx, w, http.StatusOK, resp)
-	}).Methods(http.MethodGet)
-
 	if s.opts.FrontendAssetPath != "" {
 		fs := http.FileServer(http.Dir(s.opts.FrontendAssetPath))
 		cacheBust := func(h http.Handler) http.HandlerFunc {

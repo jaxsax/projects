@@ -32,11 +32,3 @@ type TelegramUpdate struct {
 	ID   uint64 `json:"id"`
 	Data tgbotapi.Update
 }
-
-type SearchRequest struct {
-	FullText string
-}
-
-type SearchResponse struct {
-	Links []Link `json:"links"`
-}
