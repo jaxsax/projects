@@ -17,11 +17,13 @@ var (
 	HTTP       = &httpserver.Options{}
 	Telegram   = &telegrampoller.Options{}
 	DB         = &db.Options{}
+	Migrate    = &db.MigrateOptions{}
 	Log        = &logging.Options{}
 
 	ProviderSet = wire.NewSet(
 		ProvideHTTP,
 		ProvideDB,
+		ProvideMigrate,
 		ProvideTelegram,
 		ProvideLogging,
 	)
@@ -41,6 +43,10 @@ func initParser() {
 			panic(err)
 		}
 
+		if _, err := flagParser.AddGroup("migrate", "", Migrate); err != nil {
+			panic(err)
+		}
+
 		if _, err := flagParser.AddGroup("logging", "", Log); err != nil {
 			panic(err)
 		}
@@ -55,6 +61,12 @@ func ProvideHTTP() *httpserver.Options {
 	initParser()
 
 	return HTTP
+}
+
+func ProvideMigrate() *db.MigrateOptions {
+	initParser()
+
+	return Migrate
 }
 
 func ProvideDB() *db.Options {

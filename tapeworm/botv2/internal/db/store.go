@@ -13,6 +13,11 @@ type Options struct {
 	URI string `long:"db_uri" description:"uri to connect to database" default:"./bot.db" env:"DB_URI"`
 }
 
+type MigrateOptions struct {
+	Up   bool `long:"up" description:"migrate forward" env:"MIGRATE_UP"`
+	Down bool `long:"down" description:"migrate backwards" env:"MIGRATE_DOWN"`
+}
+
 type Store struct {
 	*Queries
 	db *sqlx.DB

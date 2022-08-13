@@ -1,54 +1,42 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
+	"github.com/go-logr/logr"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/sqlite"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
-	"github.com/jessevdk/go-flags"
 	"github.com/jmoiron/sqlx"
 )
 
-var (
-	flagParser     = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
-	dbOptions      = &db.Options{}
-	migrateOptions = &migrateOption{}
-)
-
-type migrateOption struct {
-	Up   bool `long:"up" description:"migrate forward" env:"MIGRATE_UP"`
-	Down bool `long:"down" description:"migrate backwards" env:"MIGRATE_DOWN"`
+type app struct {
+	dbOptions      *db.Options
+	migrateOptions *db.MigrateOptions
+	logger         logr.Logger
 }
 
 func main() {
-	if _, err := flagParser.AddGroup("db", "", dbOptions); err != nil {
-		panic(err)
-	}
-
-	if _, err := flagParser.AddGroup("migrate", "", migrateOptions); err != nil {
-		panic(err)
-	}
-
-	if _, err := flagParser.Parse(); err != nil {
-		panic(err)
-	}
-
-	db, err := sqlx.Connect("sqlite3", dbOptions.URI)
+	a, err := initialize()
 	if err != nil {
-		log.Fatalf("sql connect error=%v", err)
+		panic(err)
+	}
+
+	db, err := sqlx.Connect("sqlite3", a.dbOptions.URI)
+	if err != nil {
+		a.logger.Error(err, "sql connect")
 		return
 	}
 
 	if err := db.Ping(); err != nil {
-		log.Fatalf("sql ping error=%v", err)
+		a.logger.Error(err, "sql ping")
 		return
 	}
 
 	sqliteInstance, err := sqlite.WithInstance(db.DB, &sqlite.Config{})
 	if err != nil {
-		log.Fatalf("sqlite.withinstance err=%v", err)
+		a.logger.Error(err, "build instance fromm db")
 		return
 	}
 
@@ -58,28 +46,28 @@ func main() {
 		sqliteInstance,
 	)
 	if err != nil {
-		log.Fatalf("failed to create database instance err=%v", err)
+		a.logger.Error(err, "create database instance")
 		return
 	}
 
-	if migrateOptions.Up && migrateOptions.Down {
-		log.Fatalf("What are you doing???")
+	if a.migrateOptions.Up && a.migrateOptions.Down {
+		a.logger.Error(fmt.Errorf("cannot specify both up and down together"), "invalid options")
 		return
 	}
 
-	if migrateOptions.Up {
+	if a.migrateOptions.Up {
 		if err := m.Up(); err != nil {
-			log.Fatalf("migrate ip failed err=%v", err)
+			a.logger.Error(err, "migrate up failed")
 			return
 		}
 	}
 
-	if migrateOptions.Down {
+	if a.migrateOptions.Down {
 		if err := m.Down(); err != nil {
-			log.Fatalf("migrate down failed err=%v", err)
+			a.logger.Error(err, "migrate down failed")
 			return
 		}
 	}
 
-	log.Printf("Migration succcessful|urn=%s", dbOptions.URI)
+	a.logger.Info("migration successful", "dsn", a.dbOptions.URI)
 }
