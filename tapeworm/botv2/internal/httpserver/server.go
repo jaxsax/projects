@@ -99,7 +99,7 @@ func (s *Server) buildMux() *mux.Router {
 		var req request
 		err := s.queryParamDecoder.Decode(&req, r.Form)
 		if err != nil {
-			respondWithError(ctx, w, http.StatusBadRequest, "Failed to decode form")
+			respondWithErrorV2(w, r, err, http.StatusBadRequest, "Failed to decode form")
 			return
 		}
 
@@ -124,8 +124,7 @@ func (s *Server) buildMux() *mux.Router {
 
 		links, err := s.store.ListLinksWithFilter(ctx, filter)
 		if err != nil {
-			logging.FromContext(ctx).Error(err, "failed to retrieve links")
-			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
+			respondWithErrorV2(w, r, err, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
@@ -133,8 +132,7 @@ func (s *Server) buildMux() *mux.Router {
 		countFilter.Limit = 0
 		totalCount, err := s.store.CountLinksWithFilter(ctx, countFilter)
 		if err != nil {
-			logging.FromContext(ctx).Error(err, "failed to count links")
-			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
+			respondWithErrorV2(w, r, err, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
 
@@ -148,11 +146,11 @@ func (s *Server) buildMux() *mux.Router {
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links/get", func(w http.ResponseWriter, r *http.Request) {
-		ctx := logging.WithContext(r.Context())
+		ctx := r.Context()
 
 		linkByUrl := r.URL.Query().Get("url")
 		if linkByUrl == "" {
-			respondWithError(ctx, w, http.StatusBadRequest, "Invalid url")
+			respondWithErrorV2(w, r, errors.New("empty link url"), http.StatusBadRequest, "Invalid url")
 			return
 		}
 
@@ -160,7 +158,7 @@ func (s *Server) buildMux() *mux.Router {
 		if strings.Contains(linkByUrl, "://") {
 			parts := strings.Split(linkByUrl, "://")
 			if len(parts) < 2 {
-				respondWithError(ctx, w, http.StatusBadRequest, "Invalid url, failed to remove scheme")
+				respondWithErrorV2(w, r, errors.New("invalid url"), http.StatusBadRequest, "Invalid url, failed to remove scheme")
 				return
 			}
 
@@ -171,7 +169,7 @@ func (s *Server) buildMux() *mux.Router {
 			LinkWithoutScheme: linkWithoutScheme,
 		})
 		if err != nil {
-			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to list links")
+			respondWithErrorV2(w, r, err, http.StatusInternalServerError, "Failed to list links")
 			return
 		}
 
@@ -186,10 +184,10 @@ func (s *Server) buildMux() *mux.Router {
 	}).Methods(http.MethodGet)
 
 	m.HandleFunc("/api/links/get_by_domain", func(w http.ResponseWriter, r *http.Request) {
-		ctx := logging.WithContext(r.Context())
+		ctx := r.Context()
 
 		if err := r.ParseForm(); err != nil {
-			respondWithError(ctx, w, http.StatusBadRequest, "Failed to parseform")
+			respondWithErrorV2(w, r, err, http.StatusBadRequest, "Failed to parseform")
 			return
 		}
 
@@ -200,7 +198,7 @@ func (s *Server) buildMux() *mux.Router {
 		var req request
 		err := s.queryParamDecoder.Decode(&req, r.Form)
 		if err != nil {
-			respondWithError(ctx, w, http.StatusBadRequest, "Failed to decode form")
+			respondWithErrorV2(w, r, err, http.StatusBadRequest, "Failed to decode form")
 			return
 		}
 
@@ -209,7 +207,7 @@ func (s *Server) buildMux() *mux.Router {
 			UniqueLink: true,
 		})
 		if err != nil {
-			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to list links")
+			respondWithErrorV2(w, r, err, http.StatusInternalServerError, "Failed to list links")
 			return
 		}
 
@@ -241,6 +239,13 @@ func (s *Server) buildMux() *mux.Router {
 
 func respondWithError(ctx context.Context, w http.ResponseWriter, code int, message string) {
 	respondWithJSON(ctx, w, code, map[string]string{
+		"error": message,
+	})
+}
+
+func respondWithErrorV2(w http.ResponseWriter, r *http.Request, err error, code int, message string) {
+	logging.FromContext(r.Context()).Error(err, message)
+	respondWithJSON(r.Context(), w, code, map[string]string{
 		"error": message,
 	})
 }
