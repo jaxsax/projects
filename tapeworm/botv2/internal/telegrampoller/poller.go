@@ -11,6 +11,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/enhancers"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -134,7 +135,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 			path += "#" + link.URL.EscapedFragment()
 		}
 
-		logr.FromContextOrDiscard(ctx).Info("link", "item", link)
+		logging.FromContext(ctx).Info("link", "item", link)
 
 		lt := &types.Link{
 			Link:        link.URL.String(),
@@ -149,7 +150,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	}
 
 	if err := p.store.CreateLinks(ctx, processedLinks); err != nil {
-		logr.FromContextOrDiscard(ctx).Error(err, "failed to persist links to storage")
+		logging.FromContext(ctx).Error(err, "failed to persist links to storage")
 		p.replyWithError(ctx, err, "failed to store links", message)
 		return
 	}
@@ -161,7 +162,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 
 	_, err := p.botapi.Send(m)
 	if err != nil {
-		logr.FromContextOrDiscard(ctx).Error(err, "failed to send processed message")
+		logging.FromContext(ctx).Error(err, "failed to send processed message")
 		return
 	}
 }
@@ -186,10 +187,10 @@ func (p *TelegramPoller) replyWithError(
 	m := tgbotapi.NewMessage(originMessage.Chat.ID, clientFacingMessage)
 	m.ReplyToMessageID = originMessage.MessageID
 
-	logr.FromContextOrDiscard(ctx).Error(processErr, clientFacingMessage)
+	logging.FromContext(ctx).Error(processErr, clientFacingMessage)
 	_, err := p.botapi.Send(m)
 	if err != nil {
-		logr.FromContextOrDiscard(ctx).Error(err, "failed to reply with error")
+		logging.FromContext(ctx).Error(err, "failed to reply with error")
 		return
 	}
 }

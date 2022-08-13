@@ -118,7 +118,7 @@ func (s *Server) buildMux() *mux.Router {
 
 		links, err := s.store.ListLinksWithFilter(ctx, filter)
 		if err != nil {
-			logr.FromContextOrDiscard(ctx).Error(err, "failed to retrieve links")
+			logging.FromContext(ctx).Error(err, "failed to retrieve links")
 			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
@@ -127,7 +127,7 @@ func (s *Server) buildMux() *mux.Router {
 		countFilter.Limit = 0
 		totalCount, err := s.store.CountLinksWithFilter(ctx, countFilter)
 		if err != nil {
-			logr.FromContextOrDiscard(ctx).Error(err, "failed to count links")
+			logging.FromContext(ctx).Error(err, "failed to count links")
 			respondWithError(ctx, w, http.StatusInternalServerError, "Failed to retrieve links")
 			return
 		}
@@ -242,7 +242,7 @@ func respondWithError(ctx context.Context, w http.ResponseWriter, code int, mess
 func respondWithJSON(ctx context.Context, w http.ResponseWriter, code int, payload interface{}) {
 	responseBytes, err := json.Marshal(payload)
 	if err != nil {
-		logr.FromContextOrDiscard(ctx).
+		logging.FromContext(ctx).
 			Error(
 				err, "failed to marshal response payload",
 				"code", code,
@@ -258,7 +258,7 @@ func respondWithJSON(ctx context.Context, w http.ResponseWriter, code int, paylo
 	w.WriteHeader(code)
 	_, err = w.Write(responseBytes)
 	if err != nil {
-		logr.FromContextOrDiscard(ctx).Error(err, "failed to write to response to client")
+		logging.FromContext(ctx).Error(err, "failed to write to response to client")
 	}
 }
 

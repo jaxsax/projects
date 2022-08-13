@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-logr/logr"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 )
 
 type EnhancedLink struct {
@@ -78,7 +78,7 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 	}
 
 	for _, strategy := range StrategyList {
-		lg := logr.FromContextOrDiscard(ctx).WithValues("strategy", strategy.Name(), "url", urlToRetrieveFrom)
+		lg := logging.FromContext(ctx).WithValues("strategy", strategy.Name(), "url", urlToRetrieveFrom)
 		if strategy.Accepts(urlToRetrieveFrom) {
 			lg.Info("accepted")
 

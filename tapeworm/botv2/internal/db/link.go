@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-logr/logr"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -172,7 +172,7 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 
 func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFilter) (int, error) {
 	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links", filter)
-	logr.FromContextOrDiscard(ctx).V(1).Info("query", "stmt", stmt, "values", values)
+	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 
 	var count int
 	if err := q.GetContext(ctx, &count, stmt, values...); err != nil {
@@ -184,7 +184,7 @@ func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFi
 
 func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFilter) ([]*types.Link, error) {
 	stmt, values := q.buildLinkFilterStmt("SELECT * FROM links", filter)
-	logr.FromContextOrDiscard(ctx).V(1).Info("query", "stmt", stmt, "values", values)
+	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 	rs, err := q.QueryxContext(ctx, stmt, values...)
 	if err != nil {
 		return nil, err
