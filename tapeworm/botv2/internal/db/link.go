@@ -14,6 +14,12 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
+type Label struct {
+	ID     uint64 `db:"id"`
+	LinkID uint64 `db:"link_id"`
+	Name   string `db:"label_name"`
+}
+
 type Link struct {
 	ID        uint64 `db:"id"`
 	Link      string `db:"link"`
@@ -47,7 +53,7 @@ func toDAOLink(link *types.Link) (*Link, error) {
 	return &l, nil
 }
 
-func toTypesLink(link *Link) (*types.Link, error) {
+func (q *Queries) toTypesLink(link *Link) (*types.Link, error) {
 	var l types.Link
 
 	l.ID = link.ID
@@ -69,6 +75,13 @@ func toTypesLink(link *Link) (*types.Link, error) {
 	}
 
 	l.Domain = u.Hostname()
+
+	linkLabels, err := q.ListLinkLabels(context.TODO(), link.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	l.Labels = linkLabels
 
 	return &l, nil
 }
@@ -170,6 +183,37 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 	return stmt, values
 }
 
+func (q *Queries) toTypesLabel(l *Label) (*types.Label, error) {
+	return &types.Label{
+		Name: l.Name,
+	}, nil
+}
+
+func (q *Queries) ListLinkLabels(ctx context.Context, linkID uint64) ([]*types.Label, error) {
+	stmt := "SELECT * FROM link_label WHERE link_id = ?"
+	rs, err := q.QueryxContext(ctx, stmt, linkID)
+	if err != nil {
+		return nil, err
+	}
+
+	labels := make([]*types.Label, 0)
+	for rs.Next() {
+		var label Label
+		if err := rs.StructScan(&label); err != nil {
+			return nil, err
+		}
+
+		lt, err := q.toTypesLabel(&label)
+		if err != nil {
+			return nil, err
+		}
+
+		labels = append(labels, lt)
+	}
+
+	return labels, nil
+}
+
 func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFilter) (int, error) {
 	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links", filter)
 	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
@@ -197,7 +241,7 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 			return nil, err
 		}
 
-		link, err := toTypesLink(&obj)
+		link, err := q.toTypesLink(&obj)
 		if err != nil {
 			return nil, err
 		}
@@ -215,7 +259,7 @@ func (q *Queries) GetLink(ctx context.Context, id uint64) (*types.Link, error) {
 		return nil, err
 	}
 
-	typesLink, err := toTypesLink(link)
+	typesLink, err := q.toTypesLink(link)
 	if err != nil {
 		return nil, err
 	}

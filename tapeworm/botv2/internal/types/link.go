@@ -16,6 +16,11 @@ type Link struct {
 	Domain      string            `json:"domain"`
 	Path        string            `json:"path"`
 	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
+	Labels      []*Label          `json:"labels"`
+}
+
+type Label struct {
+	Name string `json:"name"`
 }
 
 type LinkFilter struct {
