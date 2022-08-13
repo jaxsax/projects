@@ -107,17 +107,43 @@ const SingleLinkV2: React.FC<LinkItem> = ({
   );
 };
 
+let colors = [
+  "bg-red-500",
+  "bg-orange-400",
+  "bg-yellow-500",
+  "bg-green-400",
+  "bg-blue-400",
+  "bg-slate-400",
+];
+
+function gencolor(x) {
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
 const SingleLink: React.FC<LinkItem> = ({
   title,
   link,
   created_ts,
   created_by,
+  labels,
 }) => {
   return (
     <div>
       <div>
         <h1 className="text-2xl text-bold">title</h1>
         <p>{title}</p>
+        {labels ? (
+          <div className="flex flex-wrap gap-2">
+            {labels.map((x) => (
+              <span
+                key={x.name}
+                className={` ${gencolor(x.name)} shadow border-1 p-2 rounded`}
+              >
+                {x.name}
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
       <div>
         <h1 className="text-2xl text-bold">link</h1>
