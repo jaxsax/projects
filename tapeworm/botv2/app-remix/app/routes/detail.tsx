@@ -24,13 +24,16 @@ export const loader: LoaderFunction = async ({ request }) => {
   let otherLinks = links.links.filter((x) => x.id !== originLinkID);
   let originLink = originLinks[0];
 
-  let sameDomainLinks = await ListLinksByDomain(originLink.domain);
+  let linksByDomain = await ListLinksByDomain(originLink.domain);
+  let sameDomainLinks = linksByDomain.links.filter(
+    (x) => x.id !== originLink.id
+  );
 
   return json<LoaderData>({
     links: otherLinks,
     fromLink: originLink,
     domain: originLink.domain,
-    fromSameDomain: sameDomainLinks.links,
+    fromSameDomain: sameDomainLinks,
   });
 };
 
