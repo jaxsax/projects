@@ -19,12 +19,12 @@ import (
 func initialize() (*App, error) {
 	options := config.ProvideHTTP()
 	dbOptions := config.ProvideDB()
-	store, err := db.Setup(dbOptions)
+	loggingOptions := config.ProvideLogging()
+	logger, err := logging.New(loggingOptions)
 	if err != nil {
 		return nil, err
 	}
-	loggingOptions := config.ProvideLogging()
-	logger, err := logging.New(loggingOptions)
+	store, err := db.Setup(dbOptions, logger)
 	if err != nil {
 		return nil, err
 	}

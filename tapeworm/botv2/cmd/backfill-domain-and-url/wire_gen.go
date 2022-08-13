@@ -16,12 +16,12 @@ import (
 
 func initialize() (*App, error) {
 	options := config.ProvideDB()
-	store, err := db.Setup(options)
+	loggingOptions := config.ProvideLogging()
+	logger, err := logging.New(loggingOptions)
 	if err != nil {
 		return nil, err
 	}
-	loggingOptions := config.ProvideLogging()
-	logger, err := logging.New(loggingOptions)
+	store, err := db.Setup(options, logger)
 	if err != nil {
 		return nil, err
 	}

@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/go-logr/logr"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	sqldblogger "github.com/simukti/sqldb-logger"
 )
 
 type Options struct {
@@ -78,15 +80,18 @@ func (s *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
 	return nil
 }
 
-func Setup(opt *Options) (*Store, error) {
-	db, err := sqlx.Connect("sqlite3", opt.URI)
+func Setup(opt *Options, _ logr.Logger) (*Store, error) {
+	db, err := sql.Open("sqlite3", opt.URI)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := db.Ping(); err != nil {
+	loggedDB := sqldblogger.OpenDriver(opt.URI, db.Driver(), &QueryLogger{})
+	dbx := sqlx.NewDb(loggedDB, "sqlite3")
+
+	if err := dbx.Ping(); err != nil {
 		return nil, err
 	}
 
-	return NewStore(db), nil
+	return NewStore(dbx), nil
 }
