@@ -2,46 +2,29 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/url"
 
+	"github.com/go-logr/logr"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
-	"github.com/jessevdk/go-flags"
 )
 
-var (
-	flagParser = flags.NewParser(nil, flags.HelpFlag|flags.PassDoubleDash)
-	dbOptions  = &db.Options{}
-	logOptions = &loggingOptions{}
-)
-
-type loggingOptions struct {
-	DevelopmentLog bool `long:"pretty_logs" description:"use the nicer-to-look at development log" env:"PRETTY_LOGS"`
+type App struct {
+	store     *db.Store
+	dbOptions *db.Options
+	logger    logr.Logger
 }
 
 func main() {
-	if _, err := flagParser.AddGroup("logging", "", logOptions); err != nil {
-		panic(err)
-	}
-
-	if _, err := flagParser.AddGroup("db", "", dbOptions); err != nil {
-		panic(err)
-	}
-
-	if _, err := flagParser.Parse(); err != nil {
-		panic(err)
-	}
-
-	store, err := db.Setup(dbOptions)
+	app, err := initialize()
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("dsn=%s", dbOptions.URI)
+	app.logger.Info("info", "dsn", app.dbOptions.URI)
 
 	ctx := context.Background()
-	allLinks, err := store.ListLinks(ctx)
+	allLinks, err := app.store.ListLinks(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +52,7 @@ func main() {
 		linksToUpdate = append(linksToUpdate, link)
 	}
 
-	err = store.UpdateLinks(ctx, linksToUpdate)
+	err = app.store.UpdateLinks(ctx, linksToUpdate)
 	if err != nil {
 		panic(err)
 	}
