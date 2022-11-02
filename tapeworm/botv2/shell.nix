@@ -13,5 +13,6 @@ mkShell {
     gocode-gomod
     godef
     golint
+    sqlite
   ];
 }
