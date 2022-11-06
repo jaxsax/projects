@@ -2,6 +2,7 @@ package telegrampoller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/enhancers"
+	ierrors "github.com/jaxsax/projects/tapeworm/botv2/internal/errors"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
@@ -107,7 +109,14 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 
 		resp, err := p.linkProcessor(ctx, req)
 		if err != nil {
-			p.replyWithError(ctx, err, "failed to process link", message)
+
+			var userFacingError ierrors.UserFacingError
+			if errors.As(err, &userFacingError) {
+				p.replyWithError(ctx, err, userFacingError.UserResponse(), message)
+				return
+			}
+
+			p.replyWithError(ctx, err, "Failed to process link", message)
 			return
 		}
 
@@ -205,7 +214,7 @@ type processLinkResponse struct {
 }
 
 func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequest) (*processLinkResponse, error) {
-	l, err := enhancers.EnhanceLinkWithContext(ctx, req.URL)
+	l, err := enhancers.EnhanceLinkWithContext(ctx, req.URL, p.store)
 	if err != nil {
 		return nil, err
 	}

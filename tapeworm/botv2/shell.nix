@@ -13,7 +13,9 @@ mkShell {
     gocode-gomod
     godef
     golint
+    go-migrate
     sqlite
     yq
+    litecli
   ];
 }

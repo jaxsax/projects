@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/errors"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 )
 
@@ -43,10 +45,6 @@ func removeUTMParameters(url *url.URL) {
 	url.RawQuery = values.Encode()
 }
 
-func EnhanceLink(link string) (*EnhancedLink, error) {
-	return EnhanceLinkWithContext(context.Background(), link)
-}
-
 var remapHostMap = map[string]string{
 	"www.reddit.com": "old.reddit.com",
 	"reddit.com":     "old.reddit.com",
@@ -54,7 +52,7 @@ var remapHostMap = map[string]string{
 
 var successiveSpaces = regexp.MustCompile(`\s+`)
 
-func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, error) {
+func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*EnhancedLink, error) {
 	providedURL, err := url.Parse(link)
 	if err != nil {
 		return nil, err
@@ -65,6 +63,15 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 	}
 
 	removeUTMParameters(providedURL)
+
+	isBlacklisted, err := p.IsBlacklistedDomain(ctx, providedURL.Hostname())
+	if err != nil {
+		return nil, err
+	}
+
+	if isBlacklisted {
+		return nil, errors.ErrInvalidDomain
+	}
 
 	urlToRetrieveFrom, err := url.Parse(providedURL.String())
 	if err != nil {
@@ -79,28 +86,28 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 	for _, strategy := range StrategyList {
 		lg := logging.FromContext(ctx).WithValues("strategy", strategy.Name(), "url", urlToRetrieveFrom)
 
-        lg.Info("trying strategy")
+		lg.Info("trying strategy")
 
-        e, err := strategy.Provide(urlToRetrieveFrom)
-        if err != nil {
-            lg.Error(err, "strategy failed to provide")
-            continue
-        }
+		e, err := strategy.Provide(urlToRetrieveFrom)
+		if err != nil {
+			lg.Error(err, "strategy failed to provide")
+			continue
+		}
 
-        if e == nil {
-            lg.Info("nil object")
-            continue
-        }
+		if e == nil {
+			lg.Info("nil object")
+			continue
+		}
 
-        title := strings.TrimSpace(e.Title)
-        title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+		title := strings.TrimSpace(e.Title)
+		title = successiveSpaces.ReplaceAllLiteralString(title, " ")
 
-        e.Title = title
-        e.Link = providedURL.String()
+		e.Title = title
+		e.Link = providedURL.String()
 
-        lg.Info("strategy provided", "info", e)
-        return e, nil
-    }
+		lg.Info("strategy provided", "info", e)
+		return e, nil
+	}
 
 	return nil, fmt.Errorf("no acceptable strategy")
 }
