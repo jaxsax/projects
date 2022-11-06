@@ -14,5 +14,6 @@ mkShell {
     godef
     golint
     sqlite
+    yq
   ];
 }

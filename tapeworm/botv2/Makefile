@@ -26,7 +26,10 @@ image-push:
 	docker push $(BOT_IMAGE_NAME)
 
 dev:
-	go run ./cmd/simplifiedbot
+	go run ./cmd/simplifiedbot/ \
+		--db_uri=database.db \
+		--telegram_token=$(shell yq -r .token secrets/config.yml) \
+		--enable_telegram_bot
 
 create_migration:
 	migrate create -ext sql -dir db/migrations $(name)
