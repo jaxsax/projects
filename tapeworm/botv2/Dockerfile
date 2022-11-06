@@ -6,6 +6,7 @@ RUN go mod download -x
 
 ADD cmd ./cmd/
 ADD internal ./internal/
+ADD db ./db/
 RUN make build
 
 FROM ubuntu:focal-20220426
@@ -25,5 +26,6 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=golang_builder /workspace/bin/ ./
+COPY --from=golang_builder /workspace/db/ ./
 
 CMD ["./bot"]  
