@@ -26,6 +26,6 @@ RUN apt-get update && apt-get install -y \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=golang_builder /workspace/bin/ ./
-COPY --from=golang_builder /workspace/db/ ./
+COPY --from=golang_builder /workspace/db/ ./workspace
 
 CMD ["./bot"]  
