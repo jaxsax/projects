@@ -23,7 +23,7 @@ func (s *DefaultStrategy) Provide(url *url.URL) (*EnhancedLink, error) {
 
 	req.Header.Set(
 		"User-Agent",
-		"Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko",
+		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36",
 	)
 
 	res, err := httpClient.Do(req)
