@@ -1,7 +1,7 @@
 FROM golang:1.18.2 AS golang_builder
 
 WORKDIR /workspace
-ADD go.mod go.sum ./
+ADD go.mod go.sum Makefile ./
 RUN go mod download -x
 
 ADD cmd ./cmd/
