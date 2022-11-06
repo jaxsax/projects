@@ -109,7 +109,6 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 
 		resp, err := p.linkProcessor(ctx, req)
 		if err != nil {
-
 			var userFacingError ierrors.UserFacingError
 			if errors.As(err, &userFacingError) {
 				p.replyWithError(ctx, err, userFacingError.UserResponse(), message)
