@@ -15,10 +15,6 @@ func (s *DefaultStrategy) Name() string {
 	return "default"
 }
 
-func (s *DefaultStrategy) Accepts(u *url.URL) bool {
-	return true
-}
-
 func (s *DefaultStrategy) Provide(url *url.URL) (*EnhancedLink, error) {
 	req, err := http.NewRequest(http.MethodGet, url.String(), nil)
 	if err != nil {

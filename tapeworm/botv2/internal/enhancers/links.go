@@ -20,7 +20,6 @@ type EnhancedLink struct {
 
 type Strategy interface {
 	Name() string
-	Accepts(u *url.URL) bool
 	Provide(u *url.URL) (*EnhancedLink, error)
 }
 
@@ -79,25 +78,29 @@ func EnhanceLinkWithContext(ctx context.Context, link string) (*EnhancedLink, er
 
 	for _, strategy := range StrategyList {
 		lg := logging.FromContext(ctx).WithValues("strategy", strategy.Name(), "url", urlToRetrieveFrom)
-		if strategy.Accepts(urlToRetrieveFrom) {
-			lg.Info("accepted")
 
-			e, err := strategy.Provide(urlToRetrieveFrom)
-			if err != nil {
-				lg.Error(err, "strategy failed to provide")
-				continue
-			}
+        lg.Info("trying strategy")
 
-			title := strings.TrimSpace(e.Title)
-			title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+        e, err := strategy.Provide(urlToRetrieveFrom)
+        if err != nil {
+            lg.Error(err, "strategy failed to provide")
+            continue
+        }
 
-			e.Title = title
-			e.Link = providedURL.String()
+        if e == nil {
+            lg.Info("nil object")
+            continue
+        }
 
-			lg.Info("strategy provided", "info", e)
-			return e, nil
-		}
-	}
+        title := strings.TrimSpace(e.Title)
+        title = successiveSpaces.ReplaceAllLiteralString(title, " ")
+
+        e.Title = title
+        e.Link = providedURL.String()
+
+        lg.Info("strategy provided", "info", e)
+        return e, nil
+    }
 
 	return nil, fmt.Errorf("no acceptable strategy")
 }
