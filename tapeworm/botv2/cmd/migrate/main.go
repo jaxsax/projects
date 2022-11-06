@@ -55,6 +55,11 @@ func main() {
 		return
 	}
 
+    if !a.migrateOptions.Up && !a.migrateOptions.Down {
+        a.logger.Error(fmt.Errorf("must specify either up or down"), "invalid options")
+        return
+    }
+
 	if a.migrateOptions.Up {
 		if err := m.Up(); err != nil {
 			a.logger.Error(err, "migrate up failed")
