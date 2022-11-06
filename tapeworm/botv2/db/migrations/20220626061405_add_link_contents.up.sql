@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS link_contents (
     created_at BIGINT NOT NULL
 );
 
-CREATE INDEX link_content_uri_idx ON link_contents(uri);
+CREATE INDEX IF NOT EXISTS link_content_uri_idx ON link_contents(uri);
