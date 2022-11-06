@@ -6,7 +6,7 @@ RUN go mod download -x
 
 ADD cmd ./cmd/
 ADD internal ./internal/
-RUN go build -o bin/bot ./cmd/simplifiedbot/
+RUN make build
 
 FROM ubuntu:focal-20220426
 
@@ -24,6 +24,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=golang_builder /workspace/bin/bot ./
+COPY --from=golang_builder /workspace/bin/ ./
 
 CMD ["./bot"]  

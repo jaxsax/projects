@@ -5,6 +5,11 @@ IMAGE_VERSION := $(BUILD_DATE)-$(COMMIT)
 BOT_IMAGE_NAME := r.internal.jaxsax.co/tapeworm/botv2:$(IMAGE_VERSION)
 REMIX_IMAGE_NAME := r.internal.jaxsax.co/tapeworm/botv2_remix:$(IMAGE_VERSION)
 
+.PHONY: build
+build: 
+	go build -o bin/bot ./cmd/simplifiedbot/
+	go build -o bin/migrate ./cmd/migrate/
+
 deploy-bot: image-build image-push
 	echo 'Hi'
 
