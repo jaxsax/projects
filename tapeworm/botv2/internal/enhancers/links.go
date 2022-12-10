@@ -53,16 +53,20 @@ var remapHostMap = map[string]string{
 var successiveSpaces = regexp.MustCompile(`\s+`)
 
 func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*EnhancedLink, error) {
+	if !strings.HasPrefix(link, "https://") || !strings.HasPrefix(link, "http://") {
+		link = fmt.Sprintf("http://%s", link)
+	}
+
 	providedURL, err := url.Parse(link)
 	if err != nil {
 		return nil, err
 	}
 
-	if providedURL.Scheme == "" {
-		providedURL.Scheme = "http"
-	}
-
 	removeUTMParameters(providedURL)
+
+	if providedURL.Hostname() == "" {
+		return nil, errors.ErrInvalidDomain
+	}
 
 	isBlacklisted, err := p.IsBlacklistedDomain(ctx, providedURL.Hostname())
 	if err != nil {
@@ -70,7 +74,7 @@ func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*Enh
 	}
 
 	if isBlacklisted {
-		return nil, errors.ErrInvalidDomain
+		return nil, errors.ErrBlocklistedDomain
 	}
 
 	urlToRetrieveFrom, err := url.Parse(providedURL.String())

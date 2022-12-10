@@ -3,9 +3,13 @@ package errors
 import "fmt"
 
 var (
-	ErrInvalidDomain = UserFacingError{
+	ErrBlocklistedDomain = UserFacingError{
 		err:          fmt.Errorf("domain is not allowed"),
 		userResponse: "Domain is not allowed",
+	}
+	ErrInvalidDomain = UserFacingError{
+		err:          fmt.Errorf("invalid domain"),
+		userResponse: "Domain is not valid",
 	}
 )
 
