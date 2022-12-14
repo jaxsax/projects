@@ -109,13 +109,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 
 		resp, err := p.linkProcessor(ctx, req)
 		if err != nil {
-			var userFacingError ierrors.UserFacingError
-			if errors.As(err, &userFacingError) {
-				p.replyWithError(ctx, err, userFacingError.UserResponse(), message)
-				return
-			}
-
-			p.replyWithError(ctx, err, "Failed to process link", message)
+			p.replyWithErrorV2(ctx, err, message)
 			return
 		}
 
@@ -183,6 +177,47 @@ func processedLinkGroupMessageBody(g []*processLinkResponse) string {
 	}
 
 	return sb.String()
+}
+
+func (p *TelegramPoller) replyWithErrorV2(
+	ctx context.Context,
+	err error,
+	originMessage *tgbotapi.Message,
+) {
+	if err == nil {
+		return
+	}
+	logging.FromContext(ctx).Info("replying to user with error", "err", err)
+
+	var chattable tgbotapi.Chattable
+
+	var ufe ierrors.UserFacingError
+	if errors.As(err, &ufe) {
+		if ufe.UserResponse() != "" {
+			m := tgbotapi.NewMessage(originMessage.Chat.ID, ufe.UserResponse())
+			m.ReplyToMessageID = originMessage.MessageID
+			chattable = m
+		}
+
+		if ufe.StickerResponse() != "" {
+			m := tgbotapi.NewSticker(originMessage.Chat.ID, tgbotapi.FileID(ufe.StickerResponse()))
+			m.ReplyToMessageID = originMessage.MessageID
+			chattable = m
+		}
+	}
+
+	if chattable == nil {
+		// No specific error types are matched, return generic error
+		m := tgbotapi.NewMessage(originMessage.Chat.ID, "Internal server error")
+		m.ReplyToMessageID = originMessage.MessageID
+		chattable = m
+	}
+
+	_, err = p.botapi.Send(chattable)
+	if err != nil {
+		logging.FromContext(ctx).Error(err, "failed to send error reply")
+		return
+	}
 }
 
 func (p *TelegramPoller) replyWithError(
