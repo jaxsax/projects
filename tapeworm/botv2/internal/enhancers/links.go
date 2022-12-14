@@ -68,15 +68,6 @@ func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*Enh
 		return nil, errors.ErrInvalidDomain
 	}
 
-	isBlacklisted, err := p.IsBlacklistedDomain(ctx, providedURL.Hostname())
-	if err != nil {
-		return nil, err
-	}
-
-	if isBlacklisted {
-		return nil, errors.ErrBlockedContent
-	}
-
 	urlToRetrieveFrom, err := url.Parse(providedURL.String())
 	if err != nil {
 		return nil, err
