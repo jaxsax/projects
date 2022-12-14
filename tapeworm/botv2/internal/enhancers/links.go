@@ -53,7 +53,7 @@ var remapHostMap = map[string]string{
 var successiveSpaces = regexp.MustCompile(`\s+`)
 
 func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*EnhancedLink, error) {
-	if !strings.HasPrefix(link, "https://") || !strings.HasPrefix(link, "http://") {
+	if !strings.HasPrefix(link, "https://") && !strings.HasPrefix(link, "http://") {
 		link = fmt.Sprintf("http://%s", link)
 	}
 
