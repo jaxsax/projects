@@ -187,7 +187,6 @@ func (p *TelegramPoller) replyWithErrorV2(
 	if err == nil {
 		return
 	}
-	logging.FromContext(ctx).Info("replying to user with error", "err", err)
 
 	var chattable tgbotapi.Chattable
 
@@ -213,6 +212,7 @@ func (p *TelegramPoller) replyWithErrorV2(
 		chattable = m
 	}
 
+	logging.FromContext(ctx).Info("replying to user with error", "internal_err", err)
 	_, err = p.botapi.Send(chattable)
 	if err != nil {
 		logging.FromContext(ctx).Error(err, "failed to send error reply")

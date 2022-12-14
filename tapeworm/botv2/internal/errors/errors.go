@@ -3,8 +3,8 @@ package errors
 import "fmt"
 
 var (
-	ErrBlocklistedDomain = UserFacingError{
-		err:             fmt.Errorf("domain is not allowed"),
+	ErrBlockedContent = UserFacingError{
+		err:             fmt.Errorf("content is not allowed"),
 		stickerResponse: "CAACAgQAAxkBAAIBlmOZmV1PDFKylJ9aWowPvB_wXKFmAAL7CwACWkWRU7PGcGTSdnIuLAQ",
 	}
 	ErrInvalidDomain = UserFacingError{
