@@ -14,6 +14,7 @@ mkShell {
     godef
     golint
     go-migrate
+    wire
     sqlite
     yq
     litecli

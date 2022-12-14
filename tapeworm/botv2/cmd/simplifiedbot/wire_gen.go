@@ -11,6 +11,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/services/content_block"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 )
 
@@ -30,7 +31,8 @@ func initialize() (*App, error) {
 	}
 	server := httpserver.New(options, store, logger)
 	telegrampollerOptions := config.ProvideTelegram()
-	telegramPoller := telegrampoller.New(telegrampollerOptions, store, logger)
+	service := contentblock.New(store)
+	telegramPoller := telegrampoller.New(telegrampollerOptions, store, logger, service)
 	app := &App{
 		HTTPServer:     server,
 		TelegramSource: telegramPoller,

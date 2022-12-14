@@ -14,6 +14,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/enhancers"
 	ierrors "github.com/jaxsax/projects/tapeworm/botv2/internal/errors"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
+	contentblock "github.com/jaxsax/projects/tapeworm/botv2/internal/services/content_block"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -27,21 +28,27 @@ type TelegramPoller struct {
 	options *Options
 	logger  logr.Logger
 
-	botapi *tgbotapi.BotAPI
-	store  *db.Store
-	done   chan struct{}
+	botapi              *tgbotapi.BotAPI
+	store               *db.Store
+	contentBlockChecker *contentblock.Service
+	done                chan struct{}
 }
 
-func New(opt *Options, store *db.Store, logger logr.Logger) *TelegramPoller {
+func New(opt *Options, store *db.Store, logger logr.Logger, bc *contentblock.Service) *TelegramPoller {
 	return &TelegramPoller{
-		options: opt,
-		store:   store,
-		logger:  logger,
-		done:    make(chan struct{}, 1),
+		options:             opt,
+		store:               store,
+		logger:              logger,
+		contentBlockChecker: bc,
+		done:                make(chan struct{}, 1),
 	}
 }
 
 func (p *TelegramPoller) Start() error {
+	if err := p.contentBlockChecker.Start(); err != nil {
+		return err
+	}
+
 	tgbotapi.SetLogger(&botLogger{p.logger.WithName("tgbotapi")})
 	api, err := tgbotapi.NewBotAPI(p.options.Token)
 	if err != nil {
@@ -88,6 +95,12 @@ func (p *TelegramPoller) handle(update tgbotapi.Update) {
 
 func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Message) {
 	if len(message.Entities) == 0 {
+		return
+	}
+
+	err := p.contentBlockChecker.IsAllowed(ctx, message.Text, "telegram_source_msg_text")
+	if err != nil {
+		p.replyWithErrorV2(ctx, err, message)
 		return
 	}
 
@@ -162,7 +175,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 	m := NewReplyToMessage(processedMessage, message)
 	m.DisableNotification = true
 
-	_, err := p.botapi.Send(m)
+	_, err = p.botapi.Send(m)
 	if err != nil {
 		logging.FromContext(ctx).Error(err, "failed to send processed message")
 		return
@@ -260,6 +273,10 @@ func (p *TelegramPoller) linkProcessor(ctx context.Context, req *processLinkRequ
 
 	if l.Title == "" {
 		return nil, fmt.Errorf("title is empty")
+	}
+
+	if err := p.contentBlockChecker.IsAllowed(ctx, l.Title, "link_processor_title_check"); err != nil {
+		return nil, err
 	}
 
 	return &processLinkResponse{
