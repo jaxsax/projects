@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-logr/logr"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/managed"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 )
 
@@ -30,17 +31,14 @@ func main() {
 	waitSigterm := make(chan os.Signal, 1)
 	signal.Notify(waitSigterm, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
-	go func() {
-		if err := app.HTTPServer.Start(); err != nil {
-			app.Logger.V(0).Error(err, "start httpserver")
-			done <- struct{}{}
-		}
-	}()
+	lifecycleManager := managed.New()
+	lifecycleManager.Add(app.HTTPServer, "http_server")
+	lifecycleManager.Add(app.TelegramSource, "telegram_source")
 
 	go func() {
-		if err := app.TelegramSource.Start(); err != nil {
-			app.Logger.V(0).Error(err, "start telegram poller")
-			done <- struct{}{}
+		if err := lifecycleManager.Start(context.Background()); err != nil {
+			app.Logger.V(0).Error(err, "start lifecycle failed")
+			os.Exit(1)
 		}
 	}()
 
@@ -52,14 +50,11 @@ func main() {
 	}()
 
 	<-done
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := app.TelegramSource.Stop(shutdownCtx); err != nil {
-		app.Logger.V(0).Error(err, "telegram poller shutdown")
-	}
-
-	if err := app.HTTPServer.Stop(shutdownCtx); err != nil {
-		app.Logger.V(0).Error(err, "httpserver shutdown")
+	if err := lifecycleManager.Stop(shutdownCtx); err != nil {
+		app.Logger.V(0).Error(err, "stop lifecyle failed")
+		os.Exit(1)
 	}
 }

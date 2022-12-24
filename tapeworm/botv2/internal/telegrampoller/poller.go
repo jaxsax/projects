@@ -44,7 +44,7 @@ func New(opt *Options, store *db.Store, logger logr.Logger, bc *contentblock.Ser
 	}
 }
 
-func (p *TelegramPoller) Start() error {
+func (p *TelegramPoller) Start(ctx context.Context) error {
 	if err := p.contentBlockChecker.Start(); err != nil {
 		return err
 	}

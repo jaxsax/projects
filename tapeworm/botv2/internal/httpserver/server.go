@@ -44,7 +44,7 @@ func New(opts *Options, s *db.Store, logger logr.Logger) *Server {
 	}
 }
 
-func (s *Server) Start() error {
+func (s *Server) Start(ctx context.Context) error {
 	s.logger.V(0).Info("starting", "addr", s.opts.HTTPAddress)
 
 	s.httpServer = &http.Server{
