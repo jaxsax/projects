@@ -50,7 +50,7 @@ func main() {
 	}()
 
 	<-done
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	if err := lifecycleManager.Stop(shutdownCtx); err != nil {
