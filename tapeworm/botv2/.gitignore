@@ -3,3 +3,4 @@ secrets/
 !secrets/.gitkeep
 .envrc
 fdb.cluster
+bin/
