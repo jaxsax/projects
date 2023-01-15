@@ -18,5 +18,7 @@ mkShell {
     sqlite
     yq
     litecli
+    nodejs-18_x
+    nodePackages.typescript-language-server
   ];
 }
