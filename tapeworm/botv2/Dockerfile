@@ -1,4 +1,4 @@
-FROM golang:1.18.2 AS golang_builder
+FROM golang:1.19.5 AS golang_builder
 
 WORKDIR /workspace
 ADD go.mod go.sum Makefile ./

@@ -3,7 +3,6 @@ package managed
 import (
 	"context"
 	"fmt"
-	"sync/atomic"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
 )
@@ -20,7 +19,7 @@ type serviceWrapper struct {
 type Manager struct {
 	services []serviceWrapper
 
-	started atomic.Bool
+	started bool
 }
 
 func New() *Manager {
@@ -39,7 +38,7 @@ type serviceStatus struct {
 }
 
 func (m *Manager) Start(ctx context.Context) error {
-	if m.started.Load() {
+	if m.started {
 		return fmt.Errorf("cannot start an already started manager")
 	}
 
@@ -53,9 +52,7 @@ func (m *Manager) Start(ctx context.Context) error {
 		}()
 	}
 
-	if !m.started.CompareAndSwap(false, true) {
-		return fmt.Errorf("compare and swap failed")
-	}
+	m.started = true
 
 	return nil
 }
@@ -85,7 +82,7 @@ func (m *Manager) Stop(ctx context.Context) error {
 		}
 	}
 
-	m.started.CompareAndSwap(true, false)
+	m.started = false
 
 	return nil
 }
