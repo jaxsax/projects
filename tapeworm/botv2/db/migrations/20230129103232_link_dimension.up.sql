@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS link_dimension (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    link_id INTEGER NOT NULL,
+    kind varchar(64) NOT NULL,
+    data TEXT NOT NULL
+);

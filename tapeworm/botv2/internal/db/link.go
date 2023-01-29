@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -82,6 +81,13 @@ func (q *Queries) toTypesLink(link *Link) (*types.Link, error) {
 	}
 
 	l.Labels = linkLabels
+
+	dimensions, err := q.ListLinkDimensions(context.TODO(), link.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	l.Dimensions = dimensions
 
 	return &l, nil
 }
@@ -214,6 +220,38 @@ func (q *Queries) ListLinkLabels(ctx context.Context, linkID uint64) ([]*types.L
 	return labels, nil
 }
 
+func (q *Queries) toTypesDimension(l *LinkDimension) (*types.Dimension, error) {
+	return &types.Dimension{
+		Kind: l.Kind,
+		Data: json.RawMessage(l.Data),
+	}, nil
+}
+
+func (q *Queries) ListLinkDimensions(ctx context.Context, linkID uint64) ([]*types.Dimension, error) {
+	stmt := "SELECT * FROM link_dimension WHERE link_id = ?"
+	rs, err := q.QueryxContext(ctx, stmt, linkID)
+	if err != nil {
+		return nil, err
+	}
+
+	dimensions := make([]*types.Dimension, 0)
+	for rs.Next() {
+		var dimension LinkDimension
+		if err := rs.StructScan(&dimension); err != nil {
+			return nil, err
+		}
+
+		lt, err := q.toTypesDimension(&dimension)
+		if err != nil {
+			return nil, err
+		}
+
+		dimensions = append(dimensions, lt)
+	}
+
+	return dimensions, err
+}
+
 func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFilter) (int, error) {
 	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links", filter)
 	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
@@ -273,7 +311,6 @@ func (q *Queries) UpdateLink(ctx context.Context, link *types.Link) error {
 		return err
 	}
 
-	log.Printf("%+v\n", daoLink)
 	_, err = q.ExecContext(ctx, `
 			UPDATE links SET link = ?, title = ?, host = ?, path = ?
 			WHERE id = ?

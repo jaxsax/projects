@@ -1,6 +1,7 @@
 package types
 
 import (
+	"encoding/json"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -17,10 +18,16 @@ type Link struct {
 	Path        string            `json:"path"`
 	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
 	Labels      []*Label          `json:"labels"`
+	Dimensions  []*Dimension      `json:"dimensions"`
 }
 
 type Label struct {
 	Name string `json:"name"`
+}
+
+type Dimension struct {
+	Kind string          `json:"kind"`
+	Data json.RawMessage `json:"data"`
 }
 
 type LinkFilter struct {
