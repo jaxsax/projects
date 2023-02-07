@@ -24,7 +24,10 @@ func NewHNCollector(api *algolia.HN) *HNCollector {
 
 func (c *HNCollector) Collect(link *types.Link) ([]*types.Dimension, error) {
 	response, err := c.caller.Search(&algolia.SearchRequest{
-		Query: link.Link,
+		Query:                        link.Link,
+		RestrictSearchableAttributes: []string{"url"},
+		Analytics:                    false,
+		TypoTolerance:                "false",
 	})
 	if err != nil {
 		return nil, err
@@ -34,8 +37,18 @@ func (c *HNCollector) Collect(link *types.Link) ([]*types.Dimension, error) {
 		return nil, nil
 	}
 
-	hit := response.Hits[0]
-	hnURL := fmt.Sprintf("https://news.ycombinator.com/item?id=%s", hit.ObjectID)
+	objectID := ""
+	for _, h := range response.Hits {
+		if h.URL == link.Link {
+			objectID = h.ObjectID
+		}
+	}
+
+	if objectID == "" {
+		return nil, nil
+	}
+
+	hnURL := fmt.Sprintf("https://news.ycombinator.com/item?id=%s", objectID)
 
 	data := map[string]string{
 		"url": hnURL,

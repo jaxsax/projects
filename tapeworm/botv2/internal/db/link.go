@@ -20,15 +20,16 @@ type Label struct {
 }
 
 type Link struct {
-	ID        uint64 `db:"id"`
-	Link      string `db:"link"`
-	Title     string `db:"title"`
-	CreatedTS uint64 `db:"created_ts"`
-	CreatedBy uint64 `db:"created_by"`
-	ExtraData string `db:"extra_data"`
-	Host      string `db:"host"`
-	Path      string `db:"path"`
-	DeletedAt uint64 `db:"deleted_at"`
+	ID           uint64 `db:"id"`
+	Link         string `db:"link"`
+	Title        string `db:"title"`
+	CreatedTS    uint64 `db:"created_ts"`
+	CreatedBy    uint64 `db:"created_by"`
+	ExtraData    string `db:"extra_data"`
+	Host         string `db:"host"`
+	Path         string `db:"path"`
+	DeletedAt    uint64 `db:"deleted_at"`
+	DimCollected int    `db:"dim_collected"`
 }
 
 func toDAOLink(link *types.Link) (*Link, error) {
@@ -41,6 +42,11 @@ func toDAOLink(link *types.Link) (*Link, error) {
 	l.CreatedBy = link.CreatedByID
 	l.Host = link.Domain
 	l.Path = link.Path
+	l.DimCollected = 0
+
+	if link.DimCollected {
+		l.DimCollected = 1
+	}
 
 	extraDataBytes, err := json.Marshal(link.ExtraData)
 	if err != nil {
@@ -62,10 +68,15 @@ func (q *Queries) toTypesLink(link *Link) (*types.Link, error) {
 	l.CreatedByID = link.CreatedBy
 	l.Domain = link.Host
 	l.Path = link.Path
+	l.DimCollected = false
 
 	if link.DeletedAt > 0 {
 		deletedAt := time.Unix(int64(link.DeletedAt), 0)
 		l.DeletedAt = &deletedAt
+	}
+
+	if link.DimCollected >= 1 {
+		l.DimCollected = true
 	}
 
 	u, err := url.Parse(l.Link)
@@ -150,6 +161,19 @@ func (q *Queries) buildLinkFilterStmt(selectStmt string, filter *types.LinkFilte
 			fieldName: "lower(title)",
 			operator:  "LIKE",
 			value:     "%" + filter.TitleSearch + "%",
+		})
+	}
+
+	if filter.DimCollected != nil {
+		value := "0"
+		if *filter.DimCollected {
+			value = "1"
+		}
+
+		andPairs = append(andPairs, andPair{
+			fieldName: "dim_collected",
+			operator:  "=",
+			value:     value,
 		})
 	}
 
@@ -323,6 +347,22 @@ func (q *Queries) UpdateLink(ctx context.Context, link *types.Link) error {
 	return nil
 }
 
+func (q *Queries) SetLinkDimCollected(ctx context.Context, linkID uint64, collected bool) error {
+	collectedVal := 0
+	if collected {
+		collectedVal = 1
+	}
+
+	_, err := q.ExecContext(ctx, `
+    UPDATE links SET dim_collected = ? WHERE id = ?
+    `, collectedVal, linkID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Store) UpdateLinks(ctx context.Context, links []*types.Link) error {
 	err := s.execTx(ctx, func(q *Queries) error {
 		for _, link := range links {
@@ -355,7 +395,7 @@ func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {
 
 func (s *Store) UpdateLinkDimensions(ctx context.Context, link *types.Link, dimensions []*types.Dimension) error {
 	return s.execTx(ctx, func(q *Queries) error {
-		if err := q.UpdateLink(ctx, link); err != nil {
+		if err := q.SetLinkDimCollected(ctx, link.ID, true); err != nil {
 			return fmt.Errorf("update link: %w", err)
 		}
 

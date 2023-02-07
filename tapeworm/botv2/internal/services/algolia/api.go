@@ -33,6 +33,19 @@ func (a *Algolia) Search(req *SearchRequest) (*SearchResponse, error) {
 
 	param := url.Values{}
 	param.Set("query", req.Query)
+
+	if !req.Analytics {
+		param.Set("analytics", "false")
+	}
+
+	if len(req.RestrictSearchableAttributes) > 0 {
+		param.Set("restrictSearchableAttributes", strings.Join(req.RestrictSearchableAttributes, ","))
+	}
+
+	if req.TypoTolerance != "" {
+		param.Set("typoTolerance", req.TypoTolerance)
+	}
+
 	resp, err := http.Get(a.getURL("/api/v1/search") + "?" + param.Encode())
 	if err != nil {
 		return nil, err

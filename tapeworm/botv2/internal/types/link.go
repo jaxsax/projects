@@ -8,17 +8,18 @@ import (
 )
 
 type Link struct {
-	ID          uint64            `json:"id"`
-	Link        string            `json:"link"`
-	Title       string            `json:"title"`
-	CreatedAt   uint64            `json:"created_ts"`
-	CreatedByID uint64            `json:"created_by"`
-	ExtraData   map[string]string `json:"extra_data"`
-	Domain      string            `json:"domain"`
-	Path        string            `json:"path"`
-	DeletedAt   *time.Time        `json:"deleted_at,omitempty"`
-	Labels      []*Label          `json:"labels"`
-	Dimensions  []*Dimension      `json:"dimensions"`
+	ID           uint64            `json:"id"`
+	Link         string            `json:"link"`
+	Title        string            `json:"title"`
+	CreatedAt    uint64            `json:"created_ts"`
+	CreatedByID  uint64            `json:"created_by"`
+	ExtraData    map[string]string `json:"extra_data"`
+	Domain       string            `json:"domain"`
+	Path         string            `json:"path"`
+	DeletedAt    *time.Time        `json:"deleted_at,omitempty"`
+	Labels       []*Label          `json:"labels"`
+	Dimensions   []*Dimension      `json:"dimensions"`
+	DimCollected bool              `json:"-"`
 }
 
 type Label struct {
@@ -36,8 +37,9 @@ type LinkFilter struct {
 	PageNumber        int
 	Limit             int
 
-	TitleSearch string
-	UniqueLink  bool
+	TitleSearch  string
+	UniqueLink   bool
+	DimCollected *bool
 }
 
 type TelegramUpdate struct {

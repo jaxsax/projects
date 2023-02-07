@@ -3,7 +3,10 @@ package algolia
 import "time"
 
 type SearchRequest struct {
-	Query string
+	Query                        string
+	RestrictSearchableAttributes []string
+	Analytics                    bool
+	TypoTolerance                string
 }
 
 type SearchResponse struct {

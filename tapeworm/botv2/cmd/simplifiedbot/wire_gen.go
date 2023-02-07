@@ -42,6 +42,7 @@ func initialize() (*App, error) {
 	app := &App{
 		HTTPServer:     server,
 		TelegramSource: telegramPoller,
+		dimService:     service,
 		Logger:         logger,
 	}
 	return app, nil
