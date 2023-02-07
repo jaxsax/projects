@@ -8,6 +8,7 @@ import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/dimension"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/pointer"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -44,10 +45,9 @@ func (s *Service) Start(ctx context.Context) error {
 			}
 
 			ctx := context.Background()
-			t := false
 			links, err := s.store.ListLinksWithFilter(ctx, &types.LinkFilter{
 				Limit:        100,
-				DimCollected: &t,
+				DimCollected: pointer.Of(false),
 			})
 
 			if err != nil {
