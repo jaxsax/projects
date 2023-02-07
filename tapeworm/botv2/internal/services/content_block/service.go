@@ -3,6 +3,7 @@ package contentblock
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -13,7 +14,8 @@ import (
 )
 
 type Strategy interface {
-	IsBlocked(data string) bool
+	IsBlocked(data string) (bool, bool)
+	Priority() int
 	Name() string
 }
 
@@ -48,6 +50,20 @@ func (s *Service) Start() error {
 	return nil
 }
 
+type byPriority []Strategy
+
+func (s byPriority) Len() int {
+	return len(s)
+}
+
+func (s byPriority) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s byPriority) Less(i, j int) bool {
+	return s[i].Priority() < s[j].Priority()
+}
+
 func (s *Service) refresh() error {
 	strategies, err := s.db.ListBLocklistStrategies(context.Background())
 	if err != nil {
@@ -62,15 +78,23 @@ func (s *Service) refresh() error {
 		case "substring":
 			strategyFuncs = append(strategyFuncs, &funcStrategy{
 				strategyName: fmt.Sprintf("substring(%s)", st.Content),
-				fn: func(s string) bool {
-					return strings.Contains(s, st.Content)
+				fn: func(s string) (bool, bool) {
+					return strings.Contains(s, st.Content), false
 				},
 			})
 		case "substring_case_insensitive":
 			strategyFuncs = append(strategyFuncs, &funcStrategy{
 				strategyName: fmt.Sprintf("substring_case_insensitive(%s)", strings.ToLower(st.Content)),
-				fn: func(s string) bool {
-					return strings.Contains(strings.ToLower(s), strings.ToLower(st.Content))
+				fn: func(s string) (bool, bool) {
+					return strings.Contains(strings.ToLower(s), strings.ToLower(st.Content)), false
+				},
+			})
+		case "substring_exclude":
+			strategyFuncs = append(strategyFuncs, &funcStrategy{
+				strategyName: fmt.Sprintf("substring_exclude(%s)", st.Content),
+				priority:     -100,
+				fn: func(s string) (bool, bool) {
+					return strings.Contains(strings.ToLower(s), strings.ToLower(st.Content)), true
 				},
 			})
 		}
@@ -78,6 +102,7 @@ func (s *Service) refresh() error {
 
 	s.m.Lock()
 	s.strategies = strategyFuncs
+	sort.Sort(byPriority(s.strategies))
 	s.m.Unlock()
 
 	return nil
@@ -85,14 +110,19 @@ func (s *Service) refresh() error {
 
 type funcStrategy struct {
 	strategyName string
-	fn           func(string) bool
+	priority     int
+	fn           func(string) (bool, bool)
 }
 
 func (s *funcStrategy) Name() string {
 	return s.strategyName
 }
 
-func (s *funcStrategy) IsBlocked(data string) bool {
+func (s *funcStrategy) Priority() int {
+	return s.priority
+}
+
+func (s *funcStrategy) IsBlocked(data string) (bool, bool) {
 	return s.fn(data)
 }
 
@@ -101,14 +131,21 @@ func (s *Service) IsAllowed(ctx context.Context, data string, source string) err
 	defer s.m.RUnlock()
 
 	for _, st := range s.strategies {
-		if st.IsBlocked(data) {
-			logging.FromContext(ctx).Info(
-				"content blocked by strategy",
-				"name", st.Name(),
-				"source", source,
-				"data", data,
-			)
+		matched, stopChain := st.IsBlocked(data)
+		logging.FromContext(ctx).Info(
+			"blocklist check",
+			"name", st.Name(),
+			"source", source,
+			"data", data,
+			"matched", matched,
+			"stopChain", stopChain,
+		)
 
+		if matched && stopChain {
+			break
+		}
+
+		if matched {
 			return errors.ErrBlockedContent
 		}
 	}
