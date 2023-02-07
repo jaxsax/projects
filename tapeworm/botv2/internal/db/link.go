@@ -222,7 +222,7 @@ func (q *Queries) ListLinkLabels(ctx context.Context, linkID uint64) ([]*types.L
 
 func (q *Queries) toTypesDimension(l *LinkDimension) (*types.Dimension, error) {
 	return &types.Dimension{
-		Kind: l.Kind,
+		Kind: types.DimensionKind(l.Kind),
 		Data: json.RawMessage(l.Data),
 	}, nil
 }
@@ -351,4 +351,20 @@ func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {
 	}
 
 	return nil
+}
+
+func (s *Store) UpdateLinkDimensions(ctx context.Context, link *types.Link, dimensions []*types.Dimension) error {
+	return s.execTx(ctx, func(q *Queries) error {
+		if err := q.UpdateLink(ctx, link); err != nil {
+			return fmt.Errorf("update link: %w", err)
+		}
+
+		for _, dim := range dimensions {
+			if err := q.CreateLinkDimension(ctx, link.ID, dim); err != nil {
+				return fmt.Errorf("create link dimension: %w", err)
+			}
+		}
+
+		return nil
+	})
 }

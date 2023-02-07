@@ -26,7 +26,7 @@ type Label struct {
 }
 
 type Dimension struct {
-	Kind string          `json:"kind"`
+	Kind DimensionKind   `json:"kind"`
 	Data json.RawMessage `json:"data"`
 }
 

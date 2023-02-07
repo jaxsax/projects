@@ -9,9 +9,12 @@ package main
 import (
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/config"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/dimension"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/httpserver"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/services/algolia"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/services/content_block"
+	"github.com/jaxsax/projects/tapeworm/botv2/internal/services/dim_collector"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/telegrampoller"
 )
 
@@ -29,10 +32,13 @@ func initialize() (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	server := httpserver.New(options, store, logger)
+	hn := algolia.NewForHN()
+	hnCollector := dimension.NewHNCollector(hn)
+	service := dimcollector.New(store, hnCollector)
+	server := httpserver.New(options, store, logger, service)
 	telegrampollerOptions := config.ProvideTelegram()
-	service := contentblock.New(store)
-	telegramPoller := telegrampoller.New(telegrampollerOptions, store, logger, service)
+	contentblockService := contentblock.New(store)
+	telegramPoller := telegrampoller.New(telegrampollerOptions, store, logger, contentblockService)
 	app := &App{
 		HTTPServer:     server,
 		TelegramSource: telegramPoller,

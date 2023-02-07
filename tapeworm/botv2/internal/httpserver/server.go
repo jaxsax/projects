@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/gorilla/schema"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/logging"
+	dimcollector "github.com/jaxsax/projects/tapeworm/botv2/internal/services/dim_collector"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/types"
 )
 
@@ -28,11 +30,12 @@ type Server struct {
 
 	httpServer *http.Server
 	store      *db.Store
+	dc         *dimcollector.Service
 
 	queryParamDecoder *schema.Decoder
 }
 
-func New(opts *Options, s *db.Store, logger logr.Logger) *Server {
+func New(opts *Options, s *db.Store, logger logr.Logger, dc *dimcollector.Service) *Server {
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
 
@@ -41,6 +44,7 @@ func New(opts *Options, s *db.Store, logger logr.Logger) *Server {
 		store:             s,
 		logger:            logger,
 		queryParamDecoder: decoder,
+		dc:                dc,
 	}
 }
 
@@ -219,6 +223,41 @@ func (s *Server) buildMux() *mux.Router {
 			Links: links,
 		}
 		respondWithJSON(ctx, w, http.StatusOK, resp)
+	})
+
+	m.HandleFunc("/api/links/populate_dimension", func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		if r.Method != http.MethodPost {
+			respondWithErrorV2(w, r, fmt.Errorf("invalid method"), http.StatusNotFound, "Not found")
+			return
+		}
+
+		type request struct {
+			LinkIDs []uint64 `json:"link_ids"`
+		}
+
+		var req request
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			respondWithErrorV2(w, r, err, http.StatusUnprocessableEntity, "bad request body")
+			return
+		}
+
+		for _, linkID := range req.LinkIDs {
+			lk, err := s.store.GetLink(ctx, linkID)
+			if err != nil {
+				respondWithErrorV2(w, r, err, http.StatusInternalServerError, "error getting link")
+				return
+			}
+
+			if err := s.dc.PopulateDimensions(ctx, lk); err != nil {
+				respondWithErrorV2(w, r, err, http.StatusInternalServerError, "error populating dimensions")
+				return
+			}
+		}
+
+		respondWithJSON(ctx, w, http.StatusOK, map[string]interface{}{
+			"status": "ok",
+		})
 	})
 
 	if s.opts.FrontendAssetPath != "" {
