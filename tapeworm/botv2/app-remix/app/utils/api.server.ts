@@ -1,9 +1,6 @@
 import { GetLinkResponse } from "~/models/link";
 
-let apiHost =
-  process.env.NODE_ENV === "production"
-    ? "https://jaxsax.co"
-    : "http://localhost:8081";
+let apiHost = process.env.API_HOST ?? 'http://localhost:8081';
 
 export async function ListLinks(q: string, page: string, limit: string) {
   let resp = await fetch(
