@@ -87,10 +87,6 @@ func (r *Reddit) Provide(u *url.URL) (*EnhancedLink, error) {
 
 		newURL, err := resp.Location()
 		if err != nil {
-			if errors.Is(err, http.ErrNoLocation) {
-				return nil, fmt.Errorf("no location redirect")
-			}
-
 			return nil, errors.Wrap(err, "get location")
 		}
 
