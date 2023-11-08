@@ -7,7 +7,8 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/db"
 	"github.com/jaxsax/projects/tapeworm/botv2/internal/errors"
@@ -26,12 +27,25 @@ type Strategy interface {
 }
 
 var StrategyList = []Strategy{
+	&Reddit{},
 	&OEmbedStrategy{},
 	&DefaultStrategy{},
 }
 
-var httpClient = &http.Client{
-	Timeout: 10 * time.Second,
+var (
+	httpClient           *http.Client
+	httpClientNoRedirect *http.Client
+)
+
+func init() {
+	rh := retryablehttp.NewClient()
+	rh.RetryMax = 10
+	httpClient = rh.StandardClient()
+
+	httpClientNoRedirect = &http.Client{}
+	httpClientNoRedirect.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
 }
 
 func removeUTMParameters(url *url.URL) {
@@ -46,8 +60,8 @@ func removeUTMParameters(url *url.URL) {
 }
 
 var remapHostMap = map[string]string{
-	"www.reddit.com": "old.reddit.com",
-	"reddit.com":     "old.reddit.com",
+	// "www.reddit.com": "old.reddit.com",
+	// "reddit.com":     "old.reddit.com",
 }
 
 var successiveSpaces = regexp.MustCompile(`\s+`)
@@ -85,12 +99,11 @@ func EnhanceLinkWithContext(ctx context.Context, link string, p *db.Store) (*Enh
 
 		e, err := strategy.Provide(urlToRetrieveFrom)
 		if err != nil {
-			lg.Error(err, "strategy failed to provide")
+			lg.Error(err, "strategy failed")
 			continue
 		}
 
 		if e == nil {
-			lg.Info("nil object")
 			continue
 		}
 

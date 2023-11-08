@@ -32,6 +32,7 @@ func (s *DefaultStrategy) Provide(url *url.URL) (*EnhancedLink, error) {
 	}
 
 	defer func() {
+		_, _ = io.Copy(io.Discard, res.Body)
 		_ = res.Body.Close()
 	}()
 
