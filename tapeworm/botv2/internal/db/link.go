@@ -103,17 +103,25 @@ func (q *Queries) toTypesLink(link *Link) (*types.Link, error) {
 	return &l, nil
 }
 
-func (q *Queries) CreateLink(ctx context.Context, link *types.Link) error {
+func (q *Queries) UpsertLink(ctx context.Context, link *types.Link) error {
 	l, err := toDAOLink(link)
 	if err != nil {
 		return err
 	}
 
 	_, err = q.ExecContext(ctx, `
-		INSERT INTO links (link, title, created_ts, created_by, extra_data, host, path) VALUES (
-			?, ?, ?, ?, ?, ?, ?
-		)
-	`, l.Link, l.Title, l.CreatedTS, l.CreatedBy, l.ExtraData, l.Host, l.Path)
+    INSERT INTO links_v2 (link, title, created_ts, created_by, extra_data, host, path) VALUES (
+        ?, ?, ?, ?, ?, ?, ?
+    )
+    ON CONFLICT (link) DO UPDATE SET
+    title = ?,
+    extra_data = ?,
+    host = ?,
+    path = ?
+    `,
+		l.Link, l.Title, l.CreatedTS, l.CreatedBy, l.ExtraData, l.Host, l.Path,
+		l.Title, l.ExtraData, l.Host, l.Path,
+	)
 	if err != nil {
 		return err
 	}
@@ -277,7 +285,7 @@ func (q *Queries) ListLinkDimensions(ctx context.Context, linkID uint64) ([]*typ
 }
 
 func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFilter) (int, error) {
-	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links", filter)
+	stmt, values := q.buildLinkFilterStmt("SELECT COUNT(*) FROM links_v2", filter)
 	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 
 	var count int
@@ -289,7 +297,7 @@ func (q *Queries) CountLinksWithFilter(ctx context.Context, filter *types.LinkFi
 }
 
 func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFilter) ([]*types.Link, error) {
-	stmt, values := q.buildLinkFilterStmt("SELECT * FROM links", filter)
+	stmt, values := q.buildLinkFilterStmt("SELECT * FROM links_v2", filter)
 	logging.FromContext(ctx).V(1).Info("query", "stmt", stmt, "values", values)
 	rs, err := q.QueryxContext(ctx, stmt, values...)
 	if err != nil {
@@ -316,7 +324,7 @@ func (q *Queries) ListLinksWithFilter(ctx context.Context, filter *types.LinkFil
 
 func (q *Queries) GetLink(ctx context.Context, id uint64) (*types.Link, error) {
 	link := new(Link)
-	err := q.GetContext(ctx, link, "SELECT * FROM links WHERE id = ? and deleted_at = 0", id)
+	err := q.GetContext(ctx, link, "SELECT * FROM links_v2 WHERE id = ? and deleted_at = 0", id)
 	if err != nil {
 		return nil, err
 	}
@@ -329,24 +337,6 @@ func (q *Queries) GetLink(ctx context.Context, id uint64) (*types.Link, error) {
 	return typesLink, nil
 }
 
-func (q *Queries) UpdateLink(ctx context.Context, link *types.Link) error {
-	daoLink, err := toDAOLink(link)
-	if err != nil {
-		return err
-	}
-
-	_, err = q.ExecContext(ctx, `
-			UPDATE links SET link = ?, title = ?, host = ?, path = ?
-			WHERE id = ?
-		`, daoLink.Link, daoLink.Title, daoLink.Host, daoLink.Path, daoLink.ID,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (q *Queries) SetLinkDimCollected(ctx context.Context, linkID uint64, collected bool) error {
 	collectedVal := 0
 	if collected {
@@ -354,7 +344,7 @@ func (q *Queries) SetLinkDimCollected(ctx context.Context, linkID uint64, collec
 	}
 
 	_, err := q.ExecContext(ctx, `
-    UPDATE links SET dim_collected = ? WHERE id = ?
+    UPDATE links_v2 SET dim_collected = ? WHERE id = ?
     `, collectedVal, linkID)
 	if err != nil {
 		return err
@@ -363,27 +353,14 @@ func (q *Queries) SetLinkDimCollected(ctx context.Context, linkID uint64, collec
 	return nil
 }
 
-func (s *Store) UpdateLinks(ctx context.Context, links []*types.Link) error {
+func (s *Store) UpsertLinks(ctx context.Context, links []*types.Link) error {
 	err := s.execTx(ctx, func(q *Queries) error {
 		for _, link := range links {
-			if err := q.UpdateLink(ctx, link); err != nil {
+			if err := q.UpsertLink(ctx, link); err != nil {
 				return err
 			}
 		}
 
-		return nil
-	})
-
-	return err
-}
-
-func (s *Store) CreateLinks(ctx context.Context, links []*types.Link) error {
-	err := s.execTx(ctx, func(q *Queries) error {
-		for _, link := range links {
-			if err := q.CreateLink(ctx, link); err != nil {
-				return err
-			}
-		}
 		return nil
 	})
 	if err != nil {

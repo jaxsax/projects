@@ -163,7 +163,7 @@ func (p *TelegramPoller) handleMessage(ctx context.Context, message *tgbotapi.Me
 		processedLinks = append(processedLinks, lt)
 	}
 
-	if err := p.store.CreateLinks(ctx, processedLinks); err != nil {
+	if err := p.store.UpsertLinks(ctx, processedLinks); err != nil {
 		logging.FromContext(ctx).Error(err, "failed to persist links to storage")
 		p.replyWithError(ctx, err, "failed to store links", message)
 		return
